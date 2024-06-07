@@ -1,7 +1,0 @@
-# path to the json data folder
-source_json_path = "../SrcJson"
-
-# which json data repository is used
-# "AzurLaneTools" for https://github.com/AzurLaneTools/AzurLaneData
-# "nobbyfix" for https://github.com/nobbyfix/AzurLaneSourceJson
-jsonloader_variant = "AzurLaneTools"

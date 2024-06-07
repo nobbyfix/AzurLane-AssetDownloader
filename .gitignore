@@ -1,3 +1,14 @@
+# venv files
+/Lib
+/Scripts
+/Include
+pyvenv.cfg
+
+# private files
 __pycache__
 .vscode
-Src*
+
+# generated files
+src/ClientAssets
+src/ClientExtract
+src/config/user_config.yml

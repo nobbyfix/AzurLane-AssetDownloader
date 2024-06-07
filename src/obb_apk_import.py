@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 import io, re, sys, json, shutil
 from argparse import ArgumentParser, BooleanOptionalAction
 from zipfile import ZipFile

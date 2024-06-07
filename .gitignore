@@ -7,6 +7,7 @@ pyvenv.cfg
 # private files
 __pycache__
 .vscode
+.autoenv
 
 # generated files
 src/ClientAssets

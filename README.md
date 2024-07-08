@@ -2,7 +2,7 @@
 This tool automatically downloads the newest assets directly from the game cdn servers and extracts the Texture2D files as png from them.
 
 ## Before you start
-Python 3.11+ is required with the following libraries: `requests`, `UnityPy`, `PyYAML`, `Pillow`. Dependencies can be installed using `pip install -r requirements.txt`.
+Python 3.11+ is required with the following libraries: `requests`, `UnityPy`, `PyYAML`, `Pillow`, `protobuf`. Dependencies can be installed using `pip install -r requirements.txt`.
 
 ## HOW TO USE
 ### 1. Import files from xapk/apk/obb
@@ -27,8 +27,6 @@ You can then execute the script by passing it the filepath to the xapk/apk/obb:
 The `config/user_config.yml` file provides a few settings to filter which files will be downloaded (and later also extracted). The options `download-folder-listtype` and `extract-folder-listtype` can be set to either "blacklist" or "whitelist". Depending on this it will filter by the top-level foldernames (sub folders are not supported) or top-level filenames (files inside top-level folders or lower can not be filtered) set in `download-folder-list` and `extract-folder-list`. This allows to cut down the download and extraction times by skipping unneeded assets.
 
 ### 3. Download new updates from the game
-**Note: To prevent helping cheaters, two files needed for this part are missing. If you ask me nicely on Discord (nobbyfix#2338) i may provide them to you (usually only if you are an active wiki member).**
-
 All assets that are usually distributed through the in-app downloader can be downloaded by simply executing:
 ```
 ./main.py [CLIENT]

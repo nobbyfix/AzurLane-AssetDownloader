@@ -3,10 +3,15 @@ import socket
 
 
 PROTOBUFS = {}
-def import_pb(pb: int):
-	module = importlib.import_module(f".p{pb}_pb_pb2", "lib.proto")
+def import_pb(pb: int, addname: str = ""):
+	module = importlib.import_module(f".p{pb}{addname}_pb_pb2", "lib.proto")
 	PROTOBUFS[pb] = module
 
+def import_pb_with_retry(pb: str):
+	try:
+		import_pb(pb)
+	except ModuleNotFoundError:
+		import_pb(pb, "min")
 
 class InvalidHeaderError(Exception): pass
 
@@ -15,7 +20,7 @@ class BasicCommand:
 		pbpackage = command_id//1000
 		if pbpackage not in PROTOBUFS:
 			try:
-				import_pb(pbpackage)
+				import_pb_with_retry(pbpackage)
 			except ModuleNotFoundError:
 				print(f'Command Package {pbpackage} does not exist (From cmd={command_id}).')
 

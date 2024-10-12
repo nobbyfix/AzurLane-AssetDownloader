@@ -22,6 +22,16 @@ def parse_version_string(rawstring: str) -> VersionResult:
 		return VersionResult(version, parts[-1], rawstring, versiontype)
 	return VersionResult(parts[1], parts[2], rawstring, versiontype)
 
+def compare_version_string(version_new: str, version_old: str) -> bool:
+	"""
+	Returns `True` if `version_new` is newer than `version_old`.
+	"""
+	if not version_old:
+		return True
+	new_to_int = [int(v) for v in version_new.split(".")]
+	old_to_int = [int(v) for v in version_old.split(".")]
+	return new_to_int > old_to_int
+
 
 def load_version_string(version_type: VersionType, relative_parent_dir: Path) -> Optional[str]:
 	fpath = Path(relative_parent_dir, version_type.version_filename)

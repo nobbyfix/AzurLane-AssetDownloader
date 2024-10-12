@@ -123,10 +123,10 @@ def _update(version_result: VersionResult, cdnurl: str, userconfig: UserConfig, 
 
 def update(version_result: VersionResult, cdnurl: str, userconfig: UserConfig, client_directory: Path, force_refresh: bool) -> list[UpdateResult]:
 	oldversion = versioncontrol.load_version_string(version_result.version_type, client_directory)
-	if oldversion == version_result.version:
+	if versioncontrol.compare_version_string(version_result.version, oldversion):
+		print(f"{version_result.version_type.name}: Current version {oldversion} is older than latest version {version_result.version}.")
+		return _update(version_result, cdnurl, userconfig, client_directory)
+	else:
 		print(f"{version_result.version_type.name}: Current version {oldversion} is latest.")
 		if force_refresh:
 			return _update(version_result, cdnurl, userconfig, client_directory)
-	else:
-		print(f"{version_result.version_type.name}: Current version {oldversion} is older than latest version {version_result.version}.")
-		return _update(version_result, cdnurl, userconfig, client_directory)

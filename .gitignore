@@ -8,6 +8,9 @@ pyvenv.cfg
 __pycache__
 .vscode
 .autoenv
+*.apk
+*.xapk
+*.obb
 
 # generated files
 src/ClientAssets

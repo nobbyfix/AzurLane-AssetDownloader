@@ -1,11 +1,18 @@
 #!/usr/bin/env python
-import io, re, sys, json, shutil
+import io, re, sys, json, shutil, hashlib
 from argparse import ArgumentParser, BooleanOptionalAction
 from zipfile import ZipFile
 from pathlib import Path
+from collections import defaultdict
 
 from lib import versioncontrol, updater, config
-from lib.classes import BundlePath, Client, CompareType, DownloadType, UpdateResult, VersionType
+from lib.classes import BundlePath, Client, CompareType, DownloadType, UpdateResult, VersionType, ProgressBar
+
+
+def calc_md5hash(data: bytes) -> str:
+	md5 = hashlib.md5()
+	md5.update(data)
+	return md5.hexdigest()
 
 
 def unpack(zipfile: ZipFile, client: Client, allow_older_version: bool = False):
@@ -13,6 +20,9 @@ def unpack(zipfile: ZipFile, client: Client, allow_older_version: bool = False):
 	userconfig = config.load_user_config()
 	CLIENT_ASSET_DIR = Path(userconfig.asset_directory, client.name)
 	CLIENT_ASSET_DIR.mkdir(parents=True, exist_ok=True)
+
+	# create {filename: filesize} dict for later recovery of missed files
+	file_info_list = {f.filename: f.file_size for f in zipfile.filelist if not f.is_dir()}
 
 	print('Unpacking archive...')
 	for versiontype in VersionType:
@@ -25,10 +35,9 @@ def unpack(zipfile: ZipFile, client: Client, allow_older_version: bool = False):
 		with zipfile.open('assets/'+versiontype.version_filename, 'r') as zf:
 			obbversion = zf.read().decode('utf8')
 
-		# if a version file already exists, compare the versions
-		# if the obbversion is smaller (older), don't extract data from obb
+		# if the obbversion is older, don't extract data from obb
 		currentversion = versioncontrol.load_version_string(versiontype, CLIENT_ASSET_DIR)
-		if currentversion and tuple(obbversion.split('.')) < tuple(currentversion.split('.')):
+		if not versioncontrol.compare_version_string(obbversion, currentversion):
 			print(f'{versiontype.name}: Current version {currentversion} is same or newer than obb version {obbversion}.')
 			continue
 
@@ -44,17 +53,46 @@ def unpack(zipfile: ZipFile, client: Client, allow_older_version: bool = False):
 		update_results = [UpdateResult(r, DownloadType.NoChange, BundlePath.construct(assetbasepath, r.new_hash.filepath)) for r in filter(lambda r: r.compare_type == CompareType.Unchanged, comparison_results.values())]
 
 		fileamount = len(update_files)
-		for i, result in enumerate(update_files, 1):
-			if result.compare_type in [CompareType.New, CompareType.Changed]:
-				print(f'Saving {result.new_hash.filepath} ({i}/{fileamount}).')
-				assetpath = BundlePath.construct(assetbasepath, result.new_hash.filepath)
-				extract_asset(zipfile, assetpath.inner, assetpath.full)
-				update_results.append(UpdateResult(result, DownloadType.Success if assetpath.full.exists() else DownloadType.Failed, assetpath))
-			elif result.compare_type == CompareType.Deleted:
-				print(f'Deleting {result.current_hash.filepath} ({i}/{fileamount}).')
-				assetpath = BundlePath.construct(assetbasepath, result.current_hash.filepath)
-				updater.remove_asset(assetpath.full)
-				update_results.append(UpdateResult(result, DownloadType.Removed, assetpath))
+		if fileamount > 0:
+			files_not_found = []
+			progressbar = ProgressBar(fileamount, f"Extracting '{versiontype.hashname}' Files", details_unit="files")
+			for result in update_files:
+				if result.compare_type in [CompareType.New, CompareType.Changed]:
+					#print(f'Saving {result.new_hash.filepath} ({i}/{fileamount}).')
+					assetpath = BundlePath.construct(assetbasepath, result.new_hash.filepath)
+					if pathresult := extract_asset(zipfile, assetpath.inner, assetpath.full):
+						file_info_list.pop(pathresult)
+						update_results.append(UpdateResult(result, DownloadType.Success if assetpath.full.exists() else DownloadType.Failed, assetpath))
+					else:
+						files_not_found.append((assetpath, result))
+				elif result.compare_type == CompareType.Deleted:
+					#print(f'Deleting {result.current_hash.filepath} ({i}/{fileamount}).')
+					assetpath = BundlePath.construct(assetbasepath, result.current_hash.filepath)
+					updater.remove_asset(assetpath.full)
+					update_results.append(UpdateResult(result, DownloadType.Removed, assetpath))
+				progressbar.update()
+
+			# try to find remaining files using their md5hash
+			if len(files_not_found) > 0:
+				file_info_groupby_size = defaultdict(list)
+				for k,v in file_info_list.items():
+					file_info_groupby_size[v].append(k)
+
+				progressbar = ProgressBar(len(files_not_found), "Retrieving failed files", details_unit="files")
+				for assetpath,result in files_not_found:
+					for zipf_path in file_info_groupby_size.get(result.new_hash.size):
+						with zipfile.open(zipf_path, "r") as zf:
+							zipf_data = zf.read()
+							zipf_md5hash = calc_md5hash(zipf_data)
+							if result.new_hash.md5hash == zipf_md5hash:
+								with open(assetpath.full, "wb") as f:
+									f.write(zipf_data)
+									update_results.append(UpdateResult(result, DownloadType.Success if assetpath.full.exists() else DownloadType.Failed, assetpath))
+									break
+					#else:
+					#	print( LOG ERROR MESSAGE HERE )
+					progressbar.update()
+
 
 		# update version string, hashes and difflog
 		hashes_updated = updater.filter_hashes(update_results)
@@ -69,9 +107,13 @@ def extract_asset(zipfile: ZipFile, filepath: str, target: Path):
 		assetpath = "assets/AssetBundles/"+filepath
 	else:
 		assetpath = "assets/AssetBundles/"+filepath+".ys"
-
-	with zipfile.open(assetpath, 'r') as zf, open(target, 'wb') as f:
-		shutil.copyfileobj(zf, f)
+    
+	try:
+		with zipfile.open(assetpath, 'r') as zf, open(target, 'wb') as f:
+			shutil.copyfileobj(zf, f)
+			return assetpath
+	except KeyError:
+		pass
 
 
 def extract_obb(path: Path, fallback_client: Client = None, allow_older_version: bool = False):

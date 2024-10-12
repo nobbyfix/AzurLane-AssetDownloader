@@ -52,10 +52,10 @@ def update_assets(cdnurl: str, comparison_results: dict[str, CompareResult], use
 	update_files = list(filter(lambda r: r.compare_type != CompareType.Unchanged, comparison_results.values()))
 	update_results = [UpdateResult(r, DownloadType.NoChange, BundlePath.construct(assetbasepath, r.new_hash.filepath)) for r in filter(lambda r: r.compare_type == CompareType.Unchanged, comparison_results.values())]
 
-	fileamount = len(update_files)
-	for i, result in enumerate(update_files, 1):
+	progressbar = ProgressBar(len(update_files), "Download Progress", details_unit="files")
+	for result in update_files:
 		if result.compare_type in [CompareType.New, CompareType.Changed]:
-			print(f"Downloading {result.new_hash.filepath} ({i}/{fileamount}).")
+			#print(f"Downloading {result.new_hash.filepath} ({i}/{fileamount}).")
 			assetpath = BundlePath.construct(assetbasepath, result.new_hash.filepath)
 			if download_asset(cdnurl, result.new_hash.md5hash, userconfig.useragent, assetpath.full, result.new_hash.size):
 				update_results.append(UpdateResult(result, DownloadType.Success, assetpath))
@@ -64,12 +64,13 @@ def update_assets(cdnurl: str, comparison_results: dict[str, CompareResult], use
 
 		elif result.compare_type == CompareType.Deleted:
 			if allow_deletion:
-				print(f"Deleting {result.current_hash.filepath} ({i}/{fileamount}).")
+				#print(f"Deleting {result.current_hash.filepath} ({i}/{fileamount}).")
 				assetpath = BundlePath.construct(assetbasepath, result.current_hash.filepath)
 				remove_asset(assetpath.full)
 				update_results.append(UpdateResult(result, DownloadType.Removed, assetpath))
 			else:
-				print(f"Deleting {result.current_hash.filepath} ({i}/{fileamount}) [SKIPPED].")
+				pass #print(f"Deleting {result.current_hash.filepath} ({i}/{fileamount}) [SKIPPED].")
+		progressbar.update()
 	return update_results
 
 def download_hashes(version_result: VersionResult, cdnurl: str, userconfig: UserConfig):

@@ -164,7 +164,7 @@ def printProgressBar(iteration, total, prefix = '', suffix = 'Complete', decimal
 	filledLength = int(length * iteration // total)
 	progress = fill * filledLength + '-' * (length - filledLength)
 	details = f" [{iteration}/{total} {details_unit}]" if details_unit else ""
-	print(f'\r{prefix} |{progress}| {percent}%{details} {suffix}', end = printEnd)
+	print(f'\r{prefix} |{progress}| {percent}% {suffix}{details}', end = printEnd)
 	# Print New Line on Complete
 	if iteration == total:
 		print()

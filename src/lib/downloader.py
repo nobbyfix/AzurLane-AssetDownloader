@@ -1,14 +1,14 @@
 import requests
 
 
-def request(error_msg: str, timeout, *args, **kwargs):
+def request(error_msg: str, *args, **kwargs):
 	while True:
 		try:
-			response = requests.get(timeout=timeout, *args, **kwargs)
+			response = requests.get(*args, **kwargs)
 			break
 		except TimeoutError:
 			print(error_msg)
-			timeout *= 2
+			kwargs["timeout"] *= 2
 
 	if response.status_code == 200:
 		return response

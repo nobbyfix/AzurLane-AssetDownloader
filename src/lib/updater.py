@@ -73,7 +73,7 @@ def update_assets(cdnurl: str, comparison_results: dict[str, CompareResult], use
 		progressbar.update()
 	return update_results
 
-def download_hashes(version_result: VersionResult, cdnurl: str, userconfig: UserConfig):
+def download_hashes(version_result: VersionResult, cdnurl: str, userconfig: UserConfig) -> Optional[list[HashRow]]:
 	hashes = downloader.download_hashes(cdnurl, version_result.rawstring, userconfig.useragent)
 	if not hashes:
 		print(f"Server returned empty hashfile for {version_result.version_type.name}, skipping.")
@@ -117,12 +117,13 @@ def _update_from_hashes(version_result: VersionResult, cdnurl: str, userconfig: 
 	versioncontrol.update_version_data2(version_result, client_directory, hashes_updated)
 	return update_results
 
-def _update(version_result: VersionResult, cdnurl: str, userconfig: UserConfig, client_directory: Path) -> list[UpdateResult]:
+def _update(version_result: VersionResult, cdnurl: str, userconfig: UserConfig, client_directory: Path) -> Optional[list[UpdateResult]]:
 	newhashes = download_hashes(version_result, cdnurl, userconfig)
-	oldhashes = versioncontrol.load_hash_file(version_result.version_type, client_directory)
-	return _update_from_hashes(version_result, cdnurl, userconfig, client_directory, oldhashes, newhashes)
+	if newhashes:
+		oldhashes = versioncontrol.load_hash_file(version_result.version_type, client_directory)
+		return _update_from_hashes(version_result, cdnurl, userconfig, client_directory, oldhashes, newhashes)
 
-def update(version_result: VersionResult, cdnurl: str, userconfig: UserConfig, client_directory: Path, force_refresh: bool) -> list[UpdateResult]:
+def update(version_result: VersionResult, cdnurl: str, userconfig: UserConfig, client_directory: Path, force_refresh: bool) -> Optional[list[UpdateResult]]:
 	oldversion = versioncontrol.load_version_string(version_result.version_type, client_directory)
 	if versioncontrol.compare_version_string(version_result.version, oldversion):
 		print(f"{version_result.version_type.name}: Current version {oldversion} is older than latest version {version_result.version}.")

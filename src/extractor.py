@@ -18,7 +18,8 @@ def get_diff_files(parent_directory: Path, vtype: VersionType, version_string: s
 	if p.exists():
 		with open(p, "r", encoding="utf8") as f:
 			diffdata = json.load(f)
-			return diffdata["success_files"].keys()
+			filtered_success_files = filter((lambda i: i[1] != "Deleted"), diffdata["success_files"].items())
+			return [i[0] for i in filtered_success_files]
 	return []
 
 

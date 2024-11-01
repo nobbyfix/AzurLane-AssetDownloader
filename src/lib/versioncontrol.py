@@ -83,14 +83,9 @@ def save_difflog(version_type: VersionType, version_string: str, update_results:
 		return
 
 	version_diffdir = Path(relative_parent_dir, "difflog", version_type.name.lower())
-	latest_difflog = Path(version_diffdir, "latest.json")
-	if latest_difflog.exists():
-		with open(latest_difflog, "r", encoding="utf8") as f:
-			latest_data = json.load(f)
-		latest_version = latest_data["version"]
-		latest_difflog.rename(latest_difflog.with_stem(latest_version))
-	
 	version_diffdir.mkdir(parents=True, exist_ok=True)
+	legacy_rename_latest_difflog(version_diffdir)
+	
 	data = {
 		"version": version_string,
 		"major": False,
@@ -98,8 +93,25 @@ def save_difflog(version_type: VersionType, version_string: str, update_results:
 		"failed_files": {res.path.inner: res.compare_result.compare_type.name for res in filter(lambda r: r.download_type == DownloadType.Failed, filtered_update_results)},
 	}
 
-	with open(latest_difflog, "w", encoding="utf8") as f:
+	difflog_filepath = Path(version_diffdir, version_string+".json")
+	with open(difflog_filepath+".json", "w", encoding="utf8") as f:
 		json.dump(data, f)
+
+	latest_filepath = Path(version_diffdir, "latest")
+	with open(latest_filepath, "w", encoding="utf8") as f:
+		f.write(version_string)
+
+def legacy_rename_latest_difflog(version_diffdir: Path):
+	"""
+	Rename the `latest.json` difflog file for users that used the tool while that file was being created.
+	"""
+	latest_difflog = Path(version_diffdir, "latest.json")
+	if latest_difflog.exists():
+		with open(latest_difflog, "r", encoding="utf8") as f:
+			latest_data = json.load(f)
+		latest_version = latest_data["version"]
+		latest_difflog.rename(latest_difflog.with_stem(latest_version))
+
 
 def save_difflog2(version_result: VersionResult, update_results: list[UpdateResult], relative_parent_dir: Path):
 	save_difflog(version_result.version_type, version_result.version, update_results, relative_parent_dir)

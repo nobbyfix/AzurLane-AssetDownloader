@@ -77,6 +77,16 @@ def update_version_data2(version_result: VersionResult, relative_parent_dir: Pat
 	save_hash_file(version_result.version_type, relative_parent_dir, hashrows)
 
 
+def get_latest_versionstring(version_type: VersionType, relative_parent_dir: Path) -> Optional[str]:
+	version_diffdir = Path(relative_parent_dir, "difflog", version_type.name.lower())
+	
+	legacy_rename_latest_difflog(version_diffdir)
+	
+	latest_versionfile = Path(version_diffdir, "latest")
+	if latest_versionfile.exists():
+		with open(latest_versionfile, "r", encoding="utf8") as f:
+			return f.read()
+
 def save_difflog(version_type: VersionType, version_string: str, update_results: list[UpdateResult], relative_parent_dir: Path):
 	filtered_update_results = list(filter(lambda r: r.download_type != DownloadType.NoChange, update_results))
 	if not filtered_update_results:
@@ -111,6 +121,10 @@ def legacy_rename_latest_difflog(version_diffdir: Path):
 			latest_data = json.load(f)
 		latest_version = latest_data["version"]
 		latest_difflog.rename(latest_difflog.with_stem(latest_version))
+	
+		latest_filepath = Path(version_diffdir, "latest")
+		with open(latest_filepath, "w", encoding="utf8") as f:
+			f.write(latest_version)
 
 
 def save_difflog2(version_result: VersionResult, update_results: list[UpdateResult], relative_parent_dir: Path):

@@ -5,21 +5,31 @@ from pathlib import Path
 import multiprocessing as mp
 from typing import Iterable
 
-from lib import imgrecon, config
+from lib import imgrecon, config, versioncontrol
 from lib.classes import Client, VersionType
 
 
-def get_diff_files(parent_directory: Path, vtype: VersionType, version_string: str = None) -> Iterable[str]:
-	if version_string:
-		p = Path(parent_directory, "difflog", vtype.name.lower(), version_string+".json")
-	else:
-		p = Path(parent_directory, "difflog", vtype.name.lower(), "latest.json")
+def get_difflog_versionlist(parent_directory: Path, vtype: VersionType) -> list[str]:
+	difflog_dir = Path(parent_directory, "difflog", vtype.name.lower())
+	# make sure latest.json does not exist anymore before retrieving file list
+	versioncontrol.legacy_rename_latest_difflog(difflog_dir)
+	difflog_versionlist = [path.stem for path in difflog_dir.glob("*.json")]
+	return difflog_versionlist
 
-	if p.exists():
-		with open(p, "r", encoding="utf8") as f:
-			diffdata = json.load(f)
-			filtered_success_files = filter((lambda i: i[1] != "Deleted"), diffdata["success_files"].items())
-			return [i[0] for i in filtered_success_files]
+def get_diff_files(parent_directory: Path, vtype: VersionType, version_string: str = None) -> Iterable[str]:
+	if not version_string:
+		version_string = versioncontrol.get_latest_versionstring(vtype, parent_directory)
+
+	if version_string:
+		difflog_path = Path(parent_directory, "difflog", vtype.name.lower(), version_string+".json")
+		if difflog_path.exists():
+			with open(difflog_path, "r", encoding="utf8") as f:
+				diffdata = json.load(f)
+				filtered_success_file_entries = filter((lambda i: i[1] != "Deleted"), diffdata["success_files"].items())
+				filenames = [i[0] for i in filtered_success_file_entries]
+				return filenames
+		elif version_string is not None:
+			raise FileExistsError(f"There is no difflog '{version_string}' for version type '{vtype.name}'")
 	return []
 
 
@@ -72,16 +82,30 @@ def extract_assetbundle(rootfolder: Path, filepath: str, targetfolder: Path) -> 
 		return img_target_dir
 
 
-def extract_by_client(client: Client):
+def extract_by_client(client: Client, target_version: str = None, do_iterative_version_check: bool = False):
 	userconfig = config.load_user_config()
 	client_directory = Path(userconfig.asset_directory, client.name)
 	extract_directory = Path(userconfig.extract_directory, client.name)
 
 	downloaded_files_collection = []
-	for vtype in [VersionType.AZL, VersionType.PAINTING, VersionType.MANGA, VersionType.PIC]:
-		downloaded_files = get_diff_files(client_directory, vtype)
-		downloaded_files_collection.append(downloaded_files)
-	downloaded_files_collection = itertools.chain(*downloaded_files_collection)
+	if target_version is None or target_version == "latest":
+		target_versiontypes = [VersionType.AZL, VersionType.PAINTING, VersionType.MANGA, VersionType.PIC]
+	else:
+		target_versiontypes = [VersionType.AZL]
+
+	for vtype in target_versiontypes:
+		if do_iterative_version_check:
+			version_strings = []
+			for vstring in get_difflog_versionlist(client_directory, vtype):
+				if versioncontrol.compare_version_string(vstring, target_version) or vstring == target_version:
+					version_strings.append(vstring)
+		else:
+			version_strings = [target_version]
+
+		for vstring in version_strings:
+			downloaded_files = get_diff_files(client_directory, vtype, vstring)
+			downloaded_files_collection.append(downloaded_files)
+	downloaded_files_collection = list(itertools.chain(*downloaded_files_collection))
 
 	def _filter(assetpath: str):
 		if assetpath.split('/')[0] in userconfig.extract_filter:
@@ -112,14 +136,23 @@ def main():
 		help="client to extract files of")
 	parser.add_argument("-f", "--filepath", type=str,
 		help="Path to the file to extract only this single file")
+	parser.add_argument("-v", "--version", type=str,
+		help="Extract files of a specific version (Currently only applies to AZL Versiontype!)")
+	parser.add_argument("-u", "--until-version", type=str,
+		help="Extract files from the latest until a specific version (Currently only applies to AZL Versiontype!)")
 	args = parser.parse_args()
 
 	# parse arguments and execute
 	client = Client[args.client]
 	if filepath := args.filepath:
 		extract_single_assetbundle(client, filepath)
-	else:	
-		extract_by_client(client)
+	else:
+		if version := args.until_version:
+			extract_by_client(client, version, True)
+		elif version := args.version:
+			extract_by_client(client, version)
+		else:
+			extract_by_client(client)
 
 if __name__ == "__main__":
 	main()

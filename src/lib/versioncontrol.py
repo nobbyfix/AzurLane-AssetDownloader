@@ -104,7 +104,7 @@ def save_difflog(version_type: VersionType, version_string: str, update_results:
 	}
 
 	difflog_filepath = Path(version_diffdir, version_string+".json")
-	with open(difflog_filepath+".json", "w", encoding="utf8") as f:
+	with open(difflog_filepath, "w", encoding="utf8") as f:
 		json.dump(data, f)
 
 	latest_filepath = Path(version_diffdir, "latest")

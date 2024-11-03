@@ -22,7 +22,7 @@ def parse_version_string(rawstring: str) -> VersionResult:
 		return VersionResult(version, parts[-1], rawstring, versiontype)
 	return VersionResult(parts[1], parts[2], rawstring, versiontype)
 
-def compare_version_string(version_new: str, version_old: str) -> bool:
+def compare_version_string(version_new: str, version_old: Optional[str]) -> bool:
 	"""
 	Returns `True` if `version_new` is newer than `version_old`.
 	"""
@@ -47,7 +47,7 @@ def save_version_string2(version_result: VersionResult, relative_parent_dir: Pat
 	save_version_string(version_result.version_type, relative_parent_dir, version_result.version)
 
 
-def iterate_hash_lines(hashes: str) -> Generator[tuple[str, str, str], None, None]:
+def iterate_hash_lines(hashes: str) -> Generator[list[str], None, None]:
 	for assetinfo in hashes.splitlines():
 		if assetinfo == '': continue
 		yield assetinfo.split(',')

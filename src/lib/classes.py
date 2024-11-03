@@ -33,7 +33,7 @@ class VersionType(Enum):
 		self.__hash2member_map__[hashname] = self
 
 	def __str__(self) -> str:
-		return self.label
+		return self.name.lower()
 
 	@property
 	def version_filename(self) -> str:
@@ -171,7 +171,7 @@ def printProgressBar(iteration, total, prefix = '', suffix = 'Complete', decimal
 
 # simplified progress bar class with only the useful stuff i use
 class ProgressBar():
-	def __init__(self, total: int, prefix: str, suffix: str = "Complete", iterstart: int = 0, details_unit: str = None):
+	def __init__(self, total: int, prefix: str, suffix: str = "Complete", iterstart: int = 0, details_unit: Optional[str] = None):
 		self.iteration = iterstart
 		self.total = total
 		self.prefix = prefix
@@ -179,7 +179,7 @@ class ProgressBar():
 		self.details_unit = details_unit
 		printProgressBar(iterstart, total, prefix, suffix, details_unit=details_unit)
 
-	def update(self, iteration: int = None):
+	def update(self, iteration: Optional[int] = None):
 		if iteration:
 			self.iteration = iteration
 		else:

@@ -3,7 +3,7 @@ import itertools, json
 from argparse import ArgumentParser
 from pathlib import Path
 import multiprocessing as mp
-from typing import Iterable
+from typing import Iterable, Optional
 
 from lib import imgrecon, config, versioncontrol
 from lib.classes import Client, VersionType
@@ -16,7 +16,7 @@ def get_difflog_versionlist(parent_directory: Path, vtype: VersionType) -> list[
 	difflog_versionlist = [path.stem for path in difflog_dir.glob("*.json")]
 	return difflog_versionlist
 
-def get_diff_files(parent_directory: Path, vtype: VersionType, version_string: str = None) -> Iterable[str]:
+def get_diff_files(parent_directory: Path, vtype: VersionType, version_string: Optional[str] = None) -> Iterable[str]:
 	if not version_string:
 		version_string = versioncontrol.get_latest_versionstring(vtype, parent_directory)
 
@@ -57,7 +57,7 @@ def try_safe_image(image, target: Path) -> Path:
 			image.save(target)
 			return target
 
-def extract_assetbundle(rootfolder: Path, filepath: str, targetfolder: Path) -> Path:
+def extract_assetbundle(rootfolder: Path, filepath: str, targetfolder: Path) -> Optional[Path]:
 	all_images = []
 	abpath = Path(rootfolder, filepath)
 	for imageobj in imgrecon.load_images(str(abpath)):
@@ -82,7 +82,7 @@ def extract_assetbundle(rootfolder: Path, filepath: str, targetfolder: Path) -> 
 		return img_target_dir
 
 
-def extract_by_client(client: Client, target_version: str = None, do_iterative_version_check: bool = False):
+def extract_by_client(client: Client, target_version: Optional[str] = None, do_iterative_version_check: bool = False):
 	userconfig = config.load_user_config()
 	client_directory = Path(userconfig.asset_directory, client.name)
 	extract_directory = Path(userconfig.extract_directory, client.name)
@@ -105,9 +105,9 @@ def extract_by_client(client: Client, target_version: str = None, do_iterative_v
 		for vstring in version_strings:
 			downloaded_files = get_diff_files(client_directory, vtype, vstring)
 			downloaded_files_collection.append(downloaded_files)
-	downloaded_files_collection = list(itertools.chain(*downloaded_files_collection))
+	downloaded_files_collection = itertools.chain(*downloaded_files_collection)
 
-	def _filter(assetpath: str):
+	def _filter(assetpath: str) -> bool:
 		if assetpath.split('/')[0] in userconfig.extract_filter:
 			return (not userconfig.extract_isblacklist)
 		return userconfig.extract_isblacklist
@@ -121,7 +121,7 @@ def extract_by_client(client: Client, target_version: str = None, do_iterative_v
 		pool.close()
 		pool.join()
 
-def extract_single_assetbundle(client: Client, assetpath: str):
+def extract_single_assetbundle(client: Client, assetpath: str) -> Optional[Path]:
 	userconfig = config.load_user_config()
 	client_directory = Path(userconfig.asset_directory, client.name, 'AssetBundles')
 	extract_directory = Path(userconfig.extract_directory, client.name)

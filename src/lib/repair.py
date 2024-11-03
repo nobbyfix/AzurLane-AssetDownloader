@@ -41,7 +41,7 @@ def repair(cdnurl: str, userconfig: UserConfig, client_directory: Path):
 	return update_results
 
 def repair_hashfile(version_result: VersionResult, cdnurl: str, userconfig: UserConfig, client_directory: Path) -> list[UpdateResult]:
-	newhashes = updater.download_hashes(version_result, cdnurl, userconfig)
+	newhashes = updater.download_hashes(version_result, cdnurl, userconfig) or []
 	assetbasepath = Path(client_directory, "AssetBundles")
 	
 	oldhashes = []

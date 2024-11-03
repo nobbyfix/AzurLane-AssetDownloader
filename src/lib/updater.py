@@ -34,7 +34,7 @@ def remove_asset(filepath: Path):
 
 def compare_hashes(oldhashes: Iterable[HashRow], newhashes: Iterable[HashRow]) -> dict[str, CompareResult]:
 	results = {row.filepath: CompareResult(None, row, CompareType.New) for row in newhashes}
-	for hashrow in oldhashes or []:
+	for hashrow in oldhashes:
 		res = results.get(hashrow.filepath)
 		if res is None:
 			results[hashrow.filepath] = CompareResult(hashrow, None, CompareType.Deleted)
@@ -121,7 +121,7 @@ def _update(version_result: VersionResult, cdnurl: str, userconfig: UserConfig, 
 	newhashes = download_hashes(version_result, cdnurl, userconfig)
 	if newhashes:
 		oldhashes = versioncontrol.load_hash_file(version_result.version_type, client_directory)
-		return _update_from_hashes(version_result, cdnurl, userconfig, client_directory, oldhashes, newhashes)
+		return _update_from_hashes(version_result, cdnurl, userconfig, client_directory, oldhashes or [], newhashes)
 
 def update(version_result: VersionResult, cdnurl: str, userconfig: UserConfig, client_directory: Path, force_refresh: bool) -> Optional[list[UpdateResult]]:
 	oldversion = versioncontrol.load_version_string(version_result.version_type, client_directory)

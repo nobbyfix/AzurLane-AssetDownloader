@@ -4,6 +4,7 @@ from argparse import ArgumentParser, BooleanOptionalAction
 from zipfile import ZipFile
 from pathlib import Path
 from collections import defaultdict
+from typing import Optional
 
 from lib import versioncontrol, updater, config
 from lib.classes import BundlePath, Client, CompareType, DownloadType, UpdateResult, VersionType, ProgressBar
@@ -45,7 +46,7 @@ def unpack(zipfile: ZipFile, client: Client, allow_older_version: bool = False):
 		with zipfile.open('assets/'+versiontype.hashes_filename, 'r') as hashfile:
 			obbhashes = versioncontrol.parse_hash_rows(hashfile.read().decode('utf8'))
 		currenthashes = versioncontrol.load_hash_file(versiontype, CLIENT_ASSET_DIR)
-		comparison_results = updater.compare_hashes(currenthashes, obbhashes)
+		comparison_results = updater.compare_hashes(currenthashes or [], obbhashes)
 
 		# extract and delete files
 		assetbasepath = Path(CLIENT_ASSET_DIR, 'AssetBundles')
@@ -80,7 +81,11 @@ def unpack(zipfile: ZipFile, client: Client, allow_older_version: bool = False):
 
 				progressbar = ProgressBar(len(files_not_found), "Retrieving failed files", details_unit="files")
 				for assetpath,result in files_not_found:
-					for zipf_path in file_info_groupby_size.get(result.new_hash.size):
+					fileinfo = file_info_groupby_size.get(result.new_hash.size)
+					if not fileinfo:
+						continue
+					
+					for zipf_path in fileinfo:
 						with zipfile.open(zipf_path, "r") as zf:
 							zipf_data = zf.read()
 							zipf_md5hash = calc_md5hash(zipf_data)
@@ -116,7 +121,7 @@ def extract_asset(zipfile: ZipFile, filepath: str, target: Path):
 		pass
 
 
-def extract_obb(path: Path, fallback_client: Client = None, allow_older_version: bool = False):
+def extract_obb(path: Path, fallback_client: Optional[Client] = None, allow_older_version: bool = False):
 	for client in Client:
 		if client.package_name and re.match(rf".*{client.package_name}\.obb", path.name):
 			print(f'Determined client {client.name} from filename.')
@@ -152,7 +157,7 @@ def extract_xapk(path: Path, allow_older_version: bool = False):
 			print("Could not determine client from xapk manifest.json.")
 
 
-def extract(path: Path, fallback_client: Client = None, allow_older_version: bool = False):
+def extract(path: Path, fallback_client: Optional[Client] = None, allow_older_version: bool = False):
 	if not path.exists():
 		sys.exit('This file does not exist.')
 

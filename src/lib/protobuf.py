@@ -7,7 +7,7 @@ def import_pb(pb: int, addname: str = ""):
 	module = importlib.import_module(f".p{pb}{addname}_pb_pb2", "lib.proto")
 	PROTOBUFS[pb] = module
 
-def import_pb_with_retry(pb: str):
+def import_pb_with_retry(pb: int):
 	try:
 		import_pb(pb)
 	except ModuleNotFoundError:

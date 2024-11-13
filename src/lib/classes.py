@@ -1,14 +1,14 @@
 from enum import Enum
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, Union
+from typing import Self
 
 
 CompareType = Enum('CompareType', 'New Changed Unchanged Deleted')
 DownloadType = Enum('DownloadType', 'NoChange Removed Success Failed')
 
 class VersionType(Enum):
-	__hash2member_map__: dict[str, "VersionType"] = {}
+	__hash2member_map__: dict[str, Self] = {}
 	hashname: str
 	"""Hash name used on the version result returned by the game server."""
 	suffix: str
@@ -55,7 +55,7 @@ class VersionType(Enum):
 
 
 	@classmethod
-	def from_hashname(cls, hashname: str) -> Optional["VersionType"]:
+	def from_hashname(cls, hashname: str) -> Self | None:
 		"""
 		Returns a VersionType member with matching *hashname* if match exists, otherwise None.
 		"""
@@ -82,7 +82,7 @@ class AbstractClient(Enum):
 		return obj
 
 	@classmethod
-	def from_package_name(cls, package_name) -> Optional['AbstractClient']:
+	def from_package_name(cls, package_name) -> Self | None:
 		return cls.package_names.get(package_name)
 
 
@@ -119,7 +119,7 @@ class BundlePath:
 	inner: str
 
 	@staticmethod
-	def construct(parentdir: Path, inner: Union[Path, str]) -> "BundlePath":
+	def construct(parentdir: Path, inner: Path | str) -> "BundlePath":
 		fullpath = Path(parentdir, inner)
 		return BundlePath(fullpath, str(inner))
 
@@ -171,7 +171,7 @@ def printProgressBar(iteration, total, prefix = '', suffix = 'Complete', decimal
 
 # simplified progress bar class with only the useful stuff i use
 class ProgressBar():
-	def __init__(self, total: int, prefix: str, suffix: str = "Complete", iterstart: int = 0, details_unit: Optional[str] = None):
+	def __init__(self, total: int, prefix: str, suffix: str = "Complete", iterstart: int = 0, details_unit: str | None = None):
 		self.iteration = iterstart
 		self.total = total
 		self.prefix = prefix
@@ -179,7 +179,7 @@ class ProgressBar():
 		self.details_unit = details_unit
 		printProgressBar(iterstart, total, prefix, suffix, details_unit=details_unit)
 
-	def update(self, iteration: Optional[int] = None):
+	def update(self, iteration: int | None = None):
 		if iteration:
 			self.iteration = iteration
 		else:

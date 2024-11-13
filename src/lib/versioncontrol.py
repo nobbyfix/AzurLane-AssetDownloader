@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Generator, Iterable, Optional
+from typing import Generator, Iterable
 
 from .classes import DownloadType, HashRow, UpdateResult, VersionType, VersionResult
 
@@ -22,7 +22,7 @@ def parse_version_string(rawstring: str) -> VersionResult:
 		return VersionResult(version, parts[-1], rawstring, versiontype)
 	return VersionResult(parts[1], parts[2], rawstring, versiontype)
 
-def compare_version_string(version_new: str, version_old: Optional[str]) -> bool:
+def compare_version_string(version_new: str, version_old: str | None) -> bool:
 	"""
 	Returns `True` if `version_new` is newer than `version_old`.
 	"""
@@ -33,7 +33,7 @@ def compare_version_string(version_new: str, version_old: Optional[str]) -> bool
 	return new_to_int > old_to_int
 
 
-def load_version_string(version_type: VersionType, relative_parent_dir: Path) -> Optional[str]:
+def load_version_string(version_type: VersionType, relative_parent_dir: Path) -> str | None:
 	fpath = Path(relative_parent_dir, version_type.version_filename)
 	if fpath.exists():
 		with open(fpath, 'r', encoding='utf8') as f:
@@ -56,7 +56,7 @@ def parse_hash_rows(hashes: str) -> Generator[HashRow, None, None]:
 	for path, size, md5hash in iterate_hash_lines(hashes):
 		yield HashRow(path, int(size), md5hash)
 
-def load_hash_file(version_type: VersionType, relative_parent_dir: Path) -> Optional[Generator[HashRow, None, None]]:
+def load_hash_file(version_type: VersionType, relative_parent_dir: Path) -> Generator[HashRow, None, None] | None:
 	fpath = Path(relative_parent_dir, version_type.hashes_filename)
 	if fpath.exists():
 		with open(fpath, 'r', encoding='utf8') as f:
@@ -77,7 +77,7 @@ def update_version_data2(version_result: VersionResult, relative_parent_dir: Pat
 	save_hash_file(version_result.version_type, relative_parent_dir, hashrows)
 
 
-def get_latest_versionstring(version_type: VersionType, relative_parent_dir: Path) -> Optional[str]:
+def get_latest_versionstring(version_type: VersionType, relative_parent_dir: Path) -> str | None:
 	version_diffdir = Path(relative_parent_dir, "difflog", version_type.name.lower())
 	
 	legacy_rename_latest_difflog(version_diffdir)

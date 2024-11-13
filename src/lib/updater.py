@@ -1,12 +1,12 @@
 import traceback
 from pathlib import Path
-from typing import Iterable, Optional, Union
+from typing import Iterable
 
 from . import downloader, versioncontrol
 from .classes import *
 
 
-def download_asset(cdnurl: str, filehash: str, useragent: str, save_destination: Path, size: int) -> Optional[Union[bytes, bool]]:
+def download_asset(cdnurl: str, filehash: str, useragent: str, save_destination: Path, size: int) -> bytes | bool | None:
 	try:
 		assetbinary = downloader.download_asset(cdnurl, filehash, useragent)
 		if assetbinary is None:
@@ -73,7 +73,7 @@ def update_assets(cdnurl: str, comparison_results: dict[str, CompareResult], use
 		progressbar.update()
 	return update_results
 
-def download_hashes(version_result: VersionResult, cdnurl: str, userconfig: UserConfig) -> Optional[list[HashRow]]:
+def download_hashes(version_result: VersionResult, cdnurl: str, userconfig: UserConfig) -> list[HashRow] | None:
 	hashes = downloader.download_hashes(cdnurl, version_result.rawstring, userconfig.useragent)
 	if not hashes:
 		print(f"Server returned empty hashfile for {version_result.version_type.name}, skipping.")
@@ -117,13 +117,13 @@ def _update_from_hashes(version_result: VersionResult, cdnurl: str, userconfig: 
 	versioncontrol.update_version_data2(version_result, client_directory, hashes_updated)
 	return update_results
 
-def _update(version_result: VersionResult, cdnurl: str, userconfig: UserConfig, client_directory: Path) -> Optional[list[UpdateResult]]:
+def _update(version_result: VersionResult, cdnurl: str, userconfig: UserConfig, client_directory: Path) -> list[UpdateResult] | None:
 	newhashes = download_hashes(version_result, cdnurl, userconfig)
 	if newhashes:
 		oldhashes = versioncontrol.load_hash_file(version_result.version_type, client_directory)
 		return _update_from_hashes(version_result, cdnurl, userconfig, client_directory, oldhashes or [], newhashes)
 
-def update(version_result: VersionResult, cdnurl: str, userconfig: UserConfig, client_directory: Path, force_refresh: bool) -> Optional[list[UpdateResult]]:
+def update(version_result: VersionResult, cdnurl: str, userconfig: UserConfig, client_directory: Path, force_refresh: bool) -> list[UpdateResult] | None:
 	oldversion = versioncontrol.load_version_string(version_result.version_type, client_directory)
 	if versioncontrol.compare_version_string(version_result.version, oldversion):
 		print(f"{version_result.version_type.name}: Current version {oldversion} is older than latest version {version_result.version}.")

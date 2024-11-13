@@ -4,7 +4,6 @@ from argparse import ArgumentParser, BooleanOptionalAction
 from zipfile import ZipFile
 from pathlib import Path
 from collections import defaultdict
-from typing import Optional
 
 from lib import versioncontrol, updater, config
 from lib.classes import BundlePath, Client, CompareType, DownloadType, UpdateResult, VersionType, ProgressBar
@@ -121,7 +120,7 @@ def extract_asset(zipfile: ZipFile, filepath: str, target: Path):
 		pass
 
 
-def extract_obb(path: Path, fallback_client: Optional[Client] = None, allow_older_version: bool = False):
+def extract_obb(path: Path, fallback_client: Client | None = None, allow_older_version: bool = False):
 	for client in Client:
 		if client.package_name and re.match(rf".*{client.package_name}\.obb", path.name):
 			print(f'Determined client {client.name} from filename.')
@@ -157,7 +156,7 @@ def extract_xapk(path: Path, allow_older_version: bool = False):
 			print("Could not determine client from xapk manifest.json.")
 
 
-def extract(path: Path, fallback_client: Optional[Client] = None, allow_older_version: bool = False):
+def extract(path: Path, fallback_client: Client | None = None, allow_older_version: bool = False):
 	if not path.exists():
 		sys.exit('This file does not exist.')
 

@@ -21,7 +21,8 @@ def execute(args):
 		print("All asset types will be checked for different hashes.")
 
 	version_response = protobuf.get_version_response(clientconfig.gateip, clientconfig.gateport)
-	versionlist = [versioncontrol.parse_version_string(v) for v in version_response.pb.version if v.startswith("$")]
+	version_string = version_response.pb.version
+	versionlist = [versioncontrol.parse_version_string(v) for v in version_string if v.startswith("$")]
 	for vresult in versionlist:
 		if args.repair:
 			update_assets = repair.repair_hashfile(vresult, clientconfig.cdnurl, userconfig, CLIENT_ASSET_DIR)

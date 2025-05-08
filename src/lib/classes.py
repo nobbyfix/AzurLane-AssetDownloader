@@ -23,6 +23,7 @@ class VersionType(Enum):
 	MANGA		= (7,	"mangahash",	"manga")
 	PAINTING	= (8,	"paintinghash",	"painting")
 	DORM		= (9,	"dormhash",		"dorm")
+	MAP			= (10,	"maphash",		"map")
 
 
 	def __init__(self, _, hashname, suffix) -> None:

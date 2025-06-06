@@ -2,7 +2,7 @@
 	"EN": {
 		"gateip": "blhxusgate.yo-star.com",
 		"gateport": 80,
-		"cdnurl": "https://blhxusstatic.akamaized.net"
+		"cdnurl": "https://blhxusstatic.yo-star.com"
 	},
 	"CN": {
 		"gateip": "line1-login-bili-blhx.bilibiligame.net",

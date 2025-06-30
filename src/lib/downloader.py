@@ -9,7 +9,8 @@ from .classes import VersionResult, HashRow
 class AzurlaneAsyncDownloader(aiohttp.ClientSession):
 	def __init__(self, cdn_url: str, useragent: str):
 		base_url = f"{cdn_url}/android/"
-		super().__init__(base_url=base_url, headers={"user-agent": useragent})
+		limited_tcp_connector = aiohttp.TCPConnector(limit_per_host=6)
+		super().__init__(base_url=base_url, headers={"user-agent": useragent}, connector=limited_tcp_connector)
 
 	async def get_hashes(self, versionhash: str) -> aiohttp.ClientResponse:
 		return await self.get(f"hash/{versionhash}")

@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import sys
+import asyncio
 import argparse
 from pathlib import Path
 
@@ -25,9 +27,11 @@ def execute(args):
 	versionlist = [versioncontrol.parse_version_string(v) for v in version_string if v.startswith("$")]
 	for vresult in versionlist:
 		if args.repair:
+			print("REPAIR FUNCTION IS CURRENTLY DISABLED.")
+			sys.exit(1)
 			update_assets = repair.repair_hashfile(vresult, clientconfig.cdnurl, userconfig, CLIENT_ASSET_DIR)
 		else:
-			update_assets = updater.update(vresult, clientconfig.cdnurl, userconfig, CLIENT_ASSET_DIR, args.force_refresh)
+			update_assets = asyncio.run(updater.update(vresult, clientconfig.cdnurl, userconfig, CLIENT_ASSET_DIR, args.force_refresh))
 
 		if update_assets:
 			versioncontrol.save_difflog2(vresult, update_assets, CLIENT_ASSET_DIR)

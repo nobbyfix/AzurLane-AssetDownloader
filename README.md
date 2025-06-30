@@ -2,7 +2,7 @@
 This tool automatically downloads the newest assets directly from the game cdn servers and extracts the Texture2D files as png from them.
 
 ## Before you start
-Python 3.11+ is required with the following libraries: `requests`, `UnityPy`, `PyYAML`, `Pillow`, `protobuf`. Dependencies can be installed using `pip install -r requirements.txt`.
+Python 3.11+ is required with the following libraries: `UnityPy`, `PyYAML`, `Pillow`, `protobuf`, `aiofile`, `aiohttp[speedups]`. Dependencies can be installed using `pip install -r requirements.txt`.
 
 ## HOW TO USE
 ### 1. Import files from xapk/apk/obb

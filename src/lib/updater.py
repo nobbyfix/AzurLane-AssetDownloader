@@ -1,29 +1,10 @@
-import traceback
+import asyncio
 from pathlib import Path
 from typing import Iterable
 
 from . import downloader, versioncontrol
 from .classes import *
 
-
-def download_asset(cdnurl: str, filehash: str, useragent: str, save_destination: Path, size: int) -> bytes | bool | None:
-	try:
-		assetbinary = downloader.download_asset(cdnurl, filehash, useragent)
-		if assetbinary is None:
-			print(f"ERROR: No response for asset '{filehash}' with target '{save_destination}'.")
-			return False
-		elif len(assetbinary) != size:
-			print(f"ERROR: Received asset '{filehash}' with target '{save_destination}' has wrong size ({len(assetbinary)}/{size}).")
-			return False
-
-		save_destination.parent.mkdir(parents=True, exist_ok=True)
-		with open(save_destination, 'wb') as f:
-			f.write(assetbinary)
-		return assetbinary
-	except Exception as e:
-		print(f"ERROR: An error occured while downloading '{filehash}' to '{save_destination}'.")
-		traceback.print_exception(e, e, e.__traceback__)
-		return False
 
 def remove_asset(filepath: Path):
 	if filepath.exists():
@@ -46,35 +27,45 @@ def compare_hashes(oldhashes: Iterable[HashRow], newhashes: Iterable[HashRow]) -
 			res.compare_type = CompareType.Changed
 	return results
 
+async def handle_asset_download(downloader_session: downloader.AzurlaneAsyncDownloader, assetbasepath: Path, result: CompareResult, progressbar: ProgressBar = None):
+	assetpath = BundlePath.construct(assetbasepath, result.new_hash.filepath)
+	download_success = await downloader_session.download_asset(result.new_hash.md5hash, assetpath.full, result.new_hash.size)
+	
+	if progressbar:
+		progressbar.update()
+	return UpdateResult(result, DownloadType.Success if download_success else DownloadType.Failed, assetpath)
 
-def update_assets(cdnurl: str, comparison_results: dict[str, CompareResult], userconfig: UserConfig, client_directory: Path, allow_deletion: bool = True) -> list[UpdateResult]:
+
+async def update_assets(downloader_session: downloader.AzurlaneAsyncDownloader, comparison_results: dict[str, CompareResult], client_directory: Path, allow_deletion: bool = True) -> list[UpdateResult]:
 	assetbasepath = Path(client_directory, "AssetBundles")
-	update_files = list(filter(lambda r: r.compare_type != CompareType.Unchanged, comparison_results.values()))
+	update_files = list(filter(lambda r: r.compare_type in [CompareType.New, CompareType.Changed], comparison_results.values()))
+	deleted_files = list(filter(lambda r: r.compare_type == CompareType.Deleted, comparison_results.values()))
 	update_results = [UpdateResult(r, DownloadType.NoChange, BundlePath.construct(assetbasepath, r.new_hash.filepath)) for r in filter(lambda r: r.compare_type == CompareType.Unchanged, comparison_results.values())]
 
-	progressbar = ProgressBar(len(update_files), "Download Progress", details_unit="files")
-	for result in update_files:
-		if result.compare_type in [CompareType.New, CompareType.Changed]:
-			#print(f"Downloading {result.new_hash.filepath} ({i}/{fileamount}).")
-			assetpath = BundlePath.construct(assetbasepath, result.new_hash.filepath)
-			if download_asset(cdnurl, result.new_hash.md5hash, userconfig.useragent, assetpath.full, result.new_hash.size):
-				update_results.append(UpdateResult(result, DownloadType.Success, assetpath))
-			else:
-				update_results.append(UpdateResult(result, DownloadType.Failed, assetpath))
+	# handle all new or changed files
+	if len(update_files) > 0:
+		progressbar = ProgressBar(len(update_files), "Download Progress", details_unit="files")
+		tasks = [handle_asset_download(downloader_session, assetbasepath, result, progressbar) for result in update_files]
+		await asyncio.gather(*tasks)
 
-		elif result.compare_type == CompareType.Deleted:
-			if allow_deletion:
-				#print(f"Deleting {result.current_hash.filepath} ({i}/{fileamount}).")
+	# handle all deleted files
+	if len(deleted_files) > 0:
+		if allow_deletion:
+			progressbar = ProgressBar(len(deleted_files), "Deletion Progress", details_unit="files")
+			for result in deleted_files:
 				assetpath = BundlePath.construct(assetbasepath, result.current_hash.filepath)
 				remove_asset(assetpath.full)
 				update_results.append(UpdateResult(result, DownloadType.Removed, assetpath))
-			else:
-				pass #print(f"Deleting {result.current_hash.filepath} ({i}/{fileamount}) [SKIPPED].")
-		progressbar.update()
+				progressbar.update()
+		else:
+			for result in deleted_files:
+				assetpath = BundlePath.construct(assetbasepath, result.current_hash.filepath)
+				update_results.append(UpdateResult(result, DownloadType.ForDeletionNoChange, assetpath))
+
 	return update_results
 
-def download_hashes(version_result: VersionResult, cdnurl: str, userconfig: UserConfig) -> list[HashRow] | None:
-	hashes = downloader.download_hashes(cdnurl, version_result.rawstring, userconfig.useragent)
+async def download_and_parse_hashes(version_result: VersionResult, downloader_session: downloader.AzurlaneAsyncDownloader, userconfig: UserConfig) -> list[HashRow] | None:
+	hashes = await downloader_session.download_hashes(version_result)
 	if not hashes:
 		print(f"Server returned empty hashfile for {version_result.version_type.name}, skipping.")
 		return
@@ -109,26 +100,27 @@ def filter_hashes(update_results: list[UpdateResult]) -> list[HashRow]:
 			print(update_result)
 	return hashes_updated
 
-def _update_from_hashes(version_result: VersionResult, cdnurl: str, userconfig: UserConfig, client_directory: Path,
+async def _update_from_hashes(version_result: VersionResult, downloader_session: downloader.AzurlaneAsyncDownloader, client_directory: Path,
 						oldhashes: Iterable[HashRow], newhashes: Iterable[HashRow], allow_deletion: bool = True) -> list[UpdateResult]:
 	comparison_results = compare_hashes(oldhashes, newhashes)
-	update_results = update_assets(cdnurl, comparison_results, userconfig, client_directory, allow_deletion)
+	update_results = await update_assets(downloader_session, comparison_results, client_directory, allow_deletion)
 	hashes_updated = filter_hashes(update_results)
 	versioncontrol.update_version_data2(version_result, client_directory, hashes_updated)
 	return update_results
 
-def _update(version_result: VersionResult, cdnurl: str, userconfig: UserConfig, client_directory: Path) -> list[UpdateResult] | None:
-	newhashes = download_hashes(version_result, cdnurl, userconfig)
-	if newhashes:
-		oldhashes = versioncontrol.load_hash_file(version_result.version_type, client_directory)
-		return _update_from_hashes(version_result, cdnurl, userconfig, client_directory, oldhashes or [], newhashes)
+async def _update(version_result: VersionResult, cdnurl: str, userconfig: UserConfig, client_directory: Path) -> list[UpdateResult] | None:
+	async with downloader.AzurlaneAsyncDownloader(cdnurl, useragent=userconfig.useragent) as downloader_session:
+		newhashes = await download_and_parse_hashes(version_result, downloader_session, userconfig)
+		if newhashes:
+			oldhashes = versioncontrol.load_hash_file(version_result.version_type, client_directory)
+			return await _update_from_hashes(version_result, downloader_session, client_directory, oldhashes or [], newhashes)
 
-def update(version_result: VersionResult, cdnurl: str, userconfig: UserConfig, client_directory: Path, force_refresh: bool) -> list[UpdateResult] | None:
+async def update(version_result: VersionResult, cdnurl: str, userconfig: UserConfig, client_directory: Path, force_refresh: bool) -> list[UpdateResult] | None:
 	oldversion = versioncontrol.load_version_string(version_result.version_type, client_directory)
 	if versioncontrol.compare_version_string(version_result.version, oldversion):
 		print(f"{version_result.version_type.name}: Current version {oldversion} is older than latest version {version_result.version}.")
-		return _update(version_result, cdnurl, userconfig, client_directory)
+		return await _update(version_result, cdnurl, userconfig, client_directory)
 	else:
 		print(f"{version_result.version_type.name}: Current version {oldversion} is latest.")
 		if force_refresh:
-			return _update(version_result, cdnurl, userconfig, client_directory)
+			return await _update(version_result, cdnurl, userconfig, client_directory)

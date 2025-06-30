@@ -5,7 +5,7 @@ from typing import Self
 
 
 CompareType = Enum('CompareType', 'New Changed Unchanged Deleted')
-DownloadType = Enum('DownloadType', 'NoChange Removed Success Failed')
+DownloadType = Enum('DownloadType', 'NoChange Removed Success Failed ForDeletionNoChange')
 
 class VersionType(Enum):
 	__hash2member_map__: dict[str, Self] = {}

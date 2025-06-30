@@ -1,24 +1,61 @@
-import requests
+import aiohttp
+import aiofile
+import traceback
+from pathlib import Path
+
+from .classes import VersionResult, HashRow
 
 
-def request(error_msg: str, *args, **kwargs):
-	while True:
+class AzurlaneAsyncDownloader(aiohttp.ClientSession):
+	def __init__(self, cdn_url: str, useragent: str):
+		base_url = f"{cdn_url}/android/"
+		super().__init__(base_url=base_url, headers={"user-agent": useragent})
+
+	async def get_hashes(self, versionhash: str) -> aiohttp.ClientResponse:
+		return await self.get(f"hash/{versionhash}")
+	
+	async def get_asset(self, filehash: str) -> aiohttp.ClientResponse:
+		return await self.get(f"resource/{filehash}")
+
+	async def download_hashes(self, version_result: VersionResult) -> list[HashRow] | None:
 		try:
-			response = requests.get(*args, **kwargs)
-			break
-		except TimeoutError:
-			print(error_msg)
-			kwargs["timeout"] *= 2
+			async with await self.get_hashes(version_result.rawstring) as response:
+				response: aiohttp.ClientResponse
+				response.raise_for_status() # raises error on bad HTTP status
 
-	if response.status_code == 200:
-		return response
+				hashes = await response.text()
+				return hashes
+		
+		except Exception as e:
+			print(f"ERROR: An unexpected error occured while downloading '{version_result.version_type.name}' hashfile.")
+			traceback.print_exception(e, e, e.__traceback__)
+			return
 
-def download_hashes(cdnurl, versionhash, useragent):
-	if response := request("Hash request timed out, retrying.",
-							f"{cdnurl}/android/hash/{versionhash}", headers={"user-agent": useragent}, timeout=30):
-		return response.text
+	async def download_asset(self, filehash: str, save_destination: Path, expected_file_size: int) -> bool:
+		"""
+		Downloads the requested file using the session and saves it to 'save_destination' on disk.
 
-def download_asset(cdnurl, filehash, useragent):
-	if response := request("Asset request timed out, retrying.",
-							f"{cdnurl}/android/resource/{filehash}", headers={"user-agent": useragent}, timeout=20):
-		return response.content
+		Returns `True` if the operation was successful, otherwise `False`.
+		"""
+		try:
+			async with await self.get_asset(filehash) as response:
+				response: aiohttp.ClientResponse
+				response.raise_for_status() # raises error on bad HTTP status
+				
+				# reject response if response size doesn't match expected size
+				response_size = response.content_length
+				if expected_file_size != response_size:
+					print(f"ERROR: Received asset '{filehash}' with target '{save_destination}' has wrong size ({response_size}/{expected_file_size}).")
+					return False
+
+				save_destination.parent.mkdir(parents=True, exist_ok=True)
+				async with aiofile.async_open(save_destination, "wb") as file:
+					async for chunk in response.content.iter_chunked(1024*16): # no idea what chuck size is best
+						await file.write(chunk)
+
+			return True
+		except Exception as e:
+			print(f"ERROR: An unexpected error occured while downloading '{filehash}' to '{save_destination}'.")
+			traceback.print_exception(e, e, e.__traceback__)
+			return False
+

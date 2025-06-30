@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import io, re, sys, json, shutil, hashlib
+import io, re, sys, json, shutil, hashlib, itertools
 from argparse import ArgumentParser, BooleanOptionalAction
 from zipfile import ZipFile
 from pathlib import Path
@@ -49,7 +49,7 @@ def unpack(zipfile: ZipFile, client: Client, allow_older_version: bool = False):
 
 		# extract and delete files
 		assetbasepath = Path(CLIENT_ASSET_DIR, 'AssetBundles')
-		update_files = list(filter(lambda r: r.compare_type != CompareType.Unchanged, comparison_results.values()))
+		update_files = list(itertools.chain([v for comp_type, v in comparison_results.items() if comp_type != CompareType.Unchanged]))
 		update_results = [UpdateResult(r, DownloadType.NoChange, BundlePath.construct(assetbasepath, r.new_hash.filepath)) for r in filter(lambda r: r.compare_type == CompareType.Unchanged, comparison_results.values())]
 
 		fileamount = len(update_files)
@@ -58,7 +58,6 @@ def unpack(zipfile: ZipFile, client: Client, allow_older_version: bool = False):
 			progressbar = ProgressBar(fileamount, f"Extracting '{versiontype.hashname}' Files", details_unit="files")
 			for result in update_files:
 				if result.compare_type in [CompareType.New, CompareType.Changed]:
-					#print(f'Saving {result.new_hash.filepath} ({i}/{fileamount}).')
 					assetpath = BundlePath.construct(assetbasepath, result.new_hash.filepath)
 					if pathresult := extract_asset(zipfile, assetpath.inner, assetpath.full):
 						file_info_list.pop(pathresult)
@@ -66,7 +65,6 @@ def unpack(zipfile: ZipFile, client: Client, allow_older_version: bool = False):
 					else:
 						files_not_found.append((assetpath, result))
 				elif result.compare_type == CompareType.Deleted:
-					#print(f'Deleting {result.current_hash.filepath} ({i}/{fileamount}).')
 					assetpath = BundlePath.construct(assetbasepath, result.current_hash.filepath)
 					updater.remove_asset(assetpath.full)
 					update_results.append(UpdateResult(result, DownloadType.Removed, assetpath))

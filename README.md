@@ -1,12 +1,12 @@
 # Azur Lane Asset Downloader and Extractor
-This tool automatically downloads the newest assets directly from the game cdn servers and extracts the Texture2D files as png from them.
+This tool automatically downloads the newest assets directly from the game cdn servers and allows extraction of Texture2D files as png from them.
 
-## Before you start
+## Setup
 Python 3.11+ is required with the following libraries: `UnityPy`, `PyYAML`, `Pillow`, `protobuf`, `aiofile`, `aiohttp[speedups]`. Dependencies can be installed using `pip install -r requirements.txt`.
 
-## HOW TO USE
+## Usage
 ### 1. Import files from xapk/apk/obb
-While this is *not neccessary*, this step is **recommended** if you want all game assets available and not spam the game update server with errors on the first download.
+While this is *not neccessary*, this step is **recommended** if you want all game assets available and not spam the game update server with errors of missing files on the first download.
 
 The `obb_apk_import.py` supports all game clients (EN, JP, CN, KR, TW) and multiple forms of importing the assets. The recommend and easiest way is by downloading the `.xapk` from one of many Google Play Store app distributors (like APKMirror or APKPure). You can find them by searching for the package name, which are as follows:
 - EN: com.YoStarEN.AzurLane
@@ -16,7 +16,7 @@ The `obb_apk_import.py` supports all game clients (EN, JP, CN, KR, TW) and multi
 
 Alternatively if you already have the game installed, for example on emulators, you can copy the obb file onto your system and use it instead of the xapk. On android it can be found in the folder `/storage/emulated/0/Android/obb/[PACKAGE_NAME]/`.
 
-Since the CN client is not distributed through the Google Play Store, there is no xapk/obb file for it but you can find the android download link on the [website](https://game.bilibili.com/blhx/) which will download an apk file (not xapk like the others). Alternatively the apk is installed in the folder `/data/app/com.bilibili.azurlane-1/` on android (Note: you need root permission to access this folder).
+Since the CN client is not distributed through the Google Play Store, there is no xapk/obb file for it, but you can find the android download link on the [website](https://game.bilibili.com/blhx/) which will download an apk file (not xapk like the others). Alternatively the apk is installed in the folder `/data/app/com.bilibili.azurlane-1/` on android (Note: you need root permission to access this folder).
 
 You can then execute the script by passing it the filepath to the xapk/apk/obb:
 ```

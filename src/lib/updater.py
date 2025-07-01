@@ -33,7 +33,7 @@ async def update_assets(downloader_session: downloader.AzurlaneAsyncDownloader, 
 	if len(update_files) > 0:
 		progressbar = ProgressBar(len(update_files), "Download Progress", details_unit="files")
 		tasks = [handle_asset_download(downloader_session, assetbasepath, result, progressbar) for result in update_files]
-		await asyncio.gather(*tasks)
+		update_results += await asyncio.gather(*tasks)
 
 	# handle all deleted files
 	deleted_files = comparison_results[CompareType.Deleted]

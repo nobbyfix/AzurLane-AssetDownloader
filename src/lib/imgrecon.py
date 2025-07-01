@@ -26,13 +26,13 @@ def load_mesh(filepath, require_name=None):
 	for obj in am.objects:
 		if obj.type == ClassIDType.Mesh:
 			objdata = obj.read()
-			if require_name and require_name != objdata.name:
+			if require_name and require_name != objdata.m_Name:
 				continue
 			data = objdata.export().splitlines()
-			return data 
+			return data
 
 def load_images(filepath: str):
 	am = AssetsManager(filepath)
 	for obj in am.objects:
 		if obj.type == ClassIDType.Texture2D:
-			yield obj.read()
+			yield obj, obj.read()

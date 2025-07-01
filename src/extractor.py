@@ -60,14 +60,15 @@ def try_safe_image(image, target: Path) -> Path:
 def extract_assetbundle(rootfolder: Path, filepath: str, targetfolder: Path) -> Path | None:
 	all_images = []
 	abpath = Path(rootfolder, filepath)
-	for imageobj in imgrecon.load_images(str(abpath)):
-		if imageobj.name == 'UISprite': continue # skip the UISprite element
-		if 'char' in (imageobj.container or ''): continue # skip image if its of a chibi
+	for reader, texture2d in imgrecon.load_images(str(abpath)):
+		name = texture2d.m_Name
+		if name == 'UISprite': continue # skip the UISprite element
+		if 'char' in (reader.container or ''): continue # skip image if its of a chibi
 
-		image = imageobj.image
+		image = texture2d.image
 		if filepath.split('/')[0] == 'painting':
-			image = restore_painting(image, abpath, imageobj.name, True)
-		all_images.append((image, imageobj.name))
+			image = restore_painting(image, abpath, name, True)
+		all_images.append((image, name))
 
 	if len(all_images) == 1:
 		image, imgname = all_images[0]

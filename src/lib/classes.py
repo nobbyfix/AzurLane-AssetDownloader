@@ -54,7 +54,6 @@ class VersionType(Enum):
 		if suffix: suffix = "-"+suffix
 		return f"hashes{suffix}.csv"
 
-
 	@classmethod
 	def from_hashname(cls, hashname: str) -> Self | None:
 		"""

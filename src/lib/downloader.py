@@ -3,7 +3,7 @@ import aiofile
 import traceback
 from pathlib import Path
 
-from .classes import VersionResult, HashRow
+from .classes import VersionResult
 
 
 class AzurlaneAsyncDownloader(aiohttp.ClientSession):

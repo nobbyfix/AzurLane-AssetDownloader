@@ -4,6 +4,7 @@ on:
       - master
 
 permissions:
+  issues: write
   contents: write
   pull-requests: write
 

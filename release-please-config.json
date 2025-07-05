@@ -1,6 +1,5 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
-  "bootstrap-sha": "a10d3876077f7a3c67b6293880ce4ef62fc91a71",
   "changelog-path": "CHANGELOG.md",
   "release-type": "python",
   "pull-request-title-pattern": "build: release ${version}",

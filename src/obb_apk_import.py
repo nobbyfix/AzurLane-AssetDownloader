@@ -5,7 +5,7 @@ from zipfile import ZipFile
 from pathlib import Path
 from collections import defaultdict
 
-from lib import versioncontrol, updater, config
+from lib import __version__, versioncontrol, updater, config
 from lib.classes import BundlePath, Client, CompareType, DownloadType, UpdateResult, VersionType, ProgressBar
 
 
@@ -179,6 +179,8 @@ def extract(path: Path, fallback_client: Client | None = None, allow_older_versi
 
 
 def main():
+	print(f"Running Azurlane obb_apk_import v{__version__}.")
+
 	parser = ArgumentParser()
 	parser.add_argument('file', nargs=1, help='xapk/apk/obb file to extract')
 	parser.add_argument('-c', '--client', help='fallback client if it cannot be determined automatically (obb/apk only)', choices=Client.__members__)

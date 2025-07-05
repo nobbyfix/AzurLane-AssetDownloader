@@ -5,7 +5,7 @@ from pathlib import Path
 import multiprocessing as mp
 from typing import Iterable
 
-from lib import imgrecon, config, versioncontrol
+from lib import __version__, imgrecon, config, versioncontrol
 from lib.classes import Client, VersionType
 
 
@@ -130,6 +130,8 @@ def extract_single_assetbundle(client: Client, assetpath: str) -> Path | None:
 
 
 def main():
+	print(f"Running Azurlane file extractor v{__version__}.")
+
 	# setup argument parser
 	parser = ArgumentParser(description="Extracts image assets as pngs.",
 		epilog="If '-f/--filepath' is not set, all files from the latest update will be extracted.")

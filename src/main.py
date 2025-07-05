@@ -4,7 +4,7 @@ import asyncio
 import argparse
 from pathlib import Path
 
-from lib import config, protobuf, versioncontrol, updater, repair
+from lib import __version__, config, protobuf, versioncontrol, updater, repair
 from lib.classes import Client
 
 
@@ -38,6 +38,8 @@ def execute(args):
 
 
 def main():
+	print(f"Running Azurlane file downloader v{__version__}.")
+
 	# setup argument parser
 	parser = argparse.ArgumentParser()
 	parser.add_argument("client", type=str, choices=Client.__members__,

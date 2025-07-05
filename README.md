@@ -2,7 +2,7 @@
 This tool automatically downloads the newest assets directly from the game's CDN servers and allows extraction of Texture2D files as PNG images.
 
 ## Setup
-Python 3.11+ is required with the following libraries: `UnityPy`, `PyYAML`, `Pillow`, `protobuf`, `aiofile`, `aiohttp[speedups]`. Dependencies can be installed using `pip install -r requirements.txt`.
+The latest release can be downloaded [here](https://github.com/nobbyfix/AzurLane-AssetDownloader/releases/latest). Python 3.11+ is required with the following libraries: `UnityPy`, `PyYAML`, `Pillow`, `protobuf`, `aiofile`, `aiohttp[speedups]`. Dependencies can be installed using `pip install -r requirements.txt`.
 
 ## Usage
 ### 1. Import files from xapk/apk/obb

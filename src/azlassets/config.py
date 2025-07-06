@@ -3,13 +3,19 @@ import json
 import yaml
 from shutil import copy
 from pathlib import Path
+from importlib.resources import files
 
 from .classes import Client, UserConfig, ClientConfig
 
 
-YAML_CONFIG_PATH = Path("config", "user_config.yml")
-YAML_TEMPLATE_PATH = Path("config", "user_config_template.yml")
-CLIENT_CONFIG_PATH = Path('config', 'client_config.json')
+# package-incuded filepaths
+CONFIG_DATA_PATH = files("azlassets.config")
+YAML_TEMPLATE_PATH = CONFIG_DATA_PATH.joinpath("user_config_template.yml")
+CLIENT_CONFIG_PATH = CONFIG_DATA_PATH.joinpath("client_config.json")
+
+# cwd-relative filepaths
+YAML_CONFIG_PATH = Path("config") / "user_config.yml"
+
 
 def load_user_config() -> UserConfig:
 	if not YAML_CONFIG_PATH.exists():
@@ -32,7 +38,8 @@ def load_user_config() -> UserConfig:
 			extract_directory=yamlconfig['extract-directory'],
 		)
 	except KeyError:
-		sys.exit("There is an error inside the userconfig file. Delete it or change the wrong values.")
+		print("There is an error inside the userconfig file. Delete it or change the wrong values.")
+		sys.exit(1)
 
 	return userconfig
 
@@ -48,6 +55,7 @@ def load_client_config(client: Client) -> ClientConfig:
 	try:
 		clientconfig = ClientConfig(config['gateip'], config['gateport'], config['cdnurl'])
 	except KeyError:
-		sys.exit("The clientconfig has been wrongly configured.")
+		print("The clientconfig has been wrongly configured.")
+		sys.exit(1)
 
 	return clientconfig

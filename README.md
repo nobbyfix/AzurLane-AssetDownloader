@@ -1,8 +1,14 @@
 # Azur Lane Asset Downloader and Extractor
 This tool automatically downloads the newest assets directly from the game's CDN servers and allows extraction of Texture2D files as PNG images.
 
+## Upgrade Notice
+### From 2.x / no version number to 3.x+
+When upgrading from versions 2.x or with no version number, the project has to be newly set up. To retain all current data the following folders can be copied to the new folder of the project:
+- `config`: Only user_config.yml is required, the rest can be deleted.
+- `ClientAssets` or directory set in `asset-directory` of the config: Contains all currently downloaded assets, version information und update logs used for extraction. Highly recommend to transfer to the new project folder.
+
 ## Setup
-Before installation Python 3.11 or newer and git need to be available on the system. It is recommend to set the project up using [venv](https://docs.python.org/3/tutorial/venv.html) or a similar virtual environment manager. The project can be installed using pip directly from the repository:
+Before installation, Python 3.11 or newer and git need to be available on the system. It is recommended to set the project up using [venv](https://docs.python.org/3/tutorial/venv.html) or a similar virtual environment manager. The project can be installed using pip directly from the repository:
 
 ```
 pip install git+https://github.com/nobbyfix/AzurLane-AssetDownloader.git

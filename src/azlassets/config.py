@@ -9,7 +9,7 @@ from .classes import Client, UserConfig, ClientConfig
 
 
 # package-incuded filepaths
-CONFIG_DATA_PATH = files("azlassets.config")
+CONFIG_DATA_PATH = files("azlassets").joinpath("config")
 YAML_TEMPLATE_PATH = CONFIG_DATA_PATH.joinpath("user_config_template.yml")
 CLIENT_CONFIG_PATH = CONFIG_DATA_PATH.joinpath("client_config.json")
 
@@ -21,6 +21,7 @@ def load_user_config() -> UserConfig:
 	if not YAML_CONFIG_PATH.exists():
 		print("Userconfig does not exist. A new one will be created.")
 		print("Note that the useragent is empty and it is advised to set one.")
+		YAML_CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
 		copy(YAML_TEMPLATE_PATH, YAML_CONFIG_PATH)
 		return load_user_config()
 

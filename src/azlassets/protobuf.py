@@ -4,7 +4,7 @@ import socket
 
 PROTOBUFS = {}
 def import_pb(pb: int, addname: str = ""):
-	module = importlib.import_module(f".p{pb}{addname}_pb_pb2", "lib.proto")
+	module = importlib.import_module(f".p{pb}{addname}_pb_pb2", "azlassets.proto")
 	PROTOBUFS[pb] = module
 
 def import_pb_with_retry(pb: int):

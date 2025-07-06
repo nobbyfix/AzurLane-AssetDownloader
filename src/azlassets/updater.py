@@ -14,16 +14,19 @@ def remove_asset(filepath: Path):
 		print(f"WARN: Tried to remove non-existant asset at {filepath}")
 
 async def handle_asset_download(downloader_session: downloader.AzurlaneAsyncDownloader, assetbasepath: Path, result: CompareResult,
-								progressbar: ProgressBar = None) -> UpdateResult:
-	assetpath = BundlePath.construct(assetbasepath, result.new_hash.filepath)
-	download_success = await downloader_session.download_asset(result.new_hash.md5hash, assetpath.full, result.new_hash.size)
+								progressbar: ProgressBar | None = None) -> UpdateResult:
+	newhash = result.new_hash
+	assert newhash is not None
+
+	assetpath = BundlePath.construct(assetbasepath, newhash.filepath)
+	download_success = await downloader_session.download_asset(newhash.md5hash, assetpath.full, newhash.size)
 	
 	if progressbar:
 		progressbar.update()
 	return UpdateResult(result, DownloadType.Success if download_success else DownloadType.Failed, assetpath)
 
 
-async def update_assets(downloader_session: downloader.AzurlaneAsyncDownloader, comparison_results: dict[CompareType, CompareResult],
+async def update_assets(downloader_session: downloader.AzurlaneAsyncDownloader, comparison_results: dict[CompareType, list[CompareResult]],
 						client_directory: Path, allow_deletion: bool = True) -> list[UpdateResult]:
 	assetbasepath = client_directory / "AssetBundles"
 	update_results = [UpdateResult(r, DownloadType.NoChange, BundlePath.construct(assetbasepath, r.new_hash.filepath)) for r in comparison_results[CompareType.Unchanged]]
@@ -68,7 +71,7 @@ async def download_and_parse_hashes(version_result: VersionResult, downloader_se
 
 	return list(filter(_filter, versioncontrol.parse_hash_rows(hashes)))
 
-def compare_hashes(oldhashes: Iterable[HashRow], newhashes: Iterable[HashRow]) -> dict[CompareType, CompareResult]:
+def compare_hashes(oldhashes: Iterable[HashRow], newhashes: Iterable[HashRow]) -> dict[CompareType, list[CompareResult]]:
 	results = {row.filepath: CompareResult(None, row, CompareType.New) for row in newhashes}
 	for hashrow in oldhashes:
 		res = results.get(hashrow.filepath)

@@ -102,8 +102,8 @@ class HashRow:
 
 @dataclass
 class CompareResult:
-	current_hash: HashRow
-	new_hash: HashRow
+	current_hash: HashRow | None
+	new_hash: HashRow | None
 	compare_type: CompareType
 
 @dataclass

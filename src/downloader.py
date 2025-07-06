@@ -23,6 +23,10 @@ def execute(args):
 		print("All asset types will be checked for different hashes.")
 
 	version_response = protobuf.get_version_response(clientconfig.gateip, clientconfig.gateport)
+	if not version_response:
+		print("Server did not return a response to version request.")
+		sys.exit(1)
+
 	version_string = version_response.pb.version
 	versionlist = [versioncontrol.parse_version_string(v) for v in version_string if v.startswith("$")]
 	for vresult in versionlist:

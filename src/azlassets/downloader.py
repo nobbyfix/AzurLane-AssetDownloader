@@ -29,7 +29,7 @@ class AzurlaneAsyncDownloader(aiohttp.ClientSession):
 		
 		except Exception as e:
 			print(f"ERROR: An unexpected error occured while downloading '{version_result.version_type.name}' hashfile.")
-			traceback.print_exception(e, e, e.__traceback__)
+			traceback.print_exception(type(e), e, e.__traceback__)
 			return
 
 	async def download_asset(self, filehash: str, save_destination: Path, expected_file_size: int) -> bool:
@@ -57,5 +57,5 @@ class AzurlaneAsyncDownloader(aiohttp.ClientSession):
 			return True
 		except Exception as e:
 			print(f"ERROR: An unexpected error occured while downloading '{filehash}' to '{save_destination}'.")
-			traceback.print_exception(e, e, e.__traceback__)
+			traceback.print_exception(type(e), e, e.__traceback__)
 			return False

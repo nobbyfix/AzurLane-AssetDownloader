@@ -2,9 +2,25 @@
 This tool automatically downloads the newest assets directly from the game's CDN servers and allows extraction of Texture2D files as PNG images.
 
 ## Setup
-The latest release can be downloaded [here](https://github.com/nobbyfix/AzurLane-AssetDownloader/releases/latest). Python 3.11+ is required with the following libraries: `UnityPy`, `PyYAML`, `Pillow`, `protobuf`, `aiofile`, `aiohttp[speedups]`. Dependencies can be installed using `pip install -r requirements.txt`.
+Before installation Python 3.11 or newer and git need to be available on the system. It is recommend to set the project up using [venv](https://docs.python.org/3/tutorial/venv.html) or a similar virtual environment manager. The project can be installed using pip directly from the repository:
+
+```
+pip install git+https://github.com/nobbyfix/AzurLane-AssetDownloader.git
+```
+
+Alternatively, to install without git (replace `<version>` with the version you want to install):
+```
+pip install https://github.com/nobbyfix/AzurLane-AssetDownloader/archive/refs/tags/<version>.tar.gz
+```
 
 ## Usage
+There are three scripts to manage the assets:
+- `obb_apk_import`: Importing assets from obb/apk/xapk files
+- `main`: Downloading assets from the game server
+- `extractor`: Extract PNGs from the assets
+
+These can be executed using `py[thon3] -m <filename>`. Detailed usage will be explained in the following sections.
+
 ### 1. Import files from xapk/apk/obb
 While this is *not necessary*, this step is **recommended** if you want all game assets available and not spam the game update server with errors of missing files on the first download.
 
@@ -20,7 +36,7 @@ Since the CN client is not distributed through the Google Play Store, there is n
 
 You can then execute the script by passing it the filepath to the xapk/apk/obb:
 ```
-./obb_apk_import.py [FILEPATH]
+py[thon3] -m obb_apk_import [FILEPATH]
 ```
 
 ### 2. Settings
@@ -29,20 +45,20 @@ The `config/user_config.yml` file provides a few settings to filter which files 
 ### 3. Download new updates from the game
 All assets normally distributed via the in-app downloader can be downloaded by simply executing:
 ```
-./main.py [CLIENT]
+py[thon3] -m main [CLIENT]
 ```
 where `CLIENT` has to be either EN, CN, JP, KR or TW. You can check which files have been downloaded or deleted using the difflog files in `ClientAssets/[CLIENT]/difflog`.
 
 ### 4. Extract all new and changed files
 The asset extraction script supports extraction of all newly downloaded files and single asset bundles. The newly downloaded assets can be extracted by executing:
 ```
-./extractor [CLIENT]
+py[thon3] -m extractor [CLIENT]
 ```
 where `CLIENT` is again one of EN, CN, JP, KR or TW. The extracted images will then be saved in `ClientExtract/[CLIENT]/` Since only Texture2D assets are exported, it's not desired to try to export from all assetbundles (See [settings section](#2-settings)).
 
 A single assetbundle can be extracted by passing the filepath to the script:
 ```
-./extractor -f [FILEPATH]
+py[thon3] -m extractor -f [FILEPATH]
 ```
 
 ### 5. Enjoy the files

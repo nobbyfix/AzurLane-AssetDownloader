@@ -16,7 +16,7 @@ pip install https://github.com/nobbyfix/AzurLane-AssetDownloader/archive/refs/ta
 ## Usage
 There are three scripts to manage the assets:
 - `obb_apk_import`: Importing assets from obb/apk/xapk files
-- `main`: Downloading assets from the game server
+- `downlader`: Downloading assets from the game server
 - `extractor`: Extract PNGs from the assets
 
 These can be executed using `py[thon3] -m <filename>`. Detailed usage will be explained in the following sections.
@@ -45,7 +45,7 @@ The `config/user_config.yml` file provides a few settings to filter which files 
 ### 3. Download new updates from the game
 All assets normally distributed via the in-app downloader can be downloaded by simply executing:
 ```
-py[thon3] -m main [CLIENT]
+py[thon3] -m downloader [CLIENT]
 ```
 where `CLIENT` has to be either EN, CN, JP, KR or TW. You can check which files have been downloaded or deleted using the difflog files in `ClientAssets/[CLIENT]/difflog`.
 

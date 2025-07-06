@@ -5,8 +5,8 @@ from zipfile import ZipFile
 from pathlib import Path
 from collections import defaultdict
 
-from lib import __version__, versioncontrol, updater, config
-from lib.classes import BundlePath, Client, CompareType, DownloadType, UpdateResult, VersionType, ProgressBar
+from azlassets import __version__, versioncontrol, updater, config
+from azlassets.classes import BundlePath, Client, CompareType, DownloadType, UpdateResult, VersionType, ProgressBar
 
 
 def calc_md5hash(data: bytes) -> str:

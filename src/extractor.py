@@ -5,8 +5,8 @@ from pathlib import Path
 import multiprocessing as mp
 from typing import Iterable
 
-from lib import __version__, imgrecon, config, versioncontrol
-from lib.classes import Client, VersionType
+from azlassets import __version__, imgrecon, config, versioncontrol
+from azlassets.classes import Client, VersionType
 
 
 def get_difflog_versionlist(parent_directory: Path, vtype: VersionType) -> list[str]:

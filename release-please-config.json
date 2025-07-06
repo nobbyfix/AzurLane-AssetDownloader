@@ -4,7 +4,7 @@
   "release-type": "python",
   "pull-request-title-pattern": "build: release ${version}",
   "extra-files": [
-    "src/lib/__init__.py"
+    "src/azlassets/__init__.py"
   ],
   "packages": {
     ".": {}

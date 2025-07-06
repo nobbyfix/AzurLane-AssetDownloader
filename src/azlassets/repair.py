@@ -3,8 +3,8 @@ import itertools
 from pathlib import Path
 from typing import Generator
 
-from lib import updater, versioncontrol
-from lib.classes import HashRow, UserConfig, VersionResult, VersionType, UpdateResult
+from . import updater, versioncontrol
+from .classes import HashRow, UserConfig, VersionResult, VersionType, UpdateResult
 
 
 def calc_md5hash(filepath: Path, buf_size: int = 65536) -> str:

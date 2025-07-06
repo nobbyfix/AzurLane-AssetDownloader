@@ -4,8 +4,8 @@ import asyncio
 import argparse
 from pathlib import Path
 
-from lib import __version__, config, protobuf, versioncontrol, updater, repair
-from lib.classes import Client
+from azlassets import __version__, config, protobuf, versioncontrol, updater, repair
+from azlassets.classes import Client
 
 
 def execute(args):

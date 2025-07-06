@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "azlassets"
+description ="Azur Lane asset downloader and extractor"
+readme = "README.md"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+dynamic = ["version"]
+dependencies = [
+    "UnityPy",
+    "PyYAML",
+    "Pillow",
+    "protobuf",
+    "aiofile",
+    "aiohttp[speedups]"
+]
+
+[project.urls]
+homepage = "https://github.com/nobbyfix/AzurLane-AssetDownloader"
+repository = "https://github.com/nobbyfix/AzurLane-AssetDownloader.git"
+issues = "https://github.com/nobbyfix/AzurLane-AssetDownloader/issues"
+changelog = "https://github.com/nobbyfix/AzurLane-AssetDownloader/blob/master/CHANGELOG.md"
+download = "https://github.com/nobbyfix/AzurLane-AssetDownloader/releases/latest"
+
+[tool.setuptools.dynamic]
+version = { attr = "azlassets.__version__" }
+
+[tool.setuptools.package-data]
+"azlassets.config" = ["*.json", "*.yml"]

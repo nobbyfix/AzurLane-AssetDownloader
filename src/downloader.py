@@ -17,6 +17,8 @@ def execute(args):
 	CLIENT_ASSET_DIR.mkdir(parents=True, exist_ok=True)
 
 	if args.check_integrity:
+		print("REPAIR FUNCTION IS CURRENTLY DISABLED.")
+		sys.exit(1)
 		repair.repair(clientconfig.cdnurl, userconfig, CLIENT_ASSET_DIR)
 
 	if args.force_refresh and not args.repair:

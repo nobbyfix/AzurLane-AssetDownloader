@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.1.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.0.0...v3.1.0) (2025-07-06)
+
+
+### Features
+
+* disable check integrity functionality ([7ea2fa5](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/7ea2fa5874891d535751c0bb9e03d6ece8c06a33))
+
+
+### Bug Fixes
+
+* correctly parse comparison results used for import processing ([5b97ba9](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/5b97ba99ad4314d314d58795380ce3f4ad351e08))
+
 ## [3.0.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v2.2.0...v3.0.0) (2025-07-06)
 
 

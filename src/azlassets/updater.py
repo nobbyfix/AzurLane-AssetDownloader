@@ -20,7 +20,7 @@ async def handle_asset_download(downloader_session: downloader.AzurlaneAsyncDown
 
 	assetpath = BundlePath.construct(assetbasepath, newhash.filepath)
 	download_success = await downloader_session.download_asset(newhash.md5hash, assetpath.full, newhash.size)
-	
+
 	if progressbar:
 		progressbar.update()
 	return UpdateResult(result, DownloadType.Success if download_success else DownloadType.Failed, assetpath)

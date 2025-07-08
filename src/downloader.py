@@ -8,7 +8,7 @@ from azlassets import __version__, config, protobuf, versioncontrol, updater, re
 from azlassets.classes import Client
 
 
-def execute(args):
+async def execute(args):
 	# load config data from files
 	userconfig = config.load_user_config()
 	clientconfig = config.load_client_config(args.client)
@@ -17,9 +17,7 @@ def execute(args):
 	CLIENT_ASSET_DIR.mkdir(parents=True, exist_ok=True)
 
 	if args.check_integrity:
-		print("REPAIR FUNCTION IS CURRENTLY DISABLED.")
-		sys.exit(1)
-		repair.repair(clientconfig.cdnurl, userconfig, CLIENT_ASSET_DIR)
+		update_assets = await repair.repair(clientconfig.cdnurl, userconfig, CLIENT_ASSET_DIR)
 
 	if args.force_refresh and not args.repair:
 		print("All asset types will be checked for different hashes.")
@@ -33,11 +31,9 @@ def execute(args):
 	versionlist = [versioncontrol.parse_version_string(v) for v in version_string if v.startswith("$")]
 	for vresult in versionlist:
 		if args.repair:
-			print("REPAIR FUNCTION IS CURRENTLY DISABLED.")
-			sys.exit(1)
-			update_assets = repair.repair_hashfile(vresult, clientconfig.cdnurl, userconfig, CLIENT_ASSET_DIR)
+			update_assets = await repair.repair_hashfile(vresult, clientconfig.cdnurl, userconfig, CLIENT_ASSET_DIR)
 		else:
-			update_assets = asyncio.run(updater.update(vresult, clientconfig.cdnurl, userconfig, CLIENT_ASSET_DIR, args.force_refresh))
+			update_assets = await updater.update(vresult, clientconfig.cdnurl, userconfig, CLIENT_ASSET_DIR, args.force_refresh)
 
 		if update_assets:
 			versioncontrol.save_difflog2(vresult, update_assets, CLIENT_ASSET_DIR)
@@ -59,7 +55,7 @@ def main():
 	args = parser.parse_args()
 
 	args.client = Client[args.client]
-	execute(args)
+	asyncio.run(execute(args))
 
 if __name__ == "__main__":
 	main()

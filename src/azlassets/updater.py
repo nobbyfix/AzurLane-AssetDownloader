@@ -94,6 +94,8 @@ def filter_hashes(update_results: list[UpdateResult]) -> list[HashRow]:
 	for update_result in update_results:
 		if update_result.download_type in [DownloadType.Success, DownloadType.NoChange]:
 			hashrow = update_result.compare_result.new_hash
+		elif update_result.download_type == DownloadType.ForDeletionNoChange:
+			hashrow = update_result.compare_result.current_hash
 		elif update_result.download_type == DownloadType.Failed:
 			hashrow = update_result.compare_result.current_hash
 			if not hashrow:

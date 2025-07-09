@@ -174,13 +174,14 @@ def printProgressBar(iteration, total, prefix = '', suffix = 'Complete', decimal
 
 # simplified progress bar class with only the useful stuff i use
 class ProgressBar():
-	def __init__(self, total: int, prefix: str, suffix: str = "Complete", iterstart: int = 0, details_unit: str | None = None):
+	def __init__(self, total: int, prefix: str, suffix: str = "Complete", iterstart: int = 0, details_unit: str | None = None, print_on_init: bool = True):
 		self.iteration = iterstart
 		self.total = total
 		self.prefix = prefix
 		self.suffix = suffix
 		self.details_unit = details_unit
-		printProgressBar(iterstart, total, prefix, suffix, details_unit=details_unit)
+		if print_on_init:
+			printProgressBar(iterstart, total, prefix, suffix, details_unit=details_unit)
 
 	def update(self, iteration: int | None = None):
 		if iteration:

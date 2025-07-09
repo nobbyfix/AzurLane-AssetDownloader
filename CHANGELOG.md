@@ -1,5 +1,20 @@
 # Changelog
 
+## [3.2.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.1.0...v3.2.0) (2025-07-09)
+
+
+### Features
+
+* progress bars when using repair ([bbdcf9d](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/bbdcf9d07ac2bcd074b5070b2b466d5ed04f367f))
+* re-enable repair functionality with asyncio support ([d4006cd](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/d4006cd9b809bd276114d959d67a0afcefd3fccb))
+
+
+### Bug Fixes
+
+* add missing hash function on BundlePath class ([91cb722](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/91cb7228567f51e34c68631074cff4a6712c82dc))
+* deletion skipped files not being added to hashfile ([39707f9](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/39707f90b488f25262571bb5eab49840ad0e5fee))
+* inaccurate difflog when using repair after partial download ([0c9ad29](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/0c9ad2985dd804f3831c810be0278cb3df1f075f))
+
 ## [3.1.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.0.0...v3.1.0) (2025-07-06)
 
 

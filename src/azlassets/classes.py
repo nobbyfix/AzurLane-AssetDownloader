@@ -123,6 +123,9 @@ class BundlePath:
 		fullpath = Path(parentdir, inner)
 		return BundlePath(fullpath, str(inner))
 
+	def __hash__(self):
+		return hash(self.inner)
+
 @dataclass
 class UpdateResult:
 	compare_result: CompareResult

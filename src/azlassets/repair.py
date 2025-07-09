@@ -5,7 +5,7 @@ import asyncio
 from pathlib import Path
 
 from . import downloader, updater, versioncontrol
-from .classes import HashRow, UserConfig, VersionResult, VersionType, UpdateResult
+from .classes import HashRow, UserConfig, VersionResult, VersionType, UpdateResult, CompareType, DownloadType
 
 
 semaphore_concurrent_files = asyncio.Semaphore(5)
@@ -50,12 +50,36 @@ async def repair(cdnurl: str, userconfig: UserConfig, client_directory: Path) ->
 	return update_results
 
 async def repair_hashfile(version_result: VersionResult, cdnurl: str, userconfig: UserConfig, client_directory: Path) -> list[UpdateResult]:
+	# read hashes that are stored in the local hash file
+	localhashes = versioncontrol.load_hash_file(version_result.version_type, client_directory)
+
 	async with downloader.AzurlaneAsyncDownloader(cdnurl, useragent=userconfig.useragent) as downloader_session:
-		newhashes = await updater.download_and_parse_hashes(version_result, downloader_session, userconfig) or []
+		# load newest hashes from the game server
+		serverhashes = await updater.download_and_parse_hashes(version_result, downloader_session, userconfig) or []
+
+		# parse hashes from all files stored on disk, but only check files that are expected based on the new hashes
+		# this skips deletion on unneeded files
 		assetbasepath = client_directory / "AssetBundles"
+		diskhashes_tasks = [hashrow_from_relative_file(assetbasepath, hrow.filepath) for hrow in serverhashes]
+		diskhashes = await asyncio.gather(*diskhashes_tasks)
+
+		# compare localhashes to diskhashes to determine which files have already been successfully downloaded
+		compare_results_disk = updater.compare_hashes(localhashes, diskhashes)
+		update_results_disk = {comp_result.new_hash.filepath: UpdateResult(comp_result, DownloadType.Success, comp_result.new_hash.filepath) for comp_result in compare_results_disk[CompareType.Changed]}
+		update_results_disk.update({comp_result.new_hash.filepath: UpdateResult(comp_result, DownloadType.Success, comp_result.new_hash.filepath) for comp_result in compare_results_disk[CompareType.New]})
+		update_results_disk.update({comp_result.current_hash.filepath: UpdateResult(comp_result, DownloadType.Removed, comp_result.current_hash.filepath) for comp_result in compare_results_disk[CompareType.Deleted]})
+
+		# download remaining files
+		update_results_server = await updater._update_from_hashes(version_result, downloader_session, client_directory, diskhashes, serverhashes, allow_deletion=False)
 		
-		oldhashes_tasks = [hashrow_from_relative_file(assetbasepath, hrow.filepath) for hrow in newhashes]
-		oldhashes = await asyncio.gather(*oldhashes_tasks)
-		
-		update_results = await updater._update_from_hashes(version_result, downloader_session, client_directory, oldhashes, newhashes, allow_deletion=False)
+		# add old update results to new update results list
+		update_results = []
+		for upres_server in update_results_server:
+			update_result = upres_server
+			# try to retrieve from old list only if there was no further change to the file
+			if upres_server.download_type == DownloadType.NoChange:
+				if upres_disk := update_results_disk.get(upres_server.path):
+					update_result = upres_disk
+			update_results.append(update_result)
+
 	return update_results

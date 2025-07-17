@@ -79,9 +79,9 @@ def update_version_data2(version_result: VersionResult, relative_parent_dir: Pat
 
 def get_latest_versionstring(version_type: VersionType, relative_parent_dir: Path) -> str | None:
 	version_diffdir = Path(relative_parent_dir, "difflog", version_type.name.lower())
-	
+
 	legacy_rename_latest_difflog(version_diffdir)
-	
+
 	latest_versionfile = Path(version_diffdir, "latest")
 	if latest_versionfile.exists():
 		with open(latest_versionfile, "r", encoding="utf8") as f:
@@ -95,7 +95,7 @@ def save_difflog(version_type: VersionType, version_string: str, update_results:
 	version_diffdir = Path(relative_parent_dir, "difflog", version_type.name.lower())
 	version_diffdir.mkdir(parents=True, exist_ok=True)
 	legacy_rename_latest_difflog(version_diffdir)
-	
+
 	data = {
 		"version": version_string,
 		"major": False,
@@ -121,7 +121,7 @@ def legacy_rename_latest_difflog(version_diffdir: Path):
 			latest_data = json.load(f)
 		latest_version = latest_data["version"]
 		latest_difflog.rename(latest_difflog.with_stem(latest_version))
-	
+
 		latest_filepath = Path(version_diffdir, "latest")
 		with open(latest_filepath, "w", encoding="utf8") as f:
 			f.write(latest_version)

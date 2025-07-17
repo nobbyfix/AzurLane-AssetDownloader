@@ -84,7 +84,7 @@ async def repair_hashfile(version_result: VersionResult, cdnurl: str, userconfig
 
 		# download remaining files
 		update_results_server = await updater._update_from_hashes(version_result, downloader_session, client_directory, diskhashes, serverhashes, allow_deletion=False)
-		
+
 		# add old update results to new update results list
 		update_results = []
 		for upres_server in update_results_server:

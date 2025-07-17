@@ -14,7 +14,7 @@ class AzurlaneAsyncDownloader(aiohttp.ClientSession):
 
 	async def get_hashes(self, versionhash: str) -> aiohttp.ClientResponse:
 		return await self.get(f"hash/{versionhash}")
-	
+
 	async def get_asset(self, filehash: str) -> aiohttp.ClientResponse:
 		return await self.get(f"resource/{filehash}")
 
@@ -26,7 +26,7 @@ class AzurlaneAsyncDownloader(aiohttp.ClientSession):
 
 				hashes = await response.text()
 				return hashes
-		
+
 		except Exception as e:
 			print(f"ERROR: An unexpected error occured while downloading '{version_result.version_type.name}' hashfile.")
 			traceback.print_exception(type(e), e, e.__traceback__)
@@ -42,7 +42,7 @@ class AzurlaneAsyncDownloader(aiohttp.ClientSession):
 			async with await self.get_asset(filehash) as response:
 				response: aiohttp.ClientResponse
 				response.raise_for_status() # raises error on bad HTTP status
-				
+
 				# reject response if response size doesn't match expected size
 				response_size = response.content_length
 				if expected_file_size != response_size:

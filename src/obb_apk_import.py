@@ -81,7 +81,7 @@ def unpack(zipfile: ZipFile, client: Client, allow_older_version: bool = False):
 					fileinfo = file_info_groupby_size.get(result.new_hash.size)
 					if not fileinfo:
 						continue
-					
+
 					for zipf_path in fileinfo:
 						with zipfile.open(zipf_path, "r") as zf:
 							zipf_data = zf.read()
@@ -104,12 +104,12 @@ def unpack(zipfile: ZipFile, client: Client, allow_older_version: bool = False):
 
 def extract_asset(zipfile: ZipFile, filepath: str, target: Path):
 	target.parent.mkdir(exist_ok=True, parents=True)
-	
+
 	if "." in Path(filepath).name:
 		assetpath = "assets/AssetBundles/"+filepath
 	else:
 		assetpath = "assets/AssetBundles/"+filepath+".ys"
-    
+
 	try:
 		with zipfile.open(assetpath, 'r') as zf, open(target, 'wb') as f:
 			shutil.copyfileobj(zf, f)
@@ -138,7 +138,7 @@ def extract_xapk(path: Path, allow_older_version: bool = False):
 		# read the manifest file for information about the client, obbs and the apk paths inside the archive
 		with xapk_archive.open('manifest.json', 'r') as manifestfile:
 			manifest = json.loads(manifestfile.read().decode('utf8'))
-		
+
 		# determine the client the xpak comes from
 		if client := Client.from_package_name(manifest['package_name']):
 			print(f'Determined client {client.name} from manifest.json file.')
@@ -147,7 +147,7 @@ def extract_xapk(path: Path, allow_older_version: bool = False):
 				with xapk_archive.open(obb_expansion['file'], 'r') as mainobbfile:
 					# need to load the full obb into memory, otherwise it has to constantly read the whole obb again and performance gets shit
 					mainobb_filedata = io.BytesIO(mainobbfile.read())
-					
+
 					with ZipFile(mainobb_filedata, 'r') as main_obb:
 						unpack(main_obb, client, allow_older_version)
 		else:

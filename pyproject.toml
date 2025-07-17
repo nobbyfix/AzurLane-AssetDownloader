@@ -18,6 +18,9 @@ dependencies = [
     "aiohttp[speedups]"
 ]
 
+[project.optional-dependencies]
+dev = ["pre-commit"]
+
 [project.urls]
 homepage = "https://github.com/nobbyfix/AzurLane-AssetDownloader"
 repository = "https://github.com/nobbyfix/AzurLane-AssetDownloader.git"

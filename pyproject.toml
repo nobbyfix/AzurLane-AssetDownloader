@@ -4,18 +4,39 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "azlassets"
+authors = [{ name = "nobbyfix" }]
 description ="Azur Lane asset downloader and extractor"
 readme = "README.md"
 license-files = ["LICENSE"]
 requires-python = ">=3.11"
 dynamic = ["version"]
 dependencies = [
-    "UnityPy",
+    "UnityPy >= 1.10.18",
     "PyYAML",
     "Pillow",
     "protobuf",
     "aiofile",
     "aiohttp[speedups]"
+]
+keywords = [
+    "azurlane",
+    "azur-lane"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+    "Topic :: Games/Entertainment"
 ]
 
 [project.optional-dependencies]

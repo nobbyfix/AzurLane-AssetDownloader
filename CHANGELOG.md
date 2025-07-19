@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.3.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.2.1...v3.3.0) (2025-07-19)
+
+
+### Features
+
+* add build and publishing to pypi ([824292a](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/824292a51740d76d73353fc9124450417ab41a13))
+
 ## [3.2.1](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.2.0...v3.2.1) (2025-07-19)
 
 

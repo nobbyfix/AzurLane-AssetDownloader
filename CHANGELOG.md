@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.1](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.2.0...v3.2.1) (2025-07-19)
+
+
+### Bug Fixes
+
+* bump version number ([70888c3](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/70888c3c24074e45b59511227a44e34d1e42670b))
+
 ## [3.2.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.1.0...v3.2.0) (2025-07-09)
 
 

@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write  # For uploading to GitHub Releases
+      contents: write
 
     steps:
       - name: Check out code

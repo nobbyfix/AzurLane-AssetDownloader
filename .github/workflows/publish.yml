@@ -49,8 +49,8 @@ jobs:
       id-token: write
 
     environment:
-      name: testpypi
-      url: https://test.pypi.org/p/azlassets
+      name: pypi
+      url: https://pypi.org/p/azlassets
 
     steps:
       - name: Download distributions
@@ -61,5 +61,3 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-            repository-url: https://test.pypi.org/legacy/

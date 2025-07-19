@@ -8,15 +8,15 @@ When upgrading from versions 2.x or with no version number, the project has to b
 - `ClientAssets` or directory set in `asset-directory` of the config: Contains all currently downloaded assets, version information und update logs used for extraction. Highly recommend to transfer to the new project folder.
 
 ## Setup
-Before installation, Python 3.11 or newer and git need to be available on the system. It is recommended to set the project up using [venv](https://docs.python.org/3/tutorial/venv.html) or a similar virtual environment manager. The project can be installed using pip directly from the repository:
+Before installation, Python 3.11 or newer needs to be available on the system. It is recommended to set the project up using [venv](https://docs.python.org/3/tutorial/venv.html) or a similar virtual environment manager. The project can be installed using pip:
 
+```
+pip install azlassets
+```
+
+Alternatively, to install the newest version from the repository (requires git on the system):
 ```
 pip install git+https://github.com/nobbyfix/AzurLane-AssetDownloader.git
-```
-
-Alternatively, to install without git (replace `<version>` with the version you want to install):
-```
-pip install https://github.com/nobbyfix/AzurLane-AssetDownloader/archive/refs/tags/<version>.tar.gz
 ```
 
 ## Usage
@@ -25,7 +25,7 @@ There are three scripts to manage the assets:
 - `downlader`: Downloading assets from the game server
 - `extractor`: Extract PNGs from the assets
 
-These can be executed using `py[thon3] -m <filename>`. Detailed usage will be explained in the following sections.
+These can be executed using `py -m <scriptname>` on Windows or `python3 -m <scriptname>` on Linux/macOS (will be shortened to `py[thon3]` going forward, use the appropriate version for your system). Detailed usage will be explained in the following sections.
 
 ### 1. Import files from xapk/apk/obb
 While this is *not necessary*, this step is **recommended** if you want all game assets available and not spam the game update server with errors of missing files on the first download.

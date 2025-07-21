@@ -13,13 +13,17 @@ def remove_asset(filepath: Path):
 	else:
 		print(f"WARN: Tried to remove non-existant asset at {filepath}")
 
+
+downloader_semaphore = asyncio.Semaphore(6)
+
 async def handle_asset_download(downloader_session: downloader.AzurlaneAsyncDownloader, assetbasepath: Path, result: CompareResult,
 								progressbar: ProgressBar | None = None) -> UpdateResult:
 	newhash = result.new_hash
 	assert newhash is not None
 
 	assetpath = BundlePath.construct(assetbasepath, newhash.filepath)
-	download_success = await downloader_session.download_asset(newhash.md5hash, assetpath.full, newhash.size)
+	async with downloader_semaphore:  # prevent queueing into connection pool, since wait time in pool counts towards timeout
+		download_success = await downloader_session.download_asset(newhash.md5hash, assetpath.full, newhash.size)
 
 	if progressbar:
 		progressbar.update()

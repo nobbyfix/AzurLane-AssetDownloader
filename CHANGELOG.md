@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.3.2](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.3.1...v3.3.2) (2025-07-21)
+
+
+### Bug Fixes
+
+* downloads timing out too soon ([049d4f0](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/049d4f07b66c01c1836324b1a6c23c567401d11c))
+
 ## [3.3.1](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.3.0...v3.3.1) (2025-07-21)
 
 

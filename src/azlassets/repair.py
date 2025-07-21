@@ -5,7 +5,7 @@ import asyncio
 from pathlib import Path
 
 from . import downloader, updater, versioncontrol
-from .classes import HashRow, UserConfig, VersionResult, VersionType, UpdateResult, CompareType, DownloadType, ProgressBar
+from .classes import *
 
 
 async def execute_coro_with_progressbar(coro, progressbar: ProgressBar):

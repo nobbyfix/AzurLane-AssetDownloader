@@ -189,3 +189,19 @@ class ProgressBar():
 		else:
 			self.iteration += 1
 		printProgressBar(self.iteration, self.total, self.prefix, self.suffix, details_unit=self.details_unit)
+
+
+__all__ = [
+	"CompareType",
+	"DownloadType",
+	"VersionType",
+	"Client",
+	"HashRow",
+	"CompareResult",
+	"VersionResult",
+	"BundlePath",
+	"UpdateResult",
+	"UserConfig",
+	"ClientConfig",
+	"ProgressBar",
+]

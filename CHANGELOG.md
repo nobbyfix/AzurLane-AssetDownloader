@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.3.1](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.3.0...v3.3.1) (2025-07-21)
+
+
+### Bug Fixes
+
+* add minimum aiohttp version to support new url syntax ([58e2df4](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/58e2df4a87e278f5af6269349d4fd2affdbbbcfd))
+
 ## [3.3.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.2.1...v3.3.0) (2025-07-19)
 
 

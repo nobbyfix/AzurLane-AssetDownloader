@@ -119,19 +119,18 @@ async def _update_from_hashes(version_result: VersionResult, downloader_session:
 	versioncontrol.update_version_data2(version_result, client_directory, hashes_updated)
 	return update_results
 
-async def _update(version_result: VersionResult, cdnurl: str, userconfig: UserConfig, client_directory: Path) -> list[UpdateResult] | None:
-	async with downloader.AzurlaneAsyncDownloader(cdnurl, useragent=userconfig.useragent) as downloader_session:
-		newhashes = await download_and_parse_hashes(version_result, downloader_session, userconfig)
-		if newhashes:
-			oldhashes = versioncontrol.load_hash_file(version_result.version_type, client_directory)
-			return await _update_from_hashes(version_result, downloader_session, client_directory, oldhashes or [], newhashes)
+async def _update(version_result: VersionResult, downloader_session: downloader.AzurlaneAsyncDownloader, userconfig: UserConfig, client_directory: Path) -> list[UpdateResult] | None:
+	newhashes = await download_and_parse_hashes(version_result, downloader_session, userconfig)
+	if newhashes:
+		oldhashes = versioncontrol.load_hash_file(version_result.version_type, client_directory)
+		return await _update_from_hashes(version_result, downloader_session, client_directory, oldhashes or [], newhashes)
 
-async def update(version_result: VersionResult, cdnurl: str, userconfig: UserConfig, client_directory: Path, force_refresh: bool) -> list[UpdateResult] | None:
+async def update(version_result: VersionResult, downloader_session: downloader.AzurlaneAsyncDownloader, userconfig: UserConfig, client_directory: Path, force_refresh: bool) -> list[UpdateResult] | None:
 	oldversion = versioncontrol.load_version_string(version_result.version_type, client_directory)
 	if versioncontrol.compare_version_string(version_result.version, oldversion):
 		print(f"{version_result.version_type.name}: Current version {oldversion} is older than latest version {version_result.version}.")
-		return await _update(version_result, cdnurl, userconfig, client_directory)
+		return await _update(version_result, downloader_session, userconfig, client_directory)
 	else:
 		print(f"{version_result.version_type.name}: Current version {oldversion} is latest.")
 		if force_refresh:
-			return await _update(version_result, cdnurl, userconfig, client_directory)
+			return await _update(version_result, downloader_session, userconfig, client_directory)

@@ -4,7 +4,7 @@ import asyncio
 import argparse
 from pathlib import Path
 
-from azlassets import __version__, config, protobuf, versioncontrol, updater, repair
+from azlassets import __version__, config, protobuf, versioncontrol, updater, repair, downloader
 from azlassets.classes import Client
 
 
@@ -29,14 +29,16 @@ async def execute(args):
 
 	version_string = version_response.pb.version
 	versionlist = [versioncontrol.parse_version_string(v) for v in version_string if v.startswith("$")]
-	for vresult in versionlist:
-		if args.repair:
-			update_assets = await repair.repair_hashfile(vresult, clientconfig.cdnurl, userconfig, CLIENT_ASSET_DIR)
-		else:
-			update_assets = await updater.update(vresult, clientconfig.cdnurl, userconfig, CLIENT_ASSET_DIR, args.force_refresh)
 
-		if update_assets:
-			versioncontrol.save_difflog2(vresult, update_assets, CLIENT_ASSET_DIR)
+	async with downloader.AzurlaneAsyncDownloader(clientconfig.cdnurl, useragent=userconfig.useragent) as downloader_session:
+		for vresult in versionlist:
+			if args.repair:
+				update_assets = await repair.repair_hashfile(vresult, downloader_session, userconfig, CLIENT_ASSET_DIR)
+			else:
+				update_assets = await updater.update(vresult, downloader_session, userconfig, CLIENT_ASSET_DIR, args.force_refresh)
+
+			if update_assets:
+				versioncontrol.save_difflog2(vresult, update_assets, CLIENT_ASSET_DIR)
 
 
 def main():

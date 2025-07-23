@@ -154,12 +154,16 @@ async def _update(
 		version_result: VersionResult,
 		downloader_session: downloader.AzurlaneAsyncDownloader,
 		userconfig: UserConfig,
-		client_directory: Path
+		client_directory: Path,
+		ignore_hashfile: bool = False
 	) -> list[UpdateResult] | None:
 
 	newhashes = await download_and_parse_hashes(version_result, downloader_session, userconfig)
 	if newhashes:
-		oldhashes = versioncontrol.load_hash_file(version_result.version_type, client_directory)
+		if ignore_hashfile:
+			oldhashes = []
+		else:
+			oldhashes = versioncontrol.load_hash_file(version_result.version_type, client_directory)
 		return await _update_from_hashes(version_result, downloader_session, client_directory, oldhashes or [], newhashes)
 
 
@@ -168,17 +172,18 @@ async def update(
 		downloader_session: downloader.AzurlaneAsyncDownloader,
 		userconfig: UserConfig,
 		client_directory: Path,
-		force_refresh: bool
+		force_refresh: bool = False,
+		ignore_hashfile: bool = False
 	)-> list[UpdateResult] | None:
 
 	oldversion = versioncontrol.load_version_string(version_result.version_type, client_directory)
 	if versioncontrol.compare_version_string(version_result.version, oldversion):
 		print(f"{version_result.version_type.name}: Current version {oldversion} is older than latest version {version_result.version}.")
-		return await _update(version_result, downloader_session, userconfig, client_directory)
+		return await _update(version_result, downloader_session, userconfig, client_directory, ignore_hashfile)
 	else:
 		print(f"{version_result.version_type.name}: Current version {oldversion} is latest. ", end="")
 		if force_refresh:
 			print("(force check enabled: Try downloading files anyway.)")
-			return await _update(version_result, downloader_session, userconfig, client_directory)
+			return await _update(version_result, downloader_session, userconfig, client_directory, ignore_hashfile)
 		else:
 			print("(Nothing to check.)")

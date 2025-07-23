@@ -33,9 +33,21 @@ async def execute(args):
 	async with downloader.AzurlaneAsyncDownloader(clientconfig.cdnurl, useragent=userconfig.useragent) as downloader_session:
 		for vresult in versionlist:
 			if args.repair:
-				update_assets = await repair.repair_hashfile(vresult, downloader_session, userconfig, CLIENT_ASSET_DIR)
+				update_assets = await repair.repair_hashfile(
+					vresult,
+					downloader_session,
+					userconfig,
+					CLIENT_ASSET_DIR
+				)
 			else:
-				update_assets = await updater.update(vresult, downloader_session, userconfig, CLIENT_ASSET_DIR, args.force_refresh)
+				update_assets = await updater.update(
+					vresult,
+					downloader_session,
+					userconfig,
+					CLIENT_ASSET_DIR,
+					args.force_refresh,
+					args.ignore_hashfile
+				)
 
 			if update_assets:
 				versioncontrol.save_difflog2(vresult, update_assets, CLIENT_ASSET_DIR)
@@ -49,11 +61,13 @@ def main():
 	parser.add_argument("client", type=str, choices=Client.__members__,
 		help="client to update")
 	parser.add_argument("--force-refresh", type=bool, default=False, action=argparse.BooleanOptionalAction,
-		help="compares asset hashes even when the version file is up to date")
+		help="Compares asset hashes even when the version file is up to date.")
 	parser.add_argument("--repair", type=bool, default=False, action=argparse.BooleanOptionalAction,
-		help="downloads missing files if the update process failed partially")
+		help="Downloads missing files if the update process failed partially.")
 	parser.add_argument("--check-integrity", type=bool, default=False, action=argparse.BooleanOptionalAction,
-		help="checks if all files are correct using the local hash file")
+		help="Checks if all files are correct using the local hash file.")
+	parser.add_argument("--ignore-hashfile", type=bool, default=False, action=argparse.BooleanOptionalAction,
+		help="Ignores the local hashfile and downloads ALL files again. This is only intended for testing purposes.")
 	args = parser.parse_args()
 
 	args.client = Client[args.client]

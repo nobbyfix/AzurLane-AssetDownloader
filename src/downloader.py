@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import sys
+import logging
 import asyncio
 import argparse
 from pathlib import Path
@@ -68,7 +69,16 @@ def main():
 		help="Checks if all files are correct using the local hash file.")
 	parser.add_argument("--ignore-hashfile", type=bool, default=False, action=argparse.BooleanOptionalAction,
 		help="Ignores the local hashfile and downloads ALL files again. This is only intended for testing purposes.")
+	parser.add_argument("--debug", type=bool, default=False, action=argparse.BooleanOptionalAction,
+		help="Enable Debug Logging.")
 	args = parser.parse_args()
+
+	if args.debug:
+		logging.basicConfig(
+			format="%(levelname)s [%(asctime)s] %(name)s - %(message)s",
+			datefmt="%Y-%m-%d %H:%M:%S",
+			level=logging.DEBUG
+		)
 
 	args.client = Client[args.client]
 	asyncio.run(execute(args))

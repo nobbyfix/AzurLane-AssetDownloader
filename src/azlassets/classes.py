@@ -150,7 +150,7 @@ class ClientConfig:
 
 
 # stolen from https://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console
-def printProgressBar(iteration, total, prefix = '', suffix = 'Complete', decimals = 1, length = 50, fill = '█', printEnd = "\r", details_unit = None):
+def printProgressBar(iteration, total, prefix = '', suffix = 'Complete', decimals = 1, length = 50, fill = '█', printEnd = "\r", details_unit = None) -> None:
 	"""
 	Call in a loop to create terminal progress bar
 	@params:
@@ -163,6 +163,7 @@ def printProgressBar(iteration, total, prefix = '', suffix = 'Complete', decimal
 		fill		- Optional  : bar fill character (Str)
 		printEnd	- Optional  : end character (e.g. "\r", "\r\n") (Str)
 	"""
+	if total <= 0: return None
 	percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
 	filledLength = int(length * iteration // total)
 	progress = fill * filledLength + '-' * (length - filledLength)

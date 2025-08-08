@@ -3,7 +3,7 @@ import itertools, json
 from argparse import ArgumentParser
 from pathlib import Path
 import multiprocessing as mp
-from typing import Iterable
+from typing import Iterable, Generator
 
 from azlassets import __version__, imgrecon, config, versioncontrol
 from azlassets.classes import Client, VersionType
@@ -122,11 +122,18 @@ def extract_by_client(client: Client, target_version: str | None = None, do_iter
 		pool.close()
 		pool.join()
 
-def extract_single_assetbundle(client: Client, assetpath: str) -> Path | None:
+def extract_single_assetbundle(client: Client, assetpath: str) -> None:
 	userconfig = config.load_user_config()
 	client_directory = Path(userconfig.asset_directory, client.name, 'AssetBundles')
 	extract_directory = Path(userconfig.extract_directory, client.name)
-	return extract_assetbundle(client_directory, assetpath, extract_directory)
+
+	abpath = Path(client_directory, assetpath)
+	if abpath.is_dir():
+		for ab_in_dir_path in abpath.rglob("*"):
+			if not ab_in_dir_path.is_dir():
+				extract_assetbundle(client_directory, str(ab_in_dir_path.relative_to(client_directory)), extract_directory)
+	else:
+		extract_assetbundle(client_directory, assetpath, extract_directory)
 
 
 def main():
@@ -138,7 +145,7 @@ def main():
 	parser.add_argument("client", type=str, choices=Client.__members__,
 		help="client to extract files of")
 	parser.add_argument("-f", "--filepath", type=str,
-		help="Path to the file to extract only this single file")
+		help="Path to the file or directly to extract only single file or all directory content")
 	parser.add_argument("-v", "--version", type=str,
 		help="Extract files of a specific version (Currently only applies to AZL Versiontype!)")
 	parser.add_argument("-u", "--until-version", type=str,

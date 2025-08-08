@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.4.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.3.2...v3.4.0) (2025-08-08)
+
+
+### Features
+
+* allow extraction of entire directories ([24db4c3](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/24db4c35bd4834b42748ac03f52977d1ed761fa7))
+
+
+### Bug Fixes
+
+* crash when progressbar total is non-positive number ([5578cd1](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/5578cd132334a8dea4841c5350e6a36a9482a244))
+
 ## [3.3.2](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.3.1...v3.3.2) (2025-07-21)
 
 

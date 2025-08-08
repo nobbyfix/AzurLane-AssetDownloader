@@ -21,7 +21,7 @@ def get_diff_files(parent_directory: Path, vtype: VersionType, version_string: s
 		version_string = versioncontrol.get_latest_versionstring(vtype, parent_directory)
 
 	if version_string:
-		difflog_path = Path(parent_directory, "difflog", vtype.name.lower(), version_string+".json")
+		difflog_path = parent_directory / "difflog" / vtype.name.lower() / version_string+".json"
 		if difflog_path.exists():
 			with open(difflog_path, "r", encoding="utf8") as f:
 				diffdata = json.load(f)
@@ -59,7 +59,7 @@ def try_safe_image(image, target: Path) -> Path:
 
 def extract_assetbundle(rootfolder: Path, filepath: str, targetfolder: Path) -> Path | None:
 	all_images = []
-	abpath = Path(rootfolder, filepath)
+	abpath = rootfolder / filepath
 	for reader, texture2d in imgrecon.load_images(str(abpath)):
 		name = texture2d.m_Name
 		if name == 'UISprite': continue # skip the UISprite element
@@ -72,13 +72,13 @@ def extract_assetbundle(rootfolder: Path, filepath: str, targetfolder: Path) -> 
 
 	if len(all_images) == 1:
 		image, imgname = all_images[0]
-		target = Path(Path(targetfolder, filepath).parent, imgname+'.png')
+		target = (targetfolder / filepath).parent / imgname+'.png'
 		return try_safe_image(image, target)
 
 	if len(all_images) > 1:
-		img_target_dir = Path(Path(targetfolder, filepath).parent, abpath.name)
+		img_target_dir = (targetfolder / filepath).parent / abpath.name
 		for image, imgname in all_images:
-			target = Path(img_target_dir, imgname+'.png')
+			target = img_target_dir / imgname+'.png'
 			try_safe_image(image, target)
 		return img_target_dir
 
@@ -115,7 +115,7 @@ def extract_by_client(client: Client, target_version: str | None = None, do_iter
 
 	with mp.Pool(processes=mp.cpu_count()-1) as pool:
 		for assetpath in filter(_filter, downloaded_files_collection):
-			pool.apply_async(extract_assetbundle, (Path(client_directory, 'AssetBundles'), assetpath, extract_directory,))
+			pool.apply_async(extract_assetbundle, (client_directory / 'AssetBundles', assetpath, extract_directory,))
 
 		# explicitly join pool
 		# this causes the pool to wait for all asnyc tasks to complete

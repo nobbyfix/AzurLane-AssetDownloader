@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.4.1](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.4.0...v3.4.1) (2025-08-16)
+
+
+### Bug Fixes
+
+* incorrect path construction leading to error ([06a127a](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/06a127ace3043751067291455280bf4eeccd4e54))
+
 ## [3.4.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.3.2...v3.4.0) (2025-08-08)
 
 

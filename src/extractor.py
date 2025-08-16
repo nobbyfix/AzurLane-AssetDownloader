@@ -21,7 +21,7 @@ def get_diff_files(parent_directory: Path, vtype: VersionType, version_string: s
 		version_string = versioncontrol.get_latest_versionstring(vtype, parent_directory)
 
 	if version_string:
-		difflog_path = parent_directory / "difflog" / vtype.name.lower() / version_string+".json"
+		difflog_path = parent_directory / "difflog" / vtype.name.lower() / (version_string+".json")
 		if difflog_path.exists():
 			with open(difflog_path, "r", encoding="utf8") as f:
 				diffdata = json.load(f)
@@ -72,13 +72,13 @@ def extract_assetbundle(rootfolder: Path, filepath: str, targetfolder: Path) -> 
 
 	if len(all_images) == 1:
 		image, imgname = all_images[0]
-		target = (targetfolder / filepath).parent / imgname+'.png'
+		target = (targetfolder / filepath).parent / (imgname+'.png')
 		return try_safe_image(image, target)
 
 	if len(all_images) > 1:
 		img_target_dir = (targetfolder / filepath).parent / abpath.name
 		for image, imgname in all_images:
-			target = img_target_dir / imgname+'.png'
+			target = img_target_dir / (imgname+'.png')
 			try_safe_image(image, target)
 		return img_target_dir
 

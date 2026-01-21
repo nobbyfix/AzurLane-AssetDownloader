@@ -50,7 +50,7 @@ async def execute(args):
 				)
 
 			if update_assets:
-				versioncontrol.save_difflog2(vresult, update_assets, CLIENT_ASSET_DIR)
+				versioncontrol.save_difflog(vresult, update_assets, CLIENT_ASSET_DIR)
 
 
 def main():

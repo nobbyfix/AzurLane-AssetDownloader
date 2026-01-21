@@ -146,7 +146,7 @@ async def _update_from_hashes(
 	comparison_results = compare_hashes(oldhashes, newhashes)
 	update_results = await update_assets(downloader_session, comparison_results, client_directory, allow_deletion)
 	hashes_updated = filter_hashes(update_results)
-	versioncontrol.update_version_data2(version_result, client_directory, hashes_updated)
+	versioncontrol.update_version_data(version_result, client_directory, hashes_updated)
 	return update_results
 
 

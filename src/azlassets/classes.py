@@ -107,11 +107,14 @@ class CompareResult:
 	compare_type: CompareType
 
 @dataclass
-class VersionResult:
+class SimpleVersionResult:
 	version: str
+	version_type: VersionType
+
+@dataclass
+class VersionResult(SimpleVersionResult):
 	vhash: str
 	rawstring: str
-	version_type: VersionType
 
 @dataclass
 class BundlePath:

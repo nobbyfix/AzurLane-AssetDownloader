@@ -6,7 +6,7 @@ from pathlib import Path
 from collections import defaultdict
 
 from azlassets import __version__, versioncontrol, updater, config
-from azlassets.classes import BundlePath, Client, CompareType, DownloadType, UpdateResult, VersionType, ProgressBar
+from azlassets.classes import BundlePath, Client, CompareType, DownloadType, UpdateResult, SimpleVersionResult, VersionType, ProgressBar
 
 
 def calc_md5hash(data: bytes) -> str:
@@ -97,9 +97,10 @@ def unpack(zipfile: ZipFile, client: Client, allow_older_version: bool = False):
 
 
 		# update version string, hashes and difflog
+		version = SimpleVersionResult(version=obbversion, version_type=versiontype)
 		hashes_updated = updater.filter_hashes(update_results)
-		versioncontrol.update_version_data(versiontype, CLIENT_ASSET_DIR, obbversion, hashes_updated)
-		versioncontrol.save_difflog(versiontype, obbversion, update_results, CLIENT_ASSET_DIR)
+		versioncontrol.update_version_data(version, CLIENT_ASSET_DIR, hashes_updated)
+		versioncontrol.save_difflog(version, update_results, CLIENT_ASSET_DIR)
 
 
 def extract_asset(zipfile: ZipFile, filepath: str, target: Path):

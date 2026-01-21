@@ -16,12 +16,12 @@ def get_difflog_versionlist(parent_directory: Path, vtype: VersionType) -> list[
 	difflog_versionlist = [path.stem for path in difflog_dir.glob("*.json")]
 	return difflog_versionlist
 
-def get_diff_files(parent_directory: Path, vtype: VersionType, version_string: str | None = None) -> Iterable[str]:
+def get_diff_files(versioncontroller: versioncontrol.VersionController, vtype: VersionType, version_string: str | None = None) -> Iterable[str]:
 	if not version_string:
-		version_string = versioncontrol.get_latest_versionstring(vtype, parent_directory)
+		version_string = versioncontroller.get_latest_versionstring(vtype)
 
 	if version_string:
-		difflog_path = parent_directory / "difflog" / vtype.name.lower() / (version_string+".json")
+		difflog_path = versioncontroller.client_directory / "difflog" / vtype.name.lower() / (version_string+".json")
 		if difflog_path.exists():
 			with open(difflog_path, "r", encoding="utf8") as f:
 				diffdata = json.load(f)
@@ -94,6 +94,7 @@ def extract_by_client(client: Client, target_version: str | None = None, do_iter
 	else:
 		target_versiontypes = [VersionType.AZL]
 
+	versioncontroller = versioncontrol.VersionController(client_directory)
 	for vtype in target_versiontypes:
 		if do_iterative_version_check:
 			version_strings = []
@@ -104,7 +105,7 @@ def extract_by_client(client: Client, target_version: str | None = None, do_iter
 			version_strings = [target_version]
 
 		for vstring in version_strings:
-			downloaded_files = get_diff_files(client_directory, vtype, vstring)
+			downloaded_files = get_diff_files(versioncontroller, vtype, vstring)
 			downloaded_files_collection.append(downloaded_files)
 	downloaded_files_collection = itertools.chain(*downloaded_files_collection)
 

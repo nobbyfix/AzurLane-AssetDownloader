@@ -137,16 +137,16 @@ def filter_hashes(update_results: list[UpdateResult]) -> list[HashRow]:
 async def _update_from_hashes(
 		version_result: VersionResult,
 		downloader_session: downloader.AzurlaneAsyncDownloader,
-		client_directory: Path,
+		versioncontroller: versioncontrol.VersionController,
 		oldhashes: Iterable[HashRow],
 		newhashes: Iterable[HashRow],
 		allow_deletion: bool = True
 	) -> list[UpdateResult]:
 
 	comparison_results = compare_hashes(oldhashes, newhashes)
-	update_results = await update_assets(downloader_session, comparison_results, client_directory, allow_deletion)
+	update_results = await update_assets(downloader_session, comparison_results, versioncontroller.client_directory, allow_deletion)
 	hashes_updated = filter_hashes(update_results)
-	versioncontrol.update_version_data(version_result, client_directory, hashes_updated)
+	versioncontroller.update_version_data(version_result, hashes_updated)
 	return update_results
 
 
@@ -154,7 +154,7 @@ async def _update(
 		version_result: VersionResult,
 		downloader_session: downloader.AzurlaneAsyncDownloader,
 		userconfig: UserConfig,
-		client_directory: Path,
+		versioncontroller: versioncontrol.VersionController,
 		ignore_hashfile: bool = False
 	) -> list[UpdateResult] | None:
 
@@ -163,27 +163,27 @@ async def _update(
 		if ignore_hashfile:
 			oldhashes = []
 		else:
-			oldhashes = versioncontrol.load_hash_file(version_result.version_type, client_directory)
-		return await _update_from_hashes(version_result, downloader_session, client_directory, oldhashes or [], newhashes)
+			oldhashes = versioncontroller.load_hash_file(version_result.version_type)
+		return await _update_from_hashes(version_result, downloader_session, versioncontroller, oldhashes or [], newhashes)
 
 
 async def update(
 		version_result: VersionResult,
 		downloader_session: downloader.AzurlaneAsyncDownloader,
 		userconfig: UserConfig,
-		client_directory: Path,
+		versioncontroller: versioncontrol.VersionController,
 		force_refresh: bool = False,
 		ignore_hashfile: bool = False
 	)-> list[UpdateResult] | None:
 
-	oldversion = versioncontrol.load_version_string(version_result.version_type, client_directory)
+	oldversion = versioncontroller.load_version_string(version_result.version_type)
 	if versioncontrol.compare_version_string(version_result.version, oldversion):
 		print(f"{version_result.version_type.name}: Current version {oldversion} is older than latest version {version_result.version}.")
-		return await _update(version_result, downloader_session, userconfig, client_directory, ignore_hashfile)
+		return await _update(version_result, downloader_session, userconfig, versioncontroller, ignore_hashfile)
 	else:
 		print(f"{version_result.version_type.name}: Current version {oldversion} is latest. ", end="")
 		if force_refresh:
 			print("(force check enabled: Try downloading files anyway.)")
-			return await _update(version_result, downloader_session, userconfig, client_directory, ignore_hashfile)
+			return await _update(version_result, downloader_session, userconfig, versioncontroller, ignore_hashfile)
 		else:
 			print("(Nothing to check.)")

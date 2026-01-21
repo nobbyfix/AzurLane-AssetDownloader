@@ -20,6 +20,7 @@ def unpack(zipfile: ZipFile, client: Client, allow_older_version: bool = False):
 	userconfig = config.load_user_config()
 	CLIENT_ASSET_DIR = Path(userconfig.asset_directory, client.name)
 	CLIENT_ASSET_DIR.mkdir(parents=True, exist_ok=True)
+	versioncontroller = versioncontrol.VersionController(CLIENT_ASSET_DIR)
 
 	# create {filename: filesize} dict for later recovery of missed files
 	file_info_list = {f.filename: f.file_size for f in zipfile.filelist if not f.is_dir()}
@@ -36,7 +37,7 @@ def unpack(zipfile: ZipFile, client: Client, allow_older_version: bool = False):
 			obbversion = zf.read().decode('utf8')
 
 		# if the obbversion is older, don't extract data from obb
-		currentversion = versioncontrol.load_version_string(versiontype, CLIENT_ASSET_DIR)
+		currentversion = versioncontroller.load_version_string(versiontype)
 		if not versioncontrol.compare_version_string(obbversion, currentversion):
 			print(f'{versiontype.name}: Current version {currentversion} is same or newer than obb version {obbversion}.')
 			continue
@@ -44,7 +45,7 @@ def unpack(zipfile: ZipFile, client: Client, allow_older_version: bool = False):
 		# read hash files from obb and current file and compare them
 		with zipfile.open('assets/'+versiontype.hashes_filename, 'r') as hashfile:
 			obbhashes = versioncontrol.parse_hash_rows(hashfile.read().decode('utf8'))
-		currenthashes = versioncontrol.load_hash_file(versiontype, CLIENT_ASSET_DIR)
+		currenthashes = versioncontroller.load_hash_file(versiontype)
 		comparison_results = updater.compare_hashes(currenthashes or [], obbhashes)
 
 		# extract and delete files
@@ -99,8 +100,8 @@ def unpack(zipfile: ZipFile, client: Client, allow_older_version: bool = False):
 		# update version string, hashes and difflog
 		version = SimpleVersionResult(version=obbversion, version_type=versiontype)
 		hashes_updated = updater.filter_hashes(update_results)
-		versioncontrol.update_version_data(version, CLIENT_ASSET_DIR, hashes_updated)
-		versioncontrol.save_difflog(version, update_results, CLIENT_ASSET_DIR)
+		versioncontroller.update_version_data(version, hashes_updated)
+		versioncontroller.save_difflog(version, update_results)
 
 
 def extract_asset(zipfile: ZipFile, filepath: str, target: Path):

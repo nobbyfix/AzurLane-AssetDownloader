@@ -1,4 +1,5 @@
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Generator, Iterable
 
@@ -32,17 +33,6 @@ def compare_version_string(version_new: str, version_old: str | None) -> bool:
 	old_to_int = [int(v) for v in version_old.split(".")]
 	return new_to_int > old_to_int
 
-
-def load_version_string(version_type: VersionType, relative_parent_dir: Path) -> str | None:
-	fpath = Path(relative_parent_dir, version_type.version_filename)
-	if fpath.exists():
-		with open(fpath, 'r', encoding='utf8') as f:
-			return f.read()
-
-def save_version_string(version_type: VersionType, relative_parent_dir: Path, content: str):
-	with open(Path(relative_parent_dir, version_type.version_filename), 'w', encoding='utf8') as f:
-		f.write(content)
-
 def iterate_hash_lines(hashes: str) -> Generator[list[str], None, None]:
 	for assetinfo in hashes.splitlines():
 		if assetinfo == '': continue
@@ -52,56 +42,74 @@ def parse_hash_rows(hashes: str) -> Generator[HashRow, None, None]:
 	for path, size, md5hash in iterate_hash_lines(hashes):
 		yield HashRow(path, int(size), md5hash)
 
-def load_hash_file(version_type: VersionType, relative_parent_dir: Path) -> Generator[HashRow, None, None] | None:
-	fpath = Path(relative_parent_dir, version_type.hashes_filename)
-	if fpath.exists():
-		with open(fpath, 'r', encoding='utf8') as f:
-			return parse_hash_rows(f.read())
 
-def save_hash_file(version_type: VersionType, relative_parent_dir: Path, hashrows: Iterable[HashRow]):
-	rowstrings = [f"{row.filepath},{row.size},{row.md5hash}" for row in hashrows if row]
-	content = '\n'.join(rowstrings)
-	with open(Path(relative_parent_dir, version_type.hashes_filename), 'w', encoding="utf8") as f:
-		f.write(content)
+@dataclass
+class VersionController:
+	client_directory: Path
+	"""
+	Path to clientassets directory of specific client
+	"""
 
-def update_version_data(version: SimpleVersionResult, relative_parent_dir: Path, hashrows: Iterable[HashRow]):
-	save_version_string(version.version_type, relative_parent_dir, version.version)
-	save_hash_file(version.version_type, relative_parent_dir, hashrows)
+	def load_version_string(self, version_type: VersionType) -> str | None:
+		fpath = Path(self.client_directory, version_type.version_filename)
+		if fpath.exists():
+			with open(fpath, 'r', encoding='utf8') as f:
+				return f.read()
 
-def get_latest_versionstring(version_type: VersionType, relative_parent_dir: Path) -> str | None:
-	version_diffdir = Path(relative_parent_dir, "difflog", version_type.name.lower())
+	def save_version_string(self, version_type: VersionType, content: str):
+		with open(Path(self.client_directory, version_type.version_filename), 'w', encoding='utf8') as f:
+			f.write(content)
 
-	legacy_rename_latest_difflog(version_diffdir)
+	def load_hash_file(self, version_type: VersionType) -> Generator[HashRow, None, None] | None:
+		fpath = Path(self.client_directory, version_type.hashes_filename)
+		if fpath.exists():
+			with open(fpath, 'r', encoding='utf8') as f:
+				return parse_hash_rows(f.read())
 
-	latest_versionfile = Path(version_diffdir, "latest")
-	if latest_versionfile.exists():
-		with open(latest_versionfile, "r", encoding="utf8") as f:
-			return f.read()
+	def save_hash_file(self, version_type: VersionType, hashrows: Iterable[HashRow]):
+		rowstrings = [f"{row.filepath},{row.size},{row.md5hash}" for row in hashrows if row]
+		content = '\n'.join(rowstrings)
+		with open(Path(self.client_directory, version_type.hashes_filename), 'w', encoding="utf8") as f:
+			f.write(content)
 
-def save_difflog(version: SimpleVersionResult, update_results: list[UpdateResult], relative_parent_dir: Path):
-	filtered_update_results = list(filter(lambda r: r.download_type != DownloadType.NoChange, update_results))
-	if not filtered_update_results:
-		return
+	def update_version_data(self, version: SimpleVersionResult, hashrows: Iterable[HashRow]):
+		self.save_version_string(version.version_type, version.version)
+		self.save_hash_file(version.version_type, hashrows)
 
-	version_diffdir = Path(relative_parent_dir, "difflog", version.version_type.name.lower())
-	version_diffdir.mkdir(parents=True, exist_ok=True)
-	legacy_rename_latest_difflog(version_diffdir)
+	def get_latest_versionstring(self, version_type: VersionType) -> str | None:
+		version_diffdir = Path(self.client_directory, "difflog", version_type.name.lower())
 
-	version_string = version.version
-	data = {
-		"version": version_string,
-		"major": False,
-		"success_files": {res.path.inner: res.compare_result.compare_type.name for res in filter(lambda r: r.download_type in [DownloadType.Success, DownloadType.Removed], filtered_update_results)},
-		"failed_files": {res.path.inner: res.compare_result.compare_type.name for res in filter(lambda r: r.download_type == DownloadType.Failed, filtered_update_results)},
-	}
+		legacy_rename_latest_difflog(version_diffdir)
 
-	difflog_filepath = Path(version_diffdir, version_string+".json")
-	with open(difflog_filepath, "w", encoding="utf8") as f:
-		json.dump(data, f)
+		latest_versionfile = Path(version_diffdir, "latest")
+		if latest_versionfile.exists():
+			with open(latest_versionfile, "r", encoding="utf8") as f:
+				return f.read()
 
-	latest_filepath = Path(version_diffdir, "latest")
-	with open(latest_filepath, "w", encoding="utf8") as f:
-		f.write(version_string)
+	def save_difflog(self, version: SimpleVersionResult, update_results: list[UpdateResult]):
+		filtered_update_results = list(filter(lambda r: r.download_type != DownloadType.NoChange, update_results))
+		if not filtered_update_results:
+			return
+
+		version_diffdir = Path(self.client_directory, "difflog", version.version_type.name.lower())
+		version_diffdir.mkdir(parents=True, exist_ok=True)
+		legacy_rename_latest_difflog(version_diffdir)
+
+		version_string = version.version
+		data = {
+			"version": version_string,
+			"major": False,
+			"success_files": {res.path.inner: res.compare_result.compare_type.name for res in filter(lambda r: r.download_type in [DownloadType.Success, DownloadType.Removed], filtered_update_results)},
+			"failed_files": {res.path.inner: res.compare_result.compare_type.name for res in filter(lambda r: r.download_type == DownloadType.Failed, filtered_update_results)},
+		}
+
+		difflog_filepath = Path(version_diffdir, version_string+".json")
+		with open(difflog_filepath, "w", encoding="utf8") as f:
+			json.dump(data, f)
+
+		latest_filepath = Path(version_diffdir, "latest")
+		with open(latest_filepath, "w", encoding="utf8") as f:
+			f.write(version_string)
 
 def legacy_rename_latest_difflog(version_diffdir: Path):
 	"""

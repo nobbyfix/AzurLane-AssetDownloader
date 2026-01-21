@@ -52,22 +52,22 @@ async def hashrows_from_files(client_directory: Path) -> list[HashRow]:
 	print("Checking all files...")
 	return await asyncio.gather(*tasks)
 
-async def repair(cdnurl: str, userconfig: UserConfig, client_directory: Path) -> list[UpdateResult]:
-	current_hashes = await hashrows_from_files(client_directory)
-	expected_hashes = itertools.chain(*filter(lambda x: x is not None, [versioncontrol.load_hash_file(vtype, client_directory) for vtype in VersionType]))
+async def repair(cdnurl: str, userconfig: UserConfig, versioncontroller: versioncontrol.VersionController) -> list[UpdateResult]:
+	current_hashes = await hashrows_from_files(versioncontroller.client_directory)
+	expected_hashes = itertools.chain(*filter(lambda x: x is not None, [versioncontroller.load_hash_file(vtype) for vtype in VersionType]))
 	comparison_results = updater.compare_hashes(current_hashes, expected_hashes)
 	async with downloader.AzurlaneAsyncDownloader(cdnurl, useragent=userconfig.useragent) as downloader_session:
-		update_results = await updater.update_assets(downloader_session, comparison_results, client_directory)
+		update_results = await updater.update_assets(downloader_session, comparison_results, versioncontroller.client_directory)
 	return update_results
 
-async def repair_hashfile(version_result: VersionResult, cdnurl: str, userconfig: UserConfig, client_directory: Path) -> list[UpdateResult]:
+async def repair_hashfile(version_result: VersionResult, cdnurl: str, userconfig: UserConfig, versioncontroller: versioncontrol.VersionController) -> list[UpdateResult]:
 	# read hashes that are stored in the local hash file
-	localhashes = versioncontrol.load_hash_file(version_result.version_type, client_directory)
+	localhashes = versioncontroller.load_hash_file(version_result.version_type)
 
 	async with downloader.AzurlaneAsyncDownloader(cdnurl, useragent=userconfig.useragent) as downloader_session:
 		# load newest hashes from the game server
 		serverhashes = await updater.download_and_parse_hashes(version_result, downloader_session, userconfig) or []
-		assetbasepath = client_directory / "AssetBundles"
+		assetbasepath = versioncontroller.client_directory / "AssetBundles"
 
 		# parse hashes from all files stored on disk, but only check files that are expected based on the new hashes
 		# this skips deletion on unneeded files
@@ -83,7 +83,7 @@ async def repair_hashfile(version_result: VersionResult, cdnurl: str, userconfig
 		update_results_disk.update({comp_result.current_hash.filepath: UpdateResult(comp_result, DownloadType.Removed, comp_result.current_hash.filepath) for comp_result in compare_results_disk[CompareType.Deleted]})
 
 		# download remaining files
-		update_results_server = await updater._update_from_hashes(version_result, downloader_session, client_directory, diskhashes, serverhashes, allow_deletion=False)
+		update_results_server = await updater._update_from_hashes(version_result, downloader_session, versioncontroller, diskhashes, serverhashes, allow_deletion=False)
 
 		# add old update results to new update results list
 		update_results = []

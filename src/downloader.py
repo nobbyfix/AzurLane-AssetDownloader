@@ -15,9 +15,10 @@ async def execute(args):
 
 	CLIENT_ASSET_DIR = Path(userconfig.asset_directory, args.client.name)
 	CLIENT_ASSET_DIR.mkdir(parents=True, exist_ok=True)
+	versioncontroller = versioncontrol.VersionController(CLIENT_ASSET_DIR)
 
 	if args.check_integrity:
-		update_assets = await repair.repair(clientconfig.cdnurl, userconfig, CLIENT_ASSET_DIR)
+		update_assets = await repair.repair(clientconfig.cdnurl, userconfig, versioncontroller)
 
 	if args.force_refresh and not args.repair:
 		print("All asset types will be checked for different hashes.")
@@ -37,20 +38,20 @@ async def execute(args):
 					vresult,
 					downloader_session,
 					userconfig,
-					CLIENT_ASSET_DIR
+					versioncontroller
 				)
 			else:
 				update_assets = await updater.update(
 					vresult,
 					downloader_session,
 					userconfig,
-					CLIENT_ASSET_DIR,
+					versioncontroller,
 					args.force_refresh,
 					args.ignore_hashfile
 				)
 
 			if update_assets:
-				versioncontrol.save_difflog(vresult, update_assets, CLIENT_ASSET_DIR)
+				versioncontroller.save_difflog(vresult, update_assets)
 
 
 def main():

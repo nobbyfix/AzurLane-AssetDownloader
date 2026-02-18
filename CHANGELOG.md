@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.4.2](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.4.1...v3.4.2) (2026-02-18)
+
+
+### Bug Fixes
+
+* dns error from aiodns caused by downstream dependency ([770de32](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/770de329becb92681bdfc6eceeb3f73b3b729272))
+
 ## [3.4.1](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.4.0...v3.4.1) (2025-08-16)
 
 

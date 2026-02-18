@@ -16,7 +16,8 @@ dependencies = [
     "Pillow",
     "protobuf",
     "aiofile",
-    "aiohttp[speedups] >= 3.12"
+    "aiohttp[speedups] >= 3.12",
+	"aiodns < 4"
 ]
 keywords = [
     "azurlane",

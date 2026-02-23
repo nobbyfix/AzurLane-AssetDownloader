@@ -3,7 +3,7 @@ import itertools, json
 from argparse import ArgumentParser
 from pathlib import Path
 import multiprocessing as mp
-from typing import Iterable, Generator
+from typing import Iterable
 
 from azlassets import __version__, imgrecon, config, versioncontrol
 from azlassets.classes import Client, VersionType

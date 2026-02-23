@@ -8,9 +8,9 @@ from .classes import DownloadType, HashRow, UpdateResult, VersionType, VersionRe
 
 def parse_version_string(rawstring: str) -> VersionResult:
 	"""
-	Tries to parse the raw version string as returned by the game server into a VersionResult.
+	Tries to parse the raw version string as returned by the game server into a `VersionResult`.
 
-	Raises NotImplementedError if the versiontype does not exist.
+	Raises `NotImplementedError` if the versiontype does not exist.
 	"""
 	parts = rawstring.split('$')[1:]
 	versionname = parts[0]
@@ -47,7 +47,7 @@ def parse_hash_rows(hashes: str) -> Generator[HashRow, None, None]:
 class VersionController:
 	client_directory: Path
 	"""
-	Path to clientassets directory of specific client
+	Path to clientassets directory of a specific client
 	"""
 
 	def load_version_string(self, version_type: VersionType) -> str | None:
@@ -110,6 +110,7 @@ class VersionController:
 		latest_filepath = Path(version_diffdir, "latest")
 		with open(latest_filepath, "w", encoding="utf8") as f:
 			f.write(version_string)
+
 
 def legacy_rename_latest_difflog(version_diffdir: Path):
 	"""

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Generator, Iterable
 
-from .classes import DownloadType, HashRow, UpdateResult, VersionType, VersionResult, SimpleVersionResult
+from .classes import DownloadType, HashRow, UpdateResult, VersionType, VersionResult, SimpleVersionResult, DiffLog
 
 
 def parse_version_string(rawstring: str) -> VersionResult:
@@ -86,30 +86,58 @@ class VersionController:
 			with open(latest_versionfile, "r", encoding="utf8") as f:
 				return f.read()
 
-	def save_difflog(self, version: SimpleVersionResult, update_results: list[UpdateResult]):
+	def save_latest_versionstring(self, version: SimpleVersionResult):
+		version_diffdir = Path(self.client_directory, "difflog", version.version_type.name.lower())
+		version_diffdir.mkdir(parents=True, exist_ok=True)
+		latest_filepath = Path(version_diffdir, "latest")
+		with open(latest_filepath, "w", encoding="utf8") as f:
+			f.write(version.version)
+
+	def _save_raw_difflog(self, difflog: DiffLog):
+		version_diffdir = Path(self.client_directory, "difflog", difflog.version.version_type.name.lower())
+		version_diffdir.mkdir(parents=True, exist_ok=True)
+		difflog_filepath = Path(version_diffdir, difflog.version.version+".json")
+		with open(difflog_filepath, "w", encoding="utf8") as f:
+			json.dump(difflog.to_json(), f)
+
+	def save_difflog(self, version: SimpleVersionResult, update_results: list[UpdateResult], linked_versions: list[SimpleVersionResult] = None):
 		filtered_update_results = list(filter(lambda r: r.download_type != DownloadType.NoChange, update_results))
 		if not filtered_update_results:
 			return
 
+		if version.version_type != VersionType.AZL and linked_versions:
+			print(f"WARNING: Version linking with version types other than '{VersionType.AZL.name}' is currently not supported.")
+			return
+
+		# filter and format data for difflog class
+		success_files = {res.path: res.compare_result.compare_type for res in filter(lambda r: r.download_type in [DownloadType.Success, DownloadType.Removed], filtered_update_results)}
+		failed_files = {res.path: res.compare_result.compare_type for res in filter(lambda r: r.download_type == DownloadType.Failed, filtered_update_results)}
+		difflog = DiffLog(version=version, major=False, success_files=success_files, failed_files=failed_files)
+		for linkedv in (linked_versions or []):
+			difflog.add_linked_version(linkedv)
+
+		# save data to file
+		self._save_raw_difflog(difflog)
+
+		# update 'latest version' file if this version is newer than the currently latest one
+		latest_version = self.get_latest_versionstring(version.version_type)
+		if compare_version_string(version_new=version.version, version_old=latest_version):
+			self.save_latest_versionstring(version)
+
+	def load_difflog(self, version: SimpleVersionResult) -> DiffLog | None:
 		version_diffdir = Path(self.client_directory, "difflog", version.version_type.name.lower())
-		version_diffdir.mkdir(parents=True, exist_ok=True)
-		legacy_rename_latest_difflog(version_diffdir)
+		difflog_filepath = Path(version_diffdir, version.version+".json")
+		try:
+			with open(difflog_filepath, "r", encoding="utf8") as f:
+				data = json.load(f)
+				return DiffLog.from_json(data, version.version_type, self.client_directory)
+		except FileNotFoundError:
+			return
 
-		version_string = version.version
-		data = {
-			"version": version_string,
-			"major": False,
-			"success_files": {res.path.inner: res.compare_result.compare_type.name for res in filter(lambda r: r.download_type in [DownloadType.Success, DownloadType.Removed], filtered_update_results)},
-			"failed_files": {res.path.inner: res.compare_result.compare_type.name for res in filter(lambda r: r.download_type == DownloadType.Failed, filtered_update_results)},
-		}
-
-		difflog_filepath = Path(version_diffdir, version_string+".json")
-		with open(difflog_filepath, "w", encoding="utf8") as f:
-			json.dump(data, f)
-
-		latest_filepath = Path(version_diffdir, "latest")
-		with open(latest_filepath, "w", encoding="utf8") as f:
-			f.write(version_string)
+	def set_as_linked(self, subversion: SimpleVersionResult, mainversion: SimpleVersionResult):
+		main_difflog = self.load_difflog(mainversion)
+		main_difflog.add_linked_version(subversion)
+		self._save_raw_difflog(main_difflog)
 
 
 def legacy_rename_latest_difflog(version_diffdir: Path):

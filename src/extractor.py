@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-import itertools, json
+import itertools
 from argparse import ArgumentParser
 from pathlib import Path
 import multiprocessing as mp
 from typing import Iterable
 
 from azlassets import __version__, imgrecon, config, versioncontrol
-from azlassets.classes import Client, VersionType
+from azlassets.classes import Client, CompareType, VersionType, SimpleVersionResult, BundlePath
 
 
 def get_difflog_versionlist(parent_directory: Path, vtype: VersionType) -> list[str]:
@@ -16,20 +16,15 @@ def get_difflog_versionlist(parent_directory: Path, vtype: VersionType) -> list[
 	difflog_versionlist = [path.stem for path in difflog_dir.glob("*.json")]
 	return difflog_versionlist
 
-def get_diff_files(versioncontroller: versioncontrol.VersionController, vtype: VersionType, version_string: str | None = None) -> Iterable[str]:
+def get_diff_files(versioncontroller: versioncontrol.VersionController, vtype: VersionType, version_string: str | None = None) -> Iterable[BundlePath]:
 	if not version_string:
 		version_string = versioncontroller.get_latest_versionstring(vtype)
 
 	if version_string:
-		difflog_path = versioncontroller.client_directory / "difflog" / vtype.name.lower() / (version_string+".json")
-		if difflog_path.exists():
-			with open(difflog_path, "r", encoding="utf8") as f:
-				diffdata = json.load(f)
-				filtered_success_file_entries = filter((lambda i: i[1] != "Deleted"), diffdata["success_files"].items())
-				filenames = [i[0] for i in filtered_success_file_entries]
-				return filenames
-		elif version_string is not None:
-			raise FileExistsError(f"There is no difflog '{version_string}' for version type '{vtype.name}'")
+		difflog = versioncontroller.load_difflog(SimpleVersionResult(version=version_string, version_type=vtype))
+		filtered_success_file_entries = filter((lambda i: i[1] != CompareType.Deleted), difflog.success_files.items())
+		bundlepaths = [i[0] for i in filtered_success_file_entries]
+		return bundlepaths
 	return []
 
 
@@ -109,14 +104,14 @@ def extract_by_client(client: Client, target_version: str | None = None, do_iter
 			downloaded_files_collection.append(downloaded_files)
 	downloaded_files_collection = itertools.chain(*downloaded_files_collection)
 
-	def _filter(assetpath: str) -> bool:
-		if assetpath.split('/')[0] in userconfig.extract_filter:
+	def _filter(bundlepath: BundlePath) -> bool:
+		if bundlepath.inner.split('/')[0] in userconfig.extract_filter:
 			return (not userconfig.extract_isblacklist)
 		return userconfig.extract_isblacklist
 
 	with mp.Pool(processes=mp.cpu_count()-1) as pool:
-		for assetpath in filter(_filter, downloaded_files_collection):
-			pool.apply_async(extract_assetbundle, (client_directory / 'AssetBundles', assetpath, extract_directory,))
+		for bundlepath in filter(_filter, downloaded_files_collection):
+			pool.apply_async(extract_assetbundle, (client_directory / 'AssetBundles', bundlepath.inner, extract_directory,))
 
 		# explicitly join pool
 		# this causes the pool to wait for all asnyc tasks to complete

@@ -11,8 +11,6 @@ from azlassets.classes import Client, CompareType, VersionType, SimpleVersionRes
 
 def get_difflog_versionlist(parent_directory: Path, vtype: VersionType) -> list[str]:
 	difflog_dir = Path(parent_directory, "difflog", vtype.name.lower())
-	# make sure latest.json does not exist anymore before retrieving file list
-	versioncontrol.legacy_rename_latest_difflog(difflog_dir)
 	difflog_versionlist = [path.stem for path in difflog_dir.glob("*.json")]
 	return difflog_versionlist
 

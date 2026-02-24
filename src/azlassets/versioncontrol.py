@@ -78,9 +78,6 @@ class VersionController:
 
 	def get_latest_versionstring(self, version_type: VersionType) -> str | None:
 		version_diffdir = Path(self.client_directory, "difflog", version_type.name.lower())
-
-		legacy_rename_latest_difflog(version_diffdir)
-
 		latest_versionfile = Path(version_diffdir, "latest")
 		if latest_versionfile.exists():
 			with open(latest_versionfile, "r", encoding="utf8") as f:
@@ -138,19 +135,3 @@ class VersionController:
 		main_difflog = self.load_difflog(mainversion)
 		main_difflog.add_linked_version(subversion)
 		self._save_raw_difflog(main_difflog)
-
-
-def legacy_rename_latest_difflog(version_diffdir: Path):
-	"""
-	Rename the `latest.json` difflog file for users that used the tool while that file was being created.
-	"""
-	latest_difflog = Path(version_diffdir, "latest.json")
-	if latest_difflog.exists():
-		with open(latest_difflog, "r", encoding="utf8") as f:
-			latest_data = json.load(f)
-		latest_version = latest_data["version"]
-		latest_difflog.rename(latest_difflog.with_stem(latest_version))
-
-		latest_filepath = Path(version_diffdir, "latest")
-		with open(latest_filepath, "w", encoding="utf8") as f:
-			f.write(latest_version)

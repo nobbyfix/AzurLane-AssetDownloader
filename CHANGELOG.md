@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.5.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.4.2...v3.5.0) (2026-02-24)
+
+
+### Features
+
+* add linked versions backend ([b5f83d3](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/b5f83d37e2ac81c8c2c5bb61437b5b53c127ed52))
+
 ## [3.4.2](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.4.1...v3.4.2) (2026-02-18)
 
 

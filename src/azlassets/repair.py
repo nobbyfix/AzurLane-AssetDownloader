@@ -66,7 +66,7 @@ async def repair_hashfile(
 		versioncontroller: versioncontrol.VersionController
 	) -> list[UpdateResult]:
 	# read hashes that are stored in the local hash file
-	localhashes = versioncontroller.load_hash_file(version_result.version_type)
+	localhashes = versioncontroller.load_hash_file(version_result.version_type) or []
 
 	# load newest hashes from the game server
 	serverhashes = await updater.download_and_parse_hashes(version_result, downloader_session, userconfig) or []

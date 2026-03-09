@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.4.3](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.4.2...v3.4.3) (2026-03-09)
+
+
+### Bug Fixes
+
+* caused during repair routine caused by missing None check ([c79af46](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/c79af463efc8cc35228e6125bf1a8cff824b5d08))
+* crash at start of repair routine caused by wrong function arguments ([235a9b3](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/235a9b344fd5949614c5aa49fafbf5beb479a0a0))
+
 ## [3.4.2](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.4.1...v3.4.2) (2026-02-18)
 
 

@@ -18,7 +18,9 @@ async def execute(args):
 	versioncontroller = versioncontrol.VersionController(CLIENT_ASSET_DIR)
 
 	if args.check_integrity:
-		update_assets = await repair.repair(clientconfig.cdnurl, userconfig, versioncontroller)
+		async with downloader.AzurlaneAsyncDownloader(clientconfig.cdnurl, useragent=userconfig.useragent) as downloader_session:
+			update_assets = await repair.repair(downloader_session, versioncontroller)
+			return
 
 	if args.force_refresh and not args.repair:
 		print("All asset types will be checked for different hashes.")

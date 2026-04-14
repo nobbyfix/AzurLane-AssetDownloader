@@ -63,13 +63,13 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("client", type=str, choices=Client.__members__,
 		help="client to update")
-	parser.add_argument("--force-refresh", type=bool, default=False, action=argparse.BooleanOptionalAction,
+	parser.add_argument("--force-refresh", default=False, action=argparse.BooleanOptionalAction,
 		help="Compares asset hashes even when the version file is up to date.")
-	parser.add_argument("--repair", type=bool, default=False, action=argparse.BooleanOptionalAction,
+	parser.add_argument("--repair", default=False, action=argparse.BooleanOptionalAction,
 		help="Downloads missing files if the update process failed partially.")
-	parser.add_argument("--check-integrity", type=bool, default=False, action=argparse.BooleanOptionalAction,
+	parser.add_argument("--check-integrity", default=False, action=argparse.BooleanOptionalAction,
 		help="Checks if all files are correct using the local hash file.")
-	parser.add_argument("--ignore-hashfile", type=bool, default=False, action=argparse.BooleanOptionalAction,
+	parser.add_argument("--ignore-hashfile", default=False, action=argparse.BooleanOptionalAction,
 		help="Ignores the local hashfile and downloads ALL files again. This is only intended for testing purposes.")
 	args = parser.parse_args()
 

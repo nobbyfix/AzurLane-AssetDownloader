@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.4.4](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.4.3...v3.4.4) (2026-04-14)
+
+
+### Bug Fixes
+
+* remove deprecated (removed in 3.14) type arguments on BooleanOptionalAction ([2a2110f](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/2a2110f39562e8c56230f017a1b0bccf8e46981d))
+
 ## [3.4.3](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.4.2...v3.4.3) (2026-03-09)
 
 

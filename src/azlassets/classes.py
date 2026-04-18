@@ -1,5 +1,5 @@
 from enum import Enum
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Self
 
@@ -7,31 +7,27 @@ from typing import Self
 CompareType = Enum('CompareType', 'New Changed Unchanged Deleted')
 DownloadType = Enum('DownloadType', 'NoChange Removed Success Failed ForDeletionNoChange')
 
-class VersionType(Enum):
-	__hash2member_map__: dict[str, Self] = {}
+
+@dataclass
+class VersionTypeDataMixin:
 	hashname: str
 	"""Hash name used on the version result returned by the game server."""
 	suffix: str
 	"""Suffix used on version and hash files."""
 
-	AZL			= (1,	"azhash",		"")
-	CV			= (2,	"cvhash",		"cv")
-	L2D			= (3,	"l2dhash",		"live2d")
-	PIC			= (4,	"pichash",		"pic")
-	BGM			= (5,	"bgmhash",		"bgm")
-	CIPHER		= (6,	"cipherhash",	"cipher")
-	MANGA		= (7,	"mangahash",	"manga")
-	PAINTING	= (8,	"paintinghash",	"painting")
-	DORM		= (9,	"dormhash",		"dorm")
-	MAP			= (10,	"maphash",		"map")
+class VersionType(VersionTypeDataMixin, Enum):
+	__hash2member_map__: dict[str, Self] = {}
 
-
-	def __init__(self, _, hashname, suffix) -> None:
-		# add attributes to enum objects
-		self.hashname = hashname
-		self.suffix = suffix
-		# add enum objects to member maps
-		self.__hash2member_map__[hashname] = self
+	AZL			= "azhash",			""
+	CV			= "cvhash",			"cv"
+	L2D			= "l2dhash",		"live2d"
+	PIC			= "pichash",		"pic"
+	BGM			= "bgmhash",		"bgm"
+	CIPHER		= "cipherhash",		"cipher"
+	MANGA		= "mangahash",		"manga"
+	PAINTING	= "paintinghash",	"painting"
+	DORM		= "dormhash",		"dorm"
+	MAP			= "maphash",		"map"
 
 	def __str__(self) -> str:
 		return self.name.lower()
@@ -59,39 +55,35 @@ class VersionType(Enum):
 		"""
 		Returns a VersionType member with matching *hashname* if match exists, otherwise None.
 		"""
+		if not cls.__hash2member_map__:
+			cls.__hash2member_map__ = {member.hashname: member for member in cls}
 		return cls.__hash2member_map__.get(hashname)
 
 
-class AbstractClient(Enum):
-	active: bool
+@dataclass
+class AbstractClientDataMixin:
 	locale_code: str
 	package_name: str
+	active: bool = field(repr=False, default=True)
 
-	def __new__(cls, value, active, locale, package_name):
-		# this should be done differently, but i am too lazy to do that now
-		# TODO: change it
-		if not hasattr(cls, "package_names"):
-			cls.package_names = {}
-
-		obj = object.__new__(cls)
-		obj._value_ = value
-		obj.active = active
-		obj.locale_code = locale
-		obj.package_name = package_name
-		cls.package_names[package_name] = obj
-		return obj
+class AbstractClient(AbstractClientDataMixin, Enum):
+	__package_name_map__: dict[str, Self] = {}
 
 	@classmethod
-	def from_package_name(cls, package_name) -> Self | None:
-		return cls.package_names.get(package_name)
-
+	def from_package_name(cls, package_name: str) -> Self | None:
+		"""
+		Returns a Client member with matching *package_name* if match exists, otherwise None.
+		"""
+		if not cls.__package_name_map__:
+			cls.__package_name_map__ = {member.package_name: member for member in cls}
+		return cls.__package_name_map__.get(package_name)
 
 class Client(AbstractClient):
-	EN = (1, True, 'en-US', 'com.YoStarEN.AzurLane')
-	JP = (2, True, 'ja-JP', 'com.YoStarJP.AzurLane')
-	CN = (3, True, 'zh-CN', '')
-	KR = (4, True, 'ko-KR', 'kr.txwy.and.blhx')
-	TW = (5, True, 'zh-TW', 'com.hkmanjuu.azurlane.gp')
+	EN = 'en-US', 'com.YoStarEN.AzurLane'
+	JP = 'ja-JP', 'com.YoStarJP.AzurLane'
+	CN = 'zh-CN', ''
+	KR = 'ko-KR', 'kr.txwy.and.blhx'
+	TW = 'zh-TW', 'com.hkmanjuu.azurlane.gp'
 
 
 @dataclass

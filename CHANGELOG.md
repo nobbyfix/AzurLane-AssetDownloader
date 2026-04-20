@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.5.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.4.4...v3.5.0) (2026-04-20)
+
+
+### Features
+
+* add console argument to skip error caused by unsupported version type ([fc4a17a](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/fc4a17a6f9360dbdbc48251343b818a6612072d7))
+* add tqdm progress bars ([0a886f2](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/0a886f2b7db12e86c23cf27a5a5d29175aad2bfb))
+
 ## [3.4.4](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.4.3...v3.4.4) (2026-04-14)
 
 

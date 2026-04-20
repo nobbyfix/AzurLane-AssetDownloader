@@ -5,8 +5,17 @@ import argparse
 from pathlib import Path
 
 from azlassets import __version__, config, protobuf, versioncontrol, updater, repair, downloader
-from azlassets.classes import Client, VersionType
+from azlassets.classes import Client, UnknownVersionTypeError, VersionType, VersionResult
 
+
+def try_parse_version_string(vstring: str, skip_error: bool = False) -> VersionResult:
+	try:
+		return versioncontrol.parse_version_string(vstring)
+	except UnknownVersionTypeError as e:
+		if skip_error:
+			print(f"WARN: Unknown version type '{e.version_name}' cannot be processed, but this error has been skipped.")
+			print("WARN: Update application as soon as possible to support this missing version type.")
+		else: raise
 
 async def execute(args):
 	# load config data from files
@@ -18,7 +27,9 @@ async def execute(args):
 	versioncontroller = versioncontrol.VersionController(CLIENT_ASSET_DIR)
 
 	if args.check_integrity:
-		update_assets = await repair.repair(clientconfig.cdnurl, userconfig, versioncontroller)
+		async with downloader.AzurlaneAsyncDownloader(clientconfig.cdnurl, useragent=userconfig.useragent) as downloader_session:
+			update_assets = await repair.repair(downloader_session, versioncontroller)
+			return
 
 	if args.force_refresh and not args.repair:
 		print("All asset types will be checked for different hashes.")
@@ -30,7 +41,7 @@ async def execute(args):
 
 	# parse version response
 	version_string = version_response.pb.version
-	versionlist = [versioncontrol.parse_version_string(v) for v in version_string if v.startswith("$")]
+	versionlist = [try_parse_version_string(v, args.skip_unknown_version_error) for v in version_string if v.startswith("$")]
 
 	# find AZL version result
 	azl_current = None
@@ -71,14 +82,16 @@ def main():
 	parser = argparse.ArgumentParser()
 	parser.add_argument("client", type=str, choices=Client.__members__,
 		help="client to update")
-	parser.add_argument("--force-refresh", type=bool, default=False, action=argparse.BooleanOptionalAction,
+	parser.add_argument("--force-refresh", default=False, action=argparse.BooleanOptionalAction,
 		help="Compares asset hashes even when the version file is up to date.")
-	parser.add_argument("--repair", type=bool, default=False, action=argparse.BooleanOptionalAction,
+	parser.add_argument("--repair", default=False, action=argparse.BooleanOptionalAction,
 		help="Downloads missing files if the update process failed partially.")
-	parser.add_argument("--check-integrity", type=bool, default=False, action=argparse.BooleanOptionalAction,
+	parser.add_argument("--check-integrity", default=False, action=argparse.BooleanOptionalAction,
 		help="Checks if all files are correct using the local hash file.")
-	parser.add_argument("--ignore-hashfile", type=bool, default=False, action=argparse.BooleanOptionalAction,
+	parser.add_argument("--ignore-hashfile", default=False, action=argparse.BooleanOptionalAction,
 		help="Ignores the local hashfile and downloads ALL files again. This is only intended for testing purposes.")
+	parser.add_argument("--skip-unknown-version-error", default=False, action=argparse.BooleanOptionalAction,
+		help="Skips the UnknownVersionTypeError termination as a temporary fix if a new version type gets added.")
 	args = parser.parse_args()
 
 	args.client = Client[args.client]

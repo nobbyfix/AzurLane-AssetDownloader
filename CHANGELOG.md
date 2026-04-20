@@ -1,5 +1,28 @@
 # Changelog
 
+## [3.5.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.4.4...v3.5.0) (2026-04-20)
+
+
+### Features
+
+* add console argument to skip error caused by unsupported version type ([fc4a17a](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/fc4a17a6f9360dbdbc48251343b818a6612072d7))
+* add tqdm progress bars ([0a886f2](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/0a886f2b7db12e86c23cf27a5a5d29175aad2bfb))
+
+## [3.4.4](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.4.3...v3.4.4) (2026-04-14)
+
+
+### Bug Fixes
+
+* remove deprecated (removed in 3.14) type arguments on BooleanOptionalAction ([2a2110f](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/2a2110f39562e8c56230f017a1b0bccf8e46981d))
+
+## [3.4.3](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.4.2...v3.4.3) (2026-03-09)
+
+
+### Bug Fixes
+
+* caused during repair routine caused by missing None check ([c79af46](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/c79af463efc8cc35228e6125bf1a8cff824b5d08))
+* crash at start of repair routine caused by wrong function arguments ([235a9b3](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/235a9b344fd5949614c5aa49fafbf5beb479a0a0))
+
 ## [3.4.2](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.4.1...v3.4.2) (2026-02-18)
 
 

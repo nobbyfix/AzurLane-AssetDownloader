@@ -4,9 +4,10 @@ from argparse import ArgumentParser, BooleanOptionalAction
 from zipfile import ZipFile
 from pathlib import Path
 from collections import defaultdict
+from tqdm import tqdm
 
 from azlassets import __version__, versioncontrol, updater, config
-from azlassets.classes import BundlePath, Client, CompareType, DownloadType, UpdateResult, SimpleVersionResult, VersionType, ProgressBar
+from azlassets.classes import BundlePath, Client, CompareType, DownloadType, UpdateResult, SimpleVersionResult, VersionType
 
 
 def calc_md5hash(data: bytes) -> str:
@@ -56,20 +57,20 @@ def unpack(zipfile: ZipFile, client: Client, allow_older_version: bool = False):
 		fileamount = len(update_files)
 		if fileamount > 0:
 			files_not_found = []
-			progressbar = ProgressBar(fileamount, f"Extracting '{versiontype.hashname}' Files", details_unit="files")
-			for result in update_files:
-				if result.compare_type in [CompareType.New, CompareType.Changed]:
-					assetpath = BundlePath.construct(assetbasepath, result.new_hash.filepath)
-					if pathresult := extract_asset(zipfile, assetpath.inner, assetpath.full):
-						file_info_list.pop(pathresult)
-						update_results.append(UpdateResult(result, DownloadType.Success if assetpath.full.exists() else DownloadType.Failed, assetpath))
-					else:
-						files_not_found.append((assetpath, result))
-				elif result.compare_type == CompareType.Deleted:
-					assetpath = BundlePath.construct(assetbasepath, result.current_hash.filepath)
-					updater.remove_asset(assetpath.full)
-					update_results.append(UpdateResult(result, DownloadType.Removed, assetpath))
-				progressbar.update()
+			with tqdm(total=fileamount, desc=f"Extracting '{versiontype.hashname}' Files", unit="files") as progressbar:
+				for result in update_files:
+					if result.compare_type in [CompareType.New, CompareType.Changed]:
+						assetpath = BundlePath.construct(assetbasepath, result.new_hash.filepath)
+						if pathresult := extract_asset(zipfile, assetpath.inner, assetpath.full):
+							file_info_list.pop(pathresult)
+							update_results.append(UpdateResult(result, DownloadType.Success if assetpath.full.exists() else DownloadType.Failed, assetpath))
+						else:
+							files_not_found.append((assetpath, result))
+					elif result.compare_type == CompareType.Deleted:
+						assetpath = BundlePath.construct(assetbasepath, result.current_hash.filepath)
+						updater.remove_asset(assetpath.full)
+						update_results.append(UpdateResult(result, DownloadType.Removed, assetpath))
+					progressbar.update()
 
 			# try to find remaining files using their md5hash
 			if len(files_not_found) > 0:
@@ -77,25 +78,24 @@ def unpack(zipfile: ZipFile, client: Client, allow_older_version: bool = False):
 				for k,v in file_info_list.items():
 					file_info_groupby_size[v].append(k)
 
-				progressbar = ProgressBar(len(files_not_found), "Retrieving failed files", details_unit="files")
-				for assetpath,result in files_not_found:
-					fileinfo = file_info_groupby_size.get(result.new_hash.size)
-					if not fileinfo:
-						continue
+				with tqdm(total=len(files_not_found), desc="Retrieving failed files", unit="files") as progressbar
+					for assetpath,result in files_not_found:
+						fileinfo = file_info_groupby_size.get(result.new_hash.size)
+						if not fileinfo:
+							continue
 
-					for zipf_path in fileinfo:
-						with zipfile.open(zipf_path, "r") as zf:
-							zipf_data = zf.read()
-							zipf_md5hash = calc_md5hash(zipf_data)
-							if result.new_hash.md5hash == zipf_md5hash:
+						for zipf_path in fileinfo:
+							with zipfile.open(zipf_path, "r") as zf:
+								zipf_data = zf.read()
+								zipf_md5hash = calc_md5hash(zipf_data)
+								if result.new_hash.md5hash != zipf_md5hash: continue
 								with open(assetpath.full, "wb") as f:
 									f.write(zipf_data)
 									update_results.append(UpdateResult(result, DownloadType.Success if assetpath.full.exists() else DownloadType.Failed, assetpath))
 									break
-					#else:
-					#	print( LOG ERROR MESSAGE HERE )
-					progressbar.update()
-
+						#else:
+						#	print( LOG ERROR MESSAGE HERE )
+						progressbar.update()
 
 		# update version string, hashes and difflog
 		version = SimpleVersionResult(version=obbversion, version_type=versiontype)

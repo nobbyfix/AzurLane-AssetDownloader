@@ -1,7 +1,7 @@
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Generator, Iterable
+from collections.abc import Generator, Iterable
 
 from .classes import DownloadType, HashRow, UpdateResult, VersionType, VersionResult, SimpleVersionResult
 

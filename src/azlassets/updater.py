@@ -2,8 +2,8 @@ import asyncio
 from pathlib import Path
 from tqdm import tqdm
 from tqdm.asyncio import tqdm_asyncio
-from typing import Iterable
 from collections import defaultdict
+from collections.abc import Iterable
 
 from . import downloader, versioncontrol
 from .classes import *

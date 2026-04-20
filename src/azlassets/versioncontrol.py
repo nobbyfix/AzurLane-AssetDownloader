@@ -3,20 +3,20 @@ from dataclasses import dataclass
 from pathlib import Path
 from collections.abc import Generator, Iterable
 
-from .classes import DownloadType, HashRow, UpdateResult, VersionType, VersionResult, SimpleVersionResult
+from .classes import DownloadType, HashRow, UpdateResult, VersionType, VersionResult, SimpleVersionResult, UnknownVersionTypeError
 
 
 def parse_version_string(rawstring: str) -> VersionResult:
 	"""
 	Tries to parse the raw version string as returned by the game server into a `VersionResult`.
 
-	Raises `NotImplementedError` if the versiontype does not exist.
+	Raises `UnknownVersionTypeError` if the versiontype does not exist.
 	"""
 	parts = rawstring.split('$')[1:]
 	versionname = parts[0]
 	versiontype = VersionType.from_hashname(versionname)
 	if not versiontype:
-		raise NotImplementedError(f'Unknown versionname {versionname}.')
+		raise UnknownVersionTypeError(version_name=versionname)
 
 	if versiontype == VersionType.AZL:
 		version = '.'.join(parts[1:-1])

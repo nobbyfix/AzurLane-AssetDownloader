@@ -5,8 +5,17 @@ import argparse
 from pathlib import Path
 
 from azlassets import __version__, config, protobuf, versioncontrol, updater, repair, downloader
-from azlassets.classes import Client
+from azlassets.classes import Client, UnknownVersionTypeError, VersionResult
 
+
+def try_parse_version_string(vstring: str, skip_error: bool = False) -> VersionResult:
+	try:
+		return versioncontrol.parse_version_string(vstring)
+	except UnknownVersionTypeError as e:
+		if skip_error:
+			print(f"WARN: Unknown version type '{e.version_name}' cannot be processed, but this error has been skipped.")
+			print("WARN: Update application as soon as possible to support this missing version type.")
+		else: raise
 
 async def execute(args):
 	# load config data from files
@@ -31,7 +40,7 @@ async def execute(args):
 		sys.exit(1)
 
 	version_string = version_response.pb.version
-	versionlist = [versioncontrol.parse_version_string(v) for v in version_string if v.startswith("$")]
+	versionlist = [try_parse_version_string(v, args.skip_unknown_version_error) for v in version_string if v.startswith("$")]
 
 	async with downloader.AzurlaneAsyncDownloader(clientconfig.cdnurl, useragent=userconfig.useragent) as downloader_session:
 		for vresult in versionlist:
@@ -71,6 +80,8 @@ def main():
 		help="Checks if all files are correct using the local hash file.")
 	parser.add_argument("--ignore-hashfile", default=False, action=argparse.BooleanOptionalAction,
 		help="Ignores the local hashfile and downloads ALL files again. This is only intended for testing purposes.")
+	parser.add_argument("--skip-unknown-version-error", default=False, action=argparse.BooleanOptionalAction,
+		help="Skips the UnknownVersionTypeError termination as a temporary fix if a new version type gets added.")
 	args = parser.parse_args()
 
 	args.client = Client[args.client]

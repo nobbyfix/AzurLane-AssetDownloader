@@ -4,9 +4,14 @@ from pathlib import Path
 from typing import Self
 
 
+class UnknownVersionTypeError(NotImplementedError):
+	def __init__(self, version_name, *args):
+		super().__init__(f"Unknown versionname {version_name}.", *args)
+		self.version_name = version_name
+
+
 CompareType = Enum('CompareType', 'New Changed Unchanged Deleted')
 DownloadType = Enum('DownloadType', 'NoChange Removed Success Failed ForDeletionNoChange')
-
 
 @dataclass
 class VersionTypeDataMixin:

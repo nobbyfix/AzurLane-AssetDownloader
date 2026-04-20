@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.6.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.5.0...v3.6.0) (2026-04-20)
+
+
+### Features
+
+* add version linking between AZL and other version types for easier extraction ([#27](https://github.com/nobbyfix/AzurLane-AssetDownloader/issues/27)) ([45644b7](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/45644b77350fb412408b2f9de4dff36d85c77a1f))
+
 ## [3.5.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.4.4...v3.5.0) (2026-04-20)
 
 

@@ -17,7 +17,8 @@ dependencies = [
     "protobuf",
     "aiofile",
     "aiohttp[speedups] >= 3.12",
-	"aiodns < 4"
+	"aiodns < 4",
+	"tqdm"
 ]
 keywords = [
     "azurlane",

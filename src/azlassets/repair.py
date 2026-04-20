@@ -3,15 +3,10 @@ import itertools
 import aiofile
 import asyncio
 from pathlib import Path
+from tqdm.asyncio import tqdm_asyncio
 
 from . import downloader, updater, versioncontrol
 from .classes import *
-
-
-async def execute_coro_with_progressbar(coro, progressbar: ProgressBar):
-	r = await coro
-	progressbar.update()
-	return r
 
 
 semaphore_concurrent_files = asyncio.Semaphore(5)
@@ -44,13 +39,11 @@ async def hashrow_from_relative_file(assetbasepath: Path, relative_filepath: Pat
 
 async def hashrows_from_files(client_directory: Path) -> list[HashRow]:
 	assetbasepath = client_directory / "AssetBundles"
-	progressbar = ProgressBar(0, "File Progress", details_unit="files", print_on_init=False)
 	print("Loading list of all files... ", end="")
-	tasks = [execute_coro_with_progressbar(hashrow_from_file(assetbasepath, fp), progressbar) for fp in assetbasepath.rglob("*") if not fp.is_dir()]
-	progressbar.total = len(tasks)
-	print("Done")
-	print("Checking all files...")
-	return await asyncio.gather(*tasks)
+	filepaths = [fp for fp in assetbasepath.rglob("*") if not fp.is_dir()]
+	tasks = [hashrow_from_file(assetbasepath, fp) for fp in filepaths]
+	print("Done.\nChecking all files...")
+	return await tqdm_asyncio.gather(*tasks, desc="File Progress", unit="files")
 
 async def repair(downloader_session: downloader.AzurlaneAsyncDownloader, versioncontroller: versioncontrol.VersionController) -> list[UpdateResult]:
 	current_hashes = await hashrows_from_files(versioncontroller.client_directory)
@@ -75,9 +68,8 @@ async def repair_hashfile(
 	# parse hashes from all files stored on disk, but only check files that are expected based on the new hashes
 	# this skips deletion on unneeded files
 	print("Generating hashes for all files on disk...")
-	progressbar = ProgressBar(len(serverhashes), "File Progress", details_unit="files")
-	diskhashes_tasks = [execute_coro_with_progressbar(hashrow_from_relative_file(assetbasepath, hrow.filepath), progressbar) for hrow in serverhashes]
-	diskhashes = await asyncio.gather(*diskhashes_tasks)
+	diskhashes_tasks = [hashrow_from_relative_file(assetbasepath, hrow.filepath) for hrow in serverhashes]
+	diskhashes = await tqdm_asyncio.gather(*diskhashes_tasks, desc="File Progress", unit="files")
 
 	# compare localhashes to diskhashes to determine which files have already been successfully downloaded
 	compare_results_disk = updater.compare_hashes(localhashes, diskhashes)

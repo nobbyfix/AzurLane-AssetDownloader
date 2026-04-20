@@ -1,5 +1,7 @@
 import asyncio
 from pathlib import Path
+from tqdm import tqdm
+from tqdm.asyncio import tqdm_asyncio
 from typing import Iterable
 from collections import defaultdict
 
@@ -19,8 +21,7 @@ downloader_semaphore = asyncio.Semaphore(6)
 async def handle_asset_download(
 		downloader_session: downloader.AzurlaneAsyncDownloader,
 		assetbasepath: Path,
-		result: CompareResult,
-		progressbar: ProgressBar | None = None
+		result: CompareResult
 	) -> UpdateResult:
 
 	newhash = result.new_hash
@@ -30,8 +31,6 @@ async def handle_asset_download(
 	async with downloader_semaphore:  # prevent queueing into connection pool, since wait time in pool counts towards timeout
 		download_success = await downloader_session.download_asset(newhash.md5hash, assetpath.full, newhash.size)
 
-	if progressbar:
-		progressbar.update()
 	return UpdateResult(result, DownloadType.Success if download_success else DownloadType.Failed, assetpath)
 
 
@@ -48,20 +47,19 @@ async def update_assets(
 	# handle all new or changed files
 	update_files = comparison_results[CompareType.New] + comparison_results[CompareType.Changed]
 	if len(update_files) > 0:
-		progressbar = ProgressBar(len(update_files), "Download Progress", details_unit="files")
-		tasks = [handle_asset_download(downloader_session, assetbasepath, result, progressbar) for result in update_files]
-		update_results += await asyncio.gather(*tasks)
+		tasks = [handle_asset_download(downloader_session, assetbasepath, result) for result in update_files]
+		update_results += await tqdm_asyncio.gather(*tasks, desc="Download Progress", unit="files")
 
 	# handle all deleted files
 	deleted_files = comparison_results[CompareType.Deleted]
 	if len(deleted_files) > 0:
 		if allow_deletion:
-			progressbar = ProgressBar(len(deleted_files), "Deletion Progress", details_unit="files")
-			for result in deleted_files:
-				assetpath = BundlePath.construct(assetbasepath, result.current_hash.filepath)
-				remove_asset(assetpath.full)
-				update_results.append(UpdateResult(result, DownloadType.Removed, assetpath))
-				progressbar.update()
+			with tqdm(total=len(deleted_files), desc="Deletion Progress", unit="files") as progressbar:
+				for result in deleted_files:
+					assetpath = BundlePath.construct(assetbasepath, result.current_hash.filepath)
+					remove_asset(assetpath.full)
+					update_results.append(UpdateResult(result, DownloadType.Removed, assetpath))
+					progressbar.update()
 		else:
 			for result in deleted_files:
 				assetpath = BundlePath.construct(assetbasepath, result.current_hash.filepath)

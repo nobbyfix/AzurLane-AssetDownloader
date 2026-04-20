@@ -5,7 +5,7 @@ import argparse
 from pathlib import Path
 
 from azlassets import __version__, config, protobuf, versioncontrol, updater, repair, downloader
-from azlassets.classes import Client, UnknownVersionTypeError, VersionResult
+from azlassets.classes import Client, UnknownVersionTypeError, VersionType, VersionResult
 
 
 def try_parse_version_string(vstring: str, skip_error: bool = False) -> VersionResult:
@@ -39,8 +39,16 @@ async def execute(args):
 		print("Server did not return a response to version request.")
 		sys.exit(1)
 
+	# parse version response
 	version_string = version_response.pb.version
 	versionlist = [try_parse_version_string(v, args.skip_unknown_version_error) for v in version_string if v.startswith("$")]
+
+	# find AZL version result
+	azl_current = None
+	for vresult in versionlist:
+		if vresult.version_type == VersionType.AZL:
+			azl_current = vresult
+			break
 
 	async with downloader.AzurlaneAsyncDownloader(clientconfig.cdnurl, useragent=userconfig.useragent) as downloader_session:
 		for vresult in versionlist:
@@ -63,6 +71,8 @@ async def execute(args):
 
 			if update_assets:
 				versioncontroller.save_difflog(vresult, update_assets)
+				if vresult.version_type != VersionType.AZL:
+					versioncontroller.set_as_linked(vresult, azl_current)
 
 
 def main():

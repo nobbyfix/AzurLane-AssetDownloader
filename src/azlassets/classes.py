@@ -148,6 +148,47 @@ class ClientConfig:
 	gateport: int
 	cdnurl: str
 
+@dataclass
+class DiffLog:
+	version: SimpleVersionResult
+	major: bool = False
+	linked_versions: dict[VersionType, list[str]] = field(default_factory=dict)
+	success_files: dict[BundlePath, CompareType] = field(default_factory=dict)
+	failed_files: dict[BundlePath, CompareType] = field(default_factory=dict)
+
+	def add_linked_version(self, version: SimpleVersionResult):
+		if version.version_type not in self.linked_versions:
+			self.linked_versions[version.version_type] = []
+		if version.version not in self.linked_versions[version.version_type]:
+			self.linked_versions[version.version_type].append(version.version)
+
+	def to_json(self) -> dict:
+		data = {
+			"version": self.version.version,
+			"major": self.major,
+			"linked_versions": {vt.name: versions for vt,versions in self.linked_versions.items()},
+			"success_files": {path.inner: ctype.name for path,ctype in self.success_files.items()},
+			"failed_files": {path.inner: ctype.name for path,ctype in self.failed_files.items()},
+		}
+		return data
+
+	@staticmethod
+	def from_json(diffdata: dict, vtype: VersionType, client_directory: Path):
+		version = SimpleVersionResult(version=diffdata["version"], version_type=vtype)
+		major = diffdata.get("major", False)
+		linked_versions = {VersionType[vt_str]: versions for vt_str,versions in diffdata.get("linked_versions", {}).items()}
+
+		assetbasepath = Path(client_directory, "AssetBundles")
+		success_files = {BundlePath.construct(assetbasepath, path_str): CompareType[ctype] for path_str,ctype in diffdata.get("success_files", {}).items()}
+		failed_files = {BundlePath.construct(assetbasepath, path_str): CompareType[ctype] for path_str,ctype in diffdata.get("failed_files", {}).items()}
+
+		return DiffLog(
+			version=version,
+			major=major,
+			linked_versions=linked_versions,
+			success_files=success_files,
+			failed_files=failed_files,
+		)
 
 __all__ = [
 	"CompareType",
@@ -156,9 +197,11 @@ __all__ = [
 	"Client",
 	"HashRow",
 	"CompareResult",
+	"SimpleVersionResult",
 	"VersionResult",
 	"BundlePath",
 	"UpdateResult",
 	"UserConfig",
 	"ClientConfig",
+	"DiffLog",
 ]

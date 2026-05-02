@@ -18,10 +18,12 @@ YAML_CONFIG_PATH = Path("config") / "user_config.yml"
 
 
 def create_user_config() -> bool:
-	"Returns `True` if file was created, else `False`."
+	"""
+	Returns `True` if file was created, else `False`.
+	"""
 	if not YAML_CONFIG_PATH.exists():
 		print("Userconfig does not exist. A new one will be created.")
-		print("Note that the useragent is empty and it is advised to set one.")
+		print("The useragent is using the default value and it is advised to set a custom one.")
 		YAML_CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
 		copy(YAML_TEMPLATE_PATH, YAML_CONFIG_PATH)
 		return True

@@ -58,4 +58,4 @@ extract-folder-list:
 - squareicon
 - strategyicon
 - updatebg
-useragent: ''
+useragent: 'Azurlane Asset Manager Bot'

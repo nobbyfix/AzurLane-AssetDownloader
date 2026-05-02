@@ -14,57 +14,58 @@ Before installation, Python 3.11 or newer needs to be available on the system. I
 pip install azlassets
 ```
 
-Alternatively, to install the newest version from the repository (requires git on the system):
-```
-pip install git+https://github.com/nobbyfix/AzurLane-AssetDownloader.git
-```
+To create the config file to be able to edit it before first time usage, execute `azl` in a terminal.
+
+### Settings
+The `config/user_config.yml` file provides a few settings to filter which files will be downloaded and extracted. The options `download-folder-listtype` and `extract-folder-listtype` can be set to either "blacklist" or "whitelist". Depending on this it will filter by the top-level folder names (subfolders are not supported) or top-level filenames (files inside top-level folders or lower cannot be filtered) set in `download-folder-list` and `extract-folder-list`. This allows to cut down the download and extraction times by skipping unneeded assets.
 
 ## Usage
-There are three scripts to manage the assets:
-- `obb_apk_import`: Importing assets from obb/apk/xapk files
-- `downlader`: Downloading assets from the game server
-- `extractor`: Extract PNGs from the assets
+The program can be executed using `azl <command>` with different commands available depending on the desired functionality, which will be explained in the following sections.
 
-These can be executed using `py -m <scriptname>` on Windows or `python3 -m <scriptname>` on Linux/macOS (will be shortened to `py[thon3]` going forward, use the appropriate version for your system). Detailed usage will be explained in the following sections.
+### Importer
+Using this is *not necessary* to get all files, but **recommended** as the asset server may not have all files available. An import will guarantee that all game assets will be available on your system (if so desired) and avoid potentially spamming the asset server with errors of missing files on the first download.
 
-### 1. Import files from xapk/apk/obb
-While this is *not necessary*, this step is **recommended** if you want all game assets available and not spam the game update server with errors of missing files on the first download.
-
-The `obb_apk_import.py` supports all game clients (EN, JP, CN, KR, TW) and multiple forms of importing the assets. The recommended and easiest way is by downloading the `.xapk` from one of many Google Play Store app distributors (like APKMirror or APKPure). You can find them by searching for the package name, which are as follows:
+The import supports all game clients (EN, JP, CN, KR, TW) and multiple forms of importing the assets. The recommended and easiest way is by downloading the `.xapk` from one of many Google Play Store app distributors (like APKMirror or APKPure). They can be found by searching for the package name, which are as follows:
 - EN: com.YoStarEN.AzurLane
 - JP: com.YoStarJP.AzurLane
 - KR: kr.txwy.and.blhx
 - TW: com.hkmanjuu.azurlane.gp
 
-Alternatively if you already have the game installed, for example on emulators, you can copy the obb file onto your system and use it instead of the xapk. On Android it can be found in the folder `/storage/emulated/0/Android/obb/[PACKAGE_NAME]/`.
+Alternatively, if the game is already installed, for example on emulators, you can copy the obb file onto your system and use it instead of the xapk. On Android it can be found in the folder `/storage/emulated/0/Android/obb/[PACKAGE_NAME]/`.
 
-Since the CN client is not distributed through the Google Play Store, there is no xapk/obb file for it, but you can find the android download link on the [website](https://game.bilibili.com/blhx/) which will download an apk file (not xapk like the others). Alternatively, the APK is installed in the folder `/data/app/com.bilibili.azurlane-1/` on android (Note: Root access is required to access this folder).
+Since the CN client is not distributed through the Google Play Store, there is no xapk/obb file for it, but there is an android download link on the [website](https://game.bilibili.com/blhx/) which will download an apk file (not xapk like the others). Alternatively, the APK is installed in the folder `/data/app/com.bilibili.azurlane-1/` on android (Note: Root access is required to access this folder).
 
-You can then execute the script by passing it the filepath to the xapk/apk/obb:
+The `import` command can be executed by passing it the filepath to the xapk/apk/obb:
 ```
-py[thon3] -m obb_apk_import [FILEPATH]
+azl import [FILEPATH]
 ```
 
-### 2. Settings
-The `config/user_config.yml` file provides a few settings to filter which files will be downloaded (and later also extracted). The options `download-folder-listtype` and `extract-folder-listtype` can be set to either "blacklist" or "whitelist". Depending on this it will filter by the top-level folder names (subfolders are not supported) or top-level filenames (files inside top-level folders or lower cannot be filtered) set in `download-folder-list` and `extract-folder-list`. This allows to cut down the download and extraction times by skipping unneeded assets.
+Should the program not automatically detect which client these files belong to, an additional `client` argument can be added:
+```
+azl import [FILEPATH] -c {CLIENT}
+```
 
-### 3. Download new updates from the game
+### Downloader
 All assets normally distributed via the in-app downloader can be downloaded by simply executing:
 ```
-py[thon3] -m downloader [CLIENT]
+azl download [CLIENT]
 ```
 where `CLIENT` has to be either EN, CN, JP, KR or TW. You can check which files have been downloaded or deleted using the difflog files in `ClientAssets/[CLIENT]/difflog`.
 
-### 4. Extract all new and changed files
-The asset extraction script supports extraction of all newly downloaded files and single asset bundles. The newly downloaded assets can be extracted by executing:
+There are some additional arguments available:
+* `--force-refresh`: Ignores the version check to run the downloader when on the newest version, useful after editing the config file
+* `--repair`: Checks all files on disk and only downloads missing ones, useful for resuming the download if it crashed
+* `--check-integrity`: Checks for modified, deleted or corrupt files and redownloads them
+* `--skip-unknown-version-error`: Ignores the error when a new version type gets added to the game
+
+### Extractor
+The asset extraction supports extraction of all newly downloaded files or single asset bundles. The newly downloaded assets can be extracted by executing:
 ```
-py[thon3] -m extractor [CLIENT]
+azl extract [CLIENT]
 ```
-where `CLIENT` is again one of EN, CN, JP, KR or TW. The extracted images will then be saved in `ClientExtract/[CLIENT]/` Since only Texture2D assets are exported, it's not desired to try to export from all assetbundles (See [settings section](#2-settings)).
+where `CLIENT` is again one of EN, CN, JP, KR or TW. The extracted images will then be saved in `ClientExtract/[CLIENT]/` Since only Texture2D assets are exported, it's not desired to try to export from all assetbundles (See [settings section](#settings)).
 
 A single assetbundle can be extracted by passing the filepath to the script:
 ```
-py[thon3] -m extractor -f [FILEPATH]
+azl extractor -f [FILEPATH]
 ```
-
-### 5. Enjoy the files

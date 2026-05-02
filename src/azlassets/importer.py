@@ -1,6 +1,4 @@
-#!/usr/bin/env python
 import io, re, sys, json, shutil, hashlib, itertools
-from argparse import ArgumentParser, BooleanOptionalAction
 from zipfile import ZipFile
 from pathlib import Path
 from collections import defaultdict
@@ -78,7 +76,7 @@ def unpack(zipfile: ZipFile, client: Client, allow_older_version: bool = False):
 				for k,v in file_info_list.items():
 					file_info_groupby_size[v].append(k)
 
-				with tqdm(total=len(files_not_found), desc="Retrieving failed files", unit="files") as progressbar
+				with tqdm(total=len(files_not_found), desc="Retrieving failed files", unit="files") as progressbar:
 					for assetpath,result in files_not_found:
 						fileinfo = file_info_groupby_size.get(result.new_hash.size)
 						if not fileinfo:
@@ -180,15 +178,5 @@ def extract(path: Path, fallback_client: Client | None = None, allow_older_versi
 		sys.exit(f'Unknown file extension "{path.suffix}".')
 
 
-def main():
-	print(f"Running Azurlane obb_apk_import v{__version__}.")
-
-	parser = ArgumentParser()
-	parser.add_argument('file', nargs=1, help='xapk/apk/obb file to extract')
-	parser.add_argument('-c', '--client', help='fallback client if it cannot be determined automatically (obb/apk only)', choices=Client.__members__)
-	parser.add_argument('--allow_old_version', help='when enabled, the old version check is not used', action=BooleanOptionalAction)
-	args = parser.parse_args()
-	extract(Path(args.file[0]), args.client, args.allow_old_version)
-
-if __name__ == "__main__":
-	main()
+def execute_from_args(args):
+	extract(Path(args.file[0]), args.client)

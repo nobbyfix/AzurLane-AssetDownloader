@@ -1,7 +1,5 @@
-#!/usr/bin/env python
 import sys
 import asyncio
-import argparse
 from pathlib import Path
 
 from azlassets import __version__, config, protobuf, versioncontrol, updater, repair, downloader
@@ -75,27 +73,6 @@ async def execute(args):
 					versioncontroller.set_as_linked(vresult, azl_current)
 
 
-def main():
-	print(f"Running Azurlane file downloader v{__version__}.")
-
-	# setup argument parser
-	parser = argparse.ArgumentParser()
-	parser.add_argument("client", type=str, choices=Client.__members__,
-		help="client to update")
-	parser.add_argument("--force-refresh", default=False, action=argparse.BooleanOptionalAction,
-		help="Compares asset hashes even when the version file is up to date.")
-	parser.add_argument("--repair", default=False, action=argparse.BooleanOptionalAction,
-		help="Downloads missing files if the update process failed partially.")
-	parser.add_argument("--check-integrity", default=False, action=argparse.BooleanOptionalAction,
-		help="Checks if all files are correct using the local hash file.")
-	parser.add_argument("--ignore-hashfile", default=False, action=argparse.BooleanOptionalAction,
-		help="Ignores the local hashfile and downloads ALL files again. This is only intended for testing purposes.")
-	parser.add_argument("--skip-unknown-version-error", default=False, action=argparse.BooleanOptionalAction,
-		help="Skips the UnknownVersionTypeError termination as a temporary fix if a new version type gets added.")
-	args = parser.parse_args()
-
+def execute_from_args(args):
 	args.client = Client[args.client]
 	asyncio.run(execute(args))
-
-if __name__ == "__main__":
-	main()

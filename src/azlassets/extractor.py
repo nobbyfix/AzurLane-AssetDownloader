@@ -1,9 +1,7 @@
-#!/usr/bin/env python
 import itertools
-from argparse import ArgumentParser
 from pathlib import Path
 import multiprocessing as mp
-from typing import Iterable
+from collections.abc import Iterable
 
 from azlassets import __version__, imgrecon, config, versioncontrol
 from azlassets.classes import Client, CompareType, VersionType, SimpleVersionResult, BundlePath
@@ -130,22 +128,7 @@ def extract_single_assetbundle(client: Client, assetpath: str) -> None:
 		extract_assetbundle(client_directory, assetpath, extract_directory)
 
 
-def main():
-	print(f"Running Azurlane file extractor v{__version__}.")
-
-	# setup argument parser
-	parser = ArgumentParser(description="Extracts image assets as pngs.",
-		epilog="If '-f/--filepath' is not set, all files from the latest update will be extracted.")
-	parser.add_argument("client", type=str, choices=Client.__members__,
-		help="client to extract files of")
-	parser.add_argument("-f", "--filepath", type=str,
-		help="Path to the file or directly to extract only single file or all directory content")
-	parser.add_argument("-v", "--version", type=str,
-		help="Extract files of a specific version (Currently only applies to AZL Versiontype!)")
-	parser.add_argument("-u", "--until-version", type=str,
-		help="Extract files from the latest until a specific version (Currently only applies to AZL Versiontype!)")
-	args = parser.parse_args()
-
+def execute_from_args(args):
 	# parse arguments and execute
 	client = Client[args.client]
 	if filepath := args.filepath:
@@ -157,6 +140,3 @@ def main():
 			extract_by_client(client, version)
 		else:
 			extract_by_client(client)
-
-if __name__ == "__main__":
-	main()

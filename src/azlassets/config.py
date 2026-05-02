@@ -17,13 +17,19 @@ CLIENT_CONFIG_PATH = CONFIG_DATA_PATH.joinpath("client_config.json")
 YAML_CONFIG_PATH = Path("config") / "user_config.yml"
 
 
-def load_user_config() -> UserConfig:
+def create_user_config() -> bool:
+	"Returns `True` if file was created, else `False`."
 	if not YAML_CONFIG_PATH.exists():
 		print("Userconfig does not exist. A new one will be created.")
 		print("Note that the useragent is empty and it is advised to set one.")
 		YAML_CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
 		copy(YAML_TEMPLATE_PATH, YAML_CONFIG_PATH)
-		return load_user_config()
+		return True
+	return False
+
+def load_user_config() -> UserConfig:
+	# make sure the config file exists
+	create_user_config()
 
 	with open(YAML_CONFIG_PATH, 'r', encoding='utf8') as file:
 		yamlconfig = yaml.safe_load(file)

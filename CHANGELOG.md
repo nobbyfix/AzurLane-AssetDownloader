@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.0.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.5.0...v4.0.0) (2026-05-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* use unified script with subcommands for program startup
+
+### Features
+
+* add version linking between AZL and other version types for easier extraction ([#27](https://github.com/nobbyfix/AzurLane-AssetDownloader/issues/27)) ([45644b7](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/45644b77350fb412408b2f9de4dff36d85c77a1f))
+* use unified script with subcommands for program startup ([a0efd8f](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/a0efd8f91422a60eb14e022d3c699582023e8cab))
+
 ## [3.5.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.4.4...v3.5.0) (2026-04-20)
 
 

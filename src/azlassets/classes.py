@@ -1,5 +1,5 @@
-from enum import Enum
 from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
 from typing import Self
 
@@ -10,8 +10,9 @@ class UnknownVersionTypeError(NotImplementedError):
 		self.version_name = version_name
 
 
-CompareType = Enum('CompareType', 'New Changed Unchanged Deleted')
-DownloadType = Enum('DownloadType', 'NoChange Removed Success Failed ForDeletionNoChange')
+CompareType = Enum("CompareType", "New Changed Unchanged Deleted")
+DownloadType = Enum("DownloadType", "NoChange Removed Success Failed ForDeletionNoChange")
+
 
 @dataclass
 class VersionTypeDataMixin:
@@ -20,19 +21,20 @@ class VersionTypeDataMixin:
 	suffix: str
 	"""Suffix used on version and hash files."""
 
+
 class VersionType(VersionTypeDataMixin, Enum):
 	__hash2member_map__: dict[str, Self] = {}
 
-	AZL			= "azhash",			""
-	CV			= "cvhash",			"cv"
-	L2D			= "l2dhash",		"live2d"
-	PIC			= "pichash",		"pic"
-	BGM			= "bgmhash",		"bgm"
-	CIPHER		= "cipherhash",		"cipher"
-	MANGA		= "mangahash",		"manga"
-	PAINTING	= "paintinghash",	"painting"
-	DORM		= "dormhash",		"dorm"
-	MAP			= "maphash",		"map"
+	AZL = "azhash", ""
+	CV = "cvhash", "cv"
+	L2D = "l2dhash", "live2d"
+	PIC = "pichash", "pic"
+	BGM = "bgmhash", "bgm"
+	CIPHER = "cipherhash", "cipher"
+	MANGA = "mangahash", "manga"
+	PAINTING = "paintinghash", "painting"
+	DORM = "dormhash", "dorm"
+	MAP = "maphash", "map"
 
 	def __str__(self) -> str:
 		return self.name.lower()
@@ -43,7 +45,8 @@ class VersionType(VersionTypeDataMixin, Enum):
 		Full version filename using the suffix.
 		"""
 		suffix = self.suffix
-		if suffix: suffix = "-"+suffix
+		if suffix:
+			suffix = "-" + suffix
 		return f"version{suffix}.txt"
 
 	@property
@@ -52,7 +55,8 @@ class VersionType(VersionTypeDataMixin, Enum):
 		Full hashes filename using the suffix.
 		"""
 		suffix = self.suffix
-		if suffix: suffix = "-"+suffix
+		if suffix:
+			suffix = "-" + suffix
 		return f"hashes{suffix}.csv"
 
 	@classmethod
@@ -71,6 +75,7 @@ class AbstractClientDataMixin:
 	package_name: str
 	active: bool = field(repr=False, default=True)
 
+
 class AbstractClient(AbstractClientDataMixin, Enum):
 	__package_name_map__: dict[str, Self] = {}
 
@@ -83,12 +88,13 @@ class AbstractClient(AbstractClientDataMixin, Enum):
 			cls.__package_name_map__ = {member.package_name: member for member in cls}
 		return cls.__package_name_map__.get(package_name)
 
+
 class Client(AbstractClient):
-	EN = 'en-US', 'com.YoStarEN.AzurLane'
-	JP = 'ja-JP', 'com.YoStarJP.AzurLane'
-	CN = 'zh-CN', ''
-	KR = 'ko-KR', 'kr.txwy.and.blhx'
-	TW = 'zh-TW', 'com.hkmanjuu.azurlane.gp'
+	EN = "en-US", "com.YoStarEN.AzurLane"
+	JP = "ja-JP", "com.YoStarJP.AzurLane"
+	CN = "zh-CN", ""
+	KR = "ko-KR", "kr.txwy.and.blhx"
+	TW = "zh-TW", "com.hkmanjuu.azurlane.gp"
 
 
 @dataclass
@@ -97,21 +103,25 @@ class HashRow:
 	size: int
 	md5hash: str
 
+
 @dataclass
 class CompareResult:
 	current_hash: HashRow | None
 	new_hash: HashRow | None
 	compare_type: CompareType
 
+
 @dataclass
 class SimpleVersionResult:
 	version: str
 	version_type: VersionType
 
+
 @dataclass
 class VersionResult(SimpleVersionResult):
 	vhash: str
 	rawstring: str
+
 
 @dataclass
 class BundlePath:
@@ -126,11 +136,13 @@ class BundlePath:
 	def __hash__(self):
 		return hash(self.inner)
 
+
 @dataclass
 class UpdateResult:
 	compare_result: CompareResult
 	download_type: DownloadType
 	path: BundlePath
+
 
 @dataclass
 class UserConfig:
@@ -142,11 +154,13 @@ class UserConfig:
 	asset_directory: Path
 	extract_directory: Path
 
+
 @dataclass
 class ClientConfig:
 	gateip: str
 	gateport: int
 	cdnurl: str
+
 
 @dataclass
 class DiffLog:
@@ -166,9 +180,9 @@ class DiffLog:
 		data = {
 			"version": self.version.version,
 			"major": self.major,
-			"linked_versions": {vt.name: versions for vt,versions in self.linked_versions.items()},
-			"success_files": {path.inner: ctype.name for path,ctype in self.success_files.items()},
-			"failed_files": {path.inner: ctype.name for path,ctype in self.failed_files.items()},
+			"linked_versions": {vt.name: versions for vt, versions in self.linked_versions.items()},
+			"success_files": {path.inner: ctype.name for path, ctype in self.success_files.items()},
+			"failed_files": {path.inner: ctype.name for path, ctype in self.failed_files.items()},
 		}
 		return data
 
@@ -176,11 +190,16 @@ class DiffLog:
 	def from_json(diffdata: dict, vtype: VersionType, client_directory: Path):
 		version = SimpleVersionResult(version=diffdata["version"], version_type=vtype)
 		major = diffdata.get("major", False)
-		linked_versions = {VersionType[vt_str]: versions for vt_str,versions in diffdata.get("linked_versions", {}).items()}
-
+		linked_versions = {VersionType[vt_str]: versions for vt_str, versions in diffdata.get("linked_versions", {}).items()}
 		assetbasepath = Path(client_directory, "AssetBundles")
-		success_files = {BundlePath.construct(assetbasepath, path_str): CompareType[ctype] for path_str,ctype in diffdata.get("success_files", {}).items()}
-		failed_files = {BundlePath.construct(assetbasepath, path_str): CompareType[ctype] for path_str,ctype in diffdata.get("failed_files", {}).items()}
+		success_files = {
+			BundlePath.construct(assetbasepath, path_str): CompareType[ctype]
+			for path_str, ctype in diffdata.get("success_files", {}).items()
+		}
+		failed_files = {
+			BundlePath.construct(assetbasepath, path_str): CompareType[ctype]
+			for path_str, ctype in diffdata.get("failed_files", {}).items()
+		}
 
 		return DiffLog(
 			version=version,
@@ -189,6 +208,7 @@ class DiffLog:
 			success_files=success_files,
 			failed_files=failed_files,
 		)
+
 
 __all__ = [
 	"CompareType",

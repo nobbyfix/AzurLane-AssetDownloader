@@ -1,5 +1,5 @@
-import aiohttp
 import aiofile
+import aiohttp
 import traceback
 from pathlib import Path
 
@@ -22,7 +22,7 @@ class AzurlaneAsyncDownloader(aiohttp.ClientSession):
 		try:
 			async with await self.get_hashes(version_result.rawstring) as response:
 				response: aiohttp.ClientResponse
-				response.raise_for_status() # raises error on bad HTTP status
+				response.raise_for_status()  # raises error on bad HTTP status
 
 				hashes = await response.text()
 				return hashes
@@ -41,17 +41,19 @@ class AzurlaneAsyncDownloader(aiohttp.ClientSession):
 		try:
 			async with await self.get_asset(filehash) as response:
 				response: aiohttp.ClientResponse
-				response.raise_for_status() # raises error on bad HTTP status
+				response.raise_for_status()  # raises error on bad HTTP status
 
 				# reject response if response size doesn't match expected size
 				response_size = response.content_length
 				if expected_file_size != response_size:
-					print(f"ERROR: Received asset '{filehash}' with target '{save_destination}' has wrong size ({response_size}/{expected_file_size}).")
+					print(
+						f"ERROR: Received asset '{filehash}' with target '{save_destination}' has wrong size ({response_size}/{expected_file_size})."
+					)
 					return False
 
 				save_destination.parent.mkdir(parents=True, exist_ok=True)
 				async with aiofile.async_open(save_destination, "wb") as file:
-					async for chunk in response.content.iter_chunked(1024*16): # no idea what chuck size is best
+					async for chunk in response.content.iter_chunked(1024 * 16):  # no idea what chuck size is best
 						await file.write(chunk)
 
 			return True

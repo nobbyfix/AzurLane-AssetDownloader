@@ -1,12 +1,11 @@
-import sys
 import json
+import sys
 import yaml
-from shutil import copy
-from pathlib import Path
 from importlib.resources import files
+from pathlib import Path
+from shutil import copy
 
-from .classes import Client, UserConfig, ClientConfig
-
+from .classes import Client, ClientConfig, UserConfig
 
 # package-incuded filepaths
 CONFIG_DATA_PATH = files("azlassets").joinpath("config")
@@ -29,22 +28,23 @@ def create_user_config() -> bool:
 		return True
 	return False
 
+
 def load_user_config() -> UserConfig:
 	# make sure the config file exists
 	create_user_config()
 
-	with open(YAML_CONFIG_PATH, 'r', encoding='utf8') as file:
+	with open(YAML_CONFIG_PATH, "r", encoding="utf8") as file:
 		yamlconfig = yaml.safe_load(file)
 
 	try:
 		userconfig = UserConfig(
-			useragent=yamlconfig['useragent'],
-			download_isblacklist=yamlconfig['download-folder-listtype'] == 'blacklist',
-			download_filter=yamlconfig['download-folder-list'],
-			extract_isblacklist=yamlconfig['extract-folder-listtype'] == 'blacklist',
-			extract_filter=yamlconfig['extract-folder-list'],
-			asset_directory=yamlconfig['asset-directory'],
-			extract_directory=yamlconfig['extract-directory'],
+			useragent=yamlconfig["useragent"],
+			download_isblacklist=yamlconfig["download-folder-listtype"] == "blacklist",
+			download_filter=yamlconfig["download-folder-list"],
+			extract_isblacklist=yamlconfig["extract-folder-listtype"] == "blacklist",
+			extract_filter=yamlconfig["extract-folder-list"],
+			asset_directory=yamlconfig["asset-directory"],
+			extract_directory=yamlconfig["extract-directory"],
 		)
 	except KeyError:
 		print("There is an error inside the userconfig file. Delete it or change the wrong values.")
@@ -54,15 +54,15 @@ def load_user_config() -> UserConfig:
 
 
 def load_client_config(client: Client) -> ClientConfig:
-	with open(CLIENT_CONFIG_PATH, 'r', encoding='utf8') as f:
+	with open(CLIENT_CONFIG_PATH, "r", encoding="utf8") as f:
 		configdata = json.load(f)
 
-	if not client.name in configdata:
-		raise NotImplementedError(f'Client {client.name} has not been configured yet.')
+	if client.name not in configdata:
+		raise NotImplementedError(f"Client {client.name} has not been configured yet.")
 
 	config = configdata[client.name]
 	try:
-		clientconfig = ClientConfig(config['gateip'], config['gateport'], config['cdnurl'])
+		clientconfig = ClientConfig(config["gateip"], config["gateport"], config["cdnurl"])
 	except KeyError:
 		print("The clientconfig has been wrongly configured.")
 		sys.exit(1)

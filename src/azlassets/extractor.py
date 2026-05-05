@@ -1,10 +1,10 @@
 import itertools
-from pathlib import Path
 import multiprocessing as mp
 from collections.abc import Iterable
+from pathlib import Path
 
-from azlassets import __version__, imgrecon, config, versioncontrol
-from azlassets.classes import Client, CompareType, VersionType, SimpleVersionResult, BundlePath
+from azlassets import config, imgrecon, versioncontrol
+from azlassets.classes import BundlePath, Client, CompareType, SimpleVersionResult, VersionType
 
 
 def get_difflog_versionlist(parent_directory: Path, vtype: VersionType) -> list[str]:
@@ -12,7 +12,10 @@ def get_difflog_versionlist(parent_directory: Path, vtype: VersionType) -> list[
 	difflog_versionlist = [path.stem for path in difflog_dir.glob("*.json")]
 	return difflog_versionlist
 
-def get_diff_files(versioncontroller: versioncontrol.VersionController, vtype: VersionType, version_string: str | None = None) -> Iterable[BundlePath]:
+
+def get_diff_files(
+	versioncontroller: versioncontrol.VersionController, vtype: VersionType, version_string: str | None = None
+) -> Iterable[BundlePath]:
 	if not version_string:
 		version_string = versioncontroller.get_latest_versionstring(vtype)
 
@@ -25,7 +28,7 @@ def get_diff_files(versioncontroller: versioncontrol.VersionController, vtype: V
 
 
 def restore_painting(image, abpath: Path, imgname: str, do_retry: bool):
-	mesh = imgrecon.load_mesh(str(abpath), imgname+'-mesh')
+	mesh = imgrecon.load_mesh(str(abpath), imgname + "-mesh")
 	if mesh is not None:
 		return imgrecon.recon(image, mesh)
 
@@ -33,10 +36,11 @@ def restore_painting(image, abpath: Path, imgname: str, do_retry: bool):
 		return image
 
 	# for some images, the mesh is in the non-tex asset bundle for some reason
-	if abpath.name.endswith('_tex'):
+	if abpath.name.endswith("_tex"):
 		return restore_painting(image, abpath.with_name(abpath.name[:-4]), imgname, False)
 
-	return restore_painting(image, abpath.with_name(abpath.name+'_tex'), imgname, False)
+	return restore_painting(image, abpath.with_name(abpath.name + "_tex"), imgname, False)
+
 
 def try_safe_image(image, target: Path) -> Path:
 	target.parent.mkdir(parents=True, exist_ok=True)
@@ -48,28 +52,31 @@ def try_safe_image(image, target: Path) -> Path:
 			image.save(target)
 			return target
 
+
 def extract_assetbundle(rootfolder: Path, filepath: str, targetfolder: Path) -> Path | None:
 	all_images = []
 	abpath = rootfolder / filepath
 	for reader, texture2d in imgrecon.load_images(str(abpath)):
 		name = texture2d.m_Name
-		if name == 'UISprite': continue # skip the UISprite element
-		if 'char' in (reader.container or ''): continue # skip image if its of a chibi
+		if name == "UISprite":
+			continue  # skip the UISprite element
+		if "char" in (reader.container or ""):
+			continue  # skip image if its of a chibi
 
 		image = texture2d.image
-		if filepath.split('/')[0] == 'painting':
+		if filepath.split("/")[0] == "painting":
 			image = restore_painting(image, abpath, name, True)
 		all_images.append((image, name))
 
 	if len(all_images) == 1:
 		image, imgname = all_images[0]
-		target = (targetfolder / filepath).parent / (imgname+'.png')
+		target = (targetfolder / filepath).parent / (imgname + ".png")
 		return try_safe_image(image, target)
 
 	if len(all_images) > 1:
 		img_target_dir = (targetfolder / filepath).parent / abpath.name
 		for image, imgname in all_images:
-			target = img_target_dir / (imgname+'.png')
+			target = img_target_dir / (imgname + ".png")
 			try_safe_image(image, target)
 		return img_target_dir
 
@@ -101,22 +108,30 @@ def extract_by_client(client: Client, target_version: str | None = None, do_iter
 	downloaded_files_collection = itertools.chain(*downloaded_files_collection)
 
 	def _filter(bundlepath: BundlePath) -> bool:
-		if bundlepath.inner.split('/')[0] in userconfig.extract_filter:
-			return (not userconfig.extract_isblacklist)
+		if bundlepath.inner.split("/")[0] in userconfig.extract_filter:
+			return not userconfig.extract_isblacklist
 		return userconfig.extract_isblacklist
 
-	with mp.Pool(processes=mp.cpu_count()-1) as pool:
+	with mp.Pool(processes=mp.cpu_count() - 1) as pool:
 		for bundlepath in filter(_filter, downloaded_files_collection):
-			pool.apply_async(extract_assetbundle, (client_directory / 'AssetBundles', bundlepath.inner, extract_directory,))
+			pool.apply_async(
+				extract_assetbundle,
+				(
+					client_directory / "AssetBundles",
+					bundlepath.inner,
+					extract_directory,
+				),
+			)
 
 		# explicitly join pool
 		# this causes the pool to wait for all asnyc tasks to complete
 		pool.close()
 		pool.join()
 
+
 def extract_single_assetbundle(client: Client, assetpath: str) -> None:
 	userconfig = config.load_user_config()
-	client_directory = Path(userconfig.asset_directory, client.name, 'AssetBundles')
+	client_directory = Path(userconfig.asset_directory, client.name, "AssetBundles")
 	extract_directory = Path(userconfig.extract_directory, client.name)
 
 	abpath = Path(client_directory, assetpath)

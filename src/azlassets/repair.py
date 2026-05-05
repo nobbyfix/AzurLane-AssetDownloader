@@ -1,15 +1,15 @@
-import hashlib
-import itertools
 import aiofile
 import asyncio
+import hashlib
+import itertools
 from pathlib import Path
 from tqdm.asyncio import tqdm_asyncio
 
 from . import downloader, updater, versioncontrol
-from .classes import *
-
+from .classes import BundlePath, CompareType, DownloadType, HashRow, UpdateResult, UserConfig, VersionResult
 
 semaphore_concurrent_files = asyncio.Semaphore(5)
+
 
 async def calc_md5hash(filepath: Path, chunk_size: int = 65536) -> str:
 	md5 = hashlib.md5()
@@ -20,6 +20,7 @@ async def calc_md5hash(filepath: Path, chunk_size: int = 65536) -> str:
 					md5.update(chunk)
 	return md5.hexdigest()
 
+
 async def get_filedata(filepath: Path) -> tuple[str, int]:
 	if filepath.exists():
 		current_md5 = await calc_md5hash(filepath)
@@ -28,14 +29,17 @@ async def get_filedata(filepath: Path) -> tuple[str, int]:
 	else:
 		return "", 0
 
+
 async def hashrow_from_file(assetbasepath: Path, filepath: Path) -> HashRow:
 	current_md5, current_size = await get_filedata(filepath)
 	clean_filepath = str(filepath.relative_to(assetbasepath)).replace("\\", "/")
 	return HashRow(clean_filepath, current_size, current_md5)
 
-async def hashrow_from_relative_file(assetbasepath: Path, relative_filepath: Path) -> HashRow:
+
+async def hashrow_from_relative_file(assetbasepath: Path, relative_filepath: str) -> HashRow:
 	current_md5, current_size = await get_filedata(assetbasepath / relative_filepath)
 	return HashRow(relative_filepath, current_size, current_md5)
+
 
 async def hashrows_from_files(client_directory: Path) -> list[HashRow]:
 	assetbasepath = client_directory / "AssetBundles"
@@ -45,19 +49,25 @@ async def hashrows_from_files(client_directory: Path) -> list[HashRow]:
 	print("Done.\nChecking all files...")
 	return await tqdm_asyncio.gather(*tasks, desc="File Progress", unit="files")
 
-async def repair(downloader_session: downloader.AzurlaneAsyncDownloader, versioncontroller: versioncontrol.VersionController) -> list[UpdateResult]:
+
+async def repair(
+	downloader_session: downloader.AzurlaneAsyncDownloader, versioncontroller: versioncontrol.VersionController
+) -> list[UpdateResult]:
 	current_hashes = await hashrows_from_files(versioncontroller.client_directory)
-	expected_hashes = itertools.chain(*filter(lambda x: x is not None, [versioncontroller.load_hash_file(vtype) for vtype in VersionType]))
+	expected_hashes = itertools.chain(
+		*filter(lambda x: x is not None, [versioncontroller.load_hash_file(vtype) for vtype in VersionType])
+	)
 	comparison_results = updater.compare_hashes(current_hashes, expected_hashes)
 	update_results = await updater.update_assets(downloader_session, comparison_results, versioncontroller.client_directory)
 	return update_results
 
+
 async def repair_hashfile(
-		version_result: VersionResult,
-		downloader_session: downloader.AzurlaneAsyncDownloader,
-		userconfig: UserConfig,
-		versioncontroller: versioncontrol.VersionController
-	) -> list[UpdateResult]:
+	version_result: VersionResult,
+	downloader_session: downloader.AzurlaneAsyncDownloader,
+	userconfig: UserConfig,
+	versioncontroller: versioncontrol.VersionController,
+) -> list[UpdateResult]:
 	# read hashes that are stored in the local hash file
 	localhashes = versioncontroller.load_hash_file(version_result.version_type) or []
 
@@ -73,12 +83,33 @@ async def repair_hashfile(
 
 	# compare localhashes to diskhashes to determine which files have already been successfully downloaded
 	compare_results_disk = updater.compare_hashes(localhashes, diskhashes)
-	update_results_disk = {comp_result.new_hash.filepath: UpdateResult(comp_result, DownloadType.Success, comp_result.new_hash.filepath) for comp_result in compare_results_disk[CompareType.Changed]}
-	update_results_disk.update({comp_result.new_hash.filepath: UpdateResult(comp_result, DownloadType.Success, comp_result.new_hash.filepath) for comp_result in compare_results_disk[CompareType.New]})
-	update_results_disk.update({comp_result.current_hash.filepath: UpdateResult(comp_result, DownloadType.Removed, comp_result.current_hash.filepath) for comp_result in compare_results_disk[CompareType.Deleted]})
+	update_results_disk = {
+		comp_result.new_hash.filepath: UpdateResult(
+			comp_result, DownloadType.Success, BundlePath.construct(assetbasepath, comp_result.new_hash.filepath)
+		)
+		for comp_result in compare_results_disk[CompareType.Changed]
+	}
+	update_results_disk.update(
+		{
+			comp_result.new_hash.filepath: UpdateResult(
+				comp_result, DownloadType.Success, BundlePath.construct(assetbasepath, comp_result.new_hash.filepath)
+			)
+			for comp_result in compare_results_disk[CompareType.New]
+		}
+	)
+	update_results_disk.update(
+		{
+			comp_result.current_hash.filepath: UpdateResult(
+				comp_result, DownloadType.Removed, BundlePath.construct(assetbasepath, comp_result.current_hash.filepath)
+			)
+			for comp_result in compare_results_disk[CompareType.Deleted]
+		}
+	)
 
 	# download remaining files
-	update_results_server = await updater._update_from_hashes(version_result, downloader_session, versioncontroller, diskhashes, serverhashes, allow_deletion=False)
+	update_results_server = await updater._update_from_hashes(
+		version_result, downloader_session, versioncontroller, diskhashes, serverhashes, allow_deletion=False
+	)
 
 	# add old update results to new update results list
 	update_results = []
@@ -86,7 +117,7 @@ async def repair_hashfile(
 		update_result = upres_server
 		# try to retrieve from old list only if there was no further change to the file
 		if upres_server.download_type == DownloadType.NoChange:
-			if upres_disk := update_results_disk.get(upres_server.path):
+			if upres_disk := update_results_disk.get(str(upres_server.path)):
 				update_result = upres_disk
 		update_results.append(update_result)
 

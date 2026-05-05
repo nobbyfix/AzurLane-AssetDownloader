@@ -1,12 +1,12 @@
 import asyncio
+from collections import defaultdict
+from collections.abc import Iterable
 from pathlib import Path
 from tqdm import tqdm
 from tqdm.asyncio import tqdm_asyncio
-from collections import defaultdict
-from collections.abc import Iterable
 
 from . import downloader, versioncontrol
-from .classes import *
+from .classes import BundlePath, CompareResult, CompareType, DownloadType, HashRow, UpdateResult, UserConfig, VersionResult
 
 
 def remove_asset(filepath: Path):
@@ -18,11 +18,10 @@ def remove_asset(filepath: Path):
 
 downloader_semaphore = asyncio.Semaphore(6)
 
+
 async def handle_asset_download(
-		downloader_session: downloader.AzurlaneAsyncDownloader,
-		assetbasepath: Path,
-		result: CompareResult
-	) -> UpdateResult:
+	downloader_session: downloader.AzurlaneAsyncDownloader, assetbasepath: Path, result: CompareResult
+) -> UpdateResult:
 
 	newhash = result.new_hash
 	assert newhash is not None
@@ -35,14 +34,17 @@ async def handle_asset_download(
 
 
 async def update_assets(
-		downloader_session: downloader.AzurlaneAsyncDownloader,
-		comparison_results: dict[CompareType, list[CompareResult]],
-		client_directory: Path,
-		allow_deletion: bool = True
-	) -> list[UpdateResult]:
+	downloader_session: downloader.AzurlaneAsyncDownloader,
+	comparison_results: dict[CompareType, list[CompareResult]],
+	client_directory: Path,
+	allow_deletion: bool = True,
+) -> list[UpdateResult]:
 
 	assetbasepath = client_directory / "AssetBundles"
-	update_results = [UpdateResult(r, DownloadType.NoChange, BundlePath.construct(assetbasepath, r.new_hash.filepath)) for r in comparison_results[CompareType.Unchanged]]
+	update_results = [
+		UpdateResult(r, DownloadType.NoChange, BundlePath.construct(assetbasepath, r.new_hash.filepath))
+		for r in comparison_results[CompareType.Unchanged]
+	]
 
 	# handle all new or changed files
 	update_files = comparison_results[CompareType.New] + comparison_results[CompareType.Changed]
@@ -69,10 +71,8 @@ async def update_assets(
 
 
 async def download_and_parse_hashes(
-		version_result: VersionResult,
-		downloader_session: downloader.AzurlaneAsyncDownloader,
-		userconfig: UserConfig
-	) -> list[HashRow] | None:
+	version_result: VersionResult, downloader_session: downloader.AzurlaneAsyncDownloader, userconfig: UserConfig
+) -> list[HashRow] | None:
 
 	hashes = await downloader_session.download_hashes(version_result)
 	if not hashes:
@@ -99,7 +99,7 @@ def compare_hashes(oldhashes: Iterable[HashRow], newhashes: Iterable[HashRow]) -
 		elif hashrow == res.new_hash:
 			res.current_hash = hashrow
 			res.compare_type = CompareType.Unchanged
-		else: # file has changed
+		else:  # file has changed
 			res.current_hash = hashrow
 			res.compare_type = CompareType.Changed
 
@@ -133,28 +133,30 @@ def filter_hashes(update_results: list[UpdateResult]) -> list[HashRow]:
 
 
 async def _update_from_hashes(
-		version_result: VersionResult,
-		downloader_session: downloader.AzurlaneAsyncDownloader,
-		versioncontroller: versioncontrol.VersionController,
-		oldhashes: Iterable[HashRow],
-		newhashes: Iterable[HashRow],
-		allow_deletion: bool = True
-	) -> list[UpdateResult]:
+	version_result: VersionResult,
+	downloader_session: downloader.AzurlaneAsyncDownloader,
+	versioncontroller: versioncontrol.VersionController,
+	oldhashes: Iterable[HashRow],
+	newhashes: Iterable[HashRow],
+	allow_deletion: bool = True,
+) -> list[UpdateResult]:
 
 	comparison_results = compare_hashes(oldhashes, newhashes)
-	update_results = await update_assets(downloader_session, comparison_results, versioncontroller.client_directory, allow_deletion)
+	update_results = await update_assets(
+		downloader_session, comparison_results, versioncontroller.client_directory, allow_deletion
+	)
 	hashes_updated = filter_hashes(update_results)
 	versioncontroller.update_version_data(version_result, hashes_updated)
 	return update_results
 
 
 async def _update(
-		version_result: VersionResult,
-		downloader_session: downloader.AzurlaneAsyncDownloader,
-		userconfig: UserConfig,
-		versioncontroller: versioncontrol.VersionController,
-		ignore_hashfile: bool = False
-	) -> list[UpdateResult] | None:
+	version_result: VersionResult,
+	downloader_session: downloader.AzurlaneAsyncDownloader,
+	userconfig: UserConfig,
+	versioncontroller: versioncontrol.VersionController,
+	ignore_hashfile: bool = False,
+) -> list[UpdateResult] | None:
 
 	newhashes = await download_and_parse_hashes(version_result, downloader_session, userconfig)
 	if newhashes:
@@ -166,17 +168,19 @@ async def _update(
 
 
 async def update(
-		version_result: VersionResult,
-		downloader_session: downloader.AzurlaneAsyncDownloader,
-		userconfig: UserConfig,
-		versioncontroller: versioncontrol.VersionController,
-		force_refresh: bool = False,
-		ignore_hashfile: bool = False
-	)-> list[UpdateResult] | None:
+	version_result: VersionResult,
+	downloader_session: downloader.AzurlaneAsyncDownloader,
+	userconfig: UserConfig,
+	versioncontroller: versioncontrol.VersionController,
+	force_refresh: bool = False,
+	ignore_hashfile: bool = False,
+) -> list[UpdateResult] | None:
 
 	oldversion = versioncontroller.load_version_string(version_result.version_type)
 	if versioncontrol.compare_version_string(version_result.version, oldversion):
-		print(f"{version_result.version_type.name}: Current version {oldversion} is older than latest version {version_result.version}.")
+		print(
+			f"{version_result.version_type.name}: Current version {oldversion} is older than latest version {version_result.version}."
+		)
 		return await _update(version_result, downloader_session, userconfig, versioncontroller, ignore_hashfile)
 	else:
 		print(f"{version_result.version_type.name}: Current version {oldversion} is latest. ", end="")

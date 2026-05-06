@@ -61,7 +61,7 @@ async def execute(args):
 
 			if update_assets:
 				versioncontroller.save_difflog(vresult, update_assets)
-				if vresult.version_type != VersionType.AZL:
+				if vresult.version_type != VersionType.AZL and azl_current is not None:
 					versioncontroller.set_as_linked(vresult, azl_current)
 
 

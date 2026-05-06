@@ -6,7 +6,7 @@ from pathlib import Path
 from tqdm.asyncio import tqdm_asyncio
 
 from . import downloader, updater, versioncontrol
-from .classes import BundlePath, CompareType, DownloadType, HashRow, UpdateResult, UserConfig, VersionResult
+from .classes import BundlePath, CompareType, DownloadType, HashRow, UpdateResult, UserConfig, VersionResult, VersionType
 
 semaphore_concurrent_files = asyncio.Semaphore(5)
 
@@ -17,7 +17,7 @@ async def calc_md5hash(filepath: Path, chunk_size: int = 65536) -> str:
 		async with aiofile.async_open(filepath, "rb") as f:
 			async for chunk in f.iter_chunked(chunk_size):
 				if chunk:
-					md5.update(chunk)
+					md5.update(chunk)  # pyright: ignore [reportArgumentType]
 	return md5.hexdigest()
 
 
@@ -54,9 +54,7 @@ async def repair(
 	downloader_session: downloader.AzurlaneAsyncDownloader, versioncontroller: versioncontrol.VersionController
 ) -> list[UpdateResult]:
 	current_hashes = await hashrows_from_files(versioncontroller.client_directory)
-	expected_hashes = itertools.chain(
-		*filter(lambda x: x is not None, [versioncontroller.load_hash_file(vtype) for vtype in VersionType])
-	)
+	expected_hashes = itertools.chain(*filter(None, [versioncontroller.load_hash_file(vtype) for vtype in VersionType]))
 	comparison_results = updater.compare_hashes(current_hashes, expected_hashes)
 	update_results = await updater.update_assets(downloader_session, comparison_results, versioncontroller.client_directory)
 	return update_results
@@ -84,23 +82,29 @@ async def repair_hashfile(
 	# compare localhashes to diskhashes to determine which files have already been successfully downloaded
 	compare_results_disk = updater.compare_hashes(localhashes, diskhashes)
 	update_results_disk = {
-		comp_result.new_hash.filepath: UpdateResult(
-			comp_result, DownloadType.Success, BundlePath.construct(assetbasepath, comp_result.new_hash.filepath)
+		comp_result.new_hash.filepath: UpdateResult(  # pyright: ignore [reportOptionalMemberAccess]
+			comp_result,
+			DownloadType.Success,
+			BundlePath.construct(assetbasepath, comp_result.new_hash.filepath),  # pyright: ignore [reportOptionalMemberAccess]
 		)
 		for comp_result in compare_results_disk[CompareType.Changed]
 	}
 	update_results_disk.update(
 		{
-			comp_result.new_hash.filepath: UpdateResult(
-				comp_result, DownloadType.Success, BundlePath.construct(assetbasepath, comp_result.new_hash.filepath)
+			comp_result.new_hash.filepath: UpdateResult(  # pyright: ignore [reportOptionalMemberAccess]
+				comp_result,
+				DownloadType.Success,
+				BundlePath.construct(assetbasepath, comp_result.new_hash.filepath),  # pyright: ignore [reportOptionalMemberAccess]
 			)
 			for comp_result in compare_results_disk[CompareType.New]
 		}
 	)
 	update_results_disk.update(
 		{
-			comp_result.current_hash.filepath: UpdateResult(
-				comp_result, DownloadType.Removed, BundlePath.construct(assetbasepath, comp_result.current_hash.filepath)
+			comp_result.current_hash.filepath: UpdateResult(  # pyright: ignore [reportOptionalMemberAccess]
+				comp_result,
+				DownloadType.Removed,
+				BundlePath.construct(assetbasepath, comp_result.current_hash.filepath),  # pyright: ignore [reportOptionalMemberAccess]
 			)
 			for comp_result in compare_results_disk[CompareType.Deleted]
 		}

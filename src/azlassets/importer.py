@@ -33,7 +33,7 @@ def unpack(zipfile: ZipFile, client: Client, allow_older_version: bool = False):
 	print("Unpacking archive...")
 	for versiontype in VersionType:
 		# make sure the version file exists
-		if not "assets/" + versiontype.version_filename in zipfile.namelist():
+		if "assets/" + versiontype.version_filename not in zipfile.namelist():
 			print(
 				f"{versiontype.name}: The file {versiontype.version_filename} could not be found in the archive. Has the archive been modified?"
 			)
@@ -61,7 +61,7 @@ def unpack(zipfile: ZipFile, client: Client, allow_older_version: bool = False):
 			itertools.chain(*[v for comp_type, v in comparison_results.items() if comp_type != CompareType.Unchanged])
 		)
 		update_results = [
-			UpdateResult(r, DownloadType.NoChange, BundlePath.construct(assetbasepath, r.new_hash.filepath))
+			UpdateResult(r, DownloadType.NoChange, BundlePath.construct(assetbasepath, r.new_hash.filepath))  # pyright: ignore [reportOptionalMemberAccess]
 			for r in comparison_results[CompareType.Unchanged]
 		]
 
@@ -71,7 +71,7 @@ def unpack(zipfile: ZipFile, client: Client, allow_older_version: bool = False):
 			with tqdm(total=fileamount, desc=f"Extracting '{versiontype.hashname}' Files", unit="files") as progressbar:
 				for result in update_files:
 					if result.compare_type in [CompareType.New, CompareType.Changed]:
-						assetpath = BundlePath.construct(assetbasepath, result.new_hash.filepath)
+						assetpath = BundlePath.construct(assetbasepath, result.new_hash.filepath)  # pyright: ignore [reportOptionalMemberAccess]
 						if pathresult := extract_asset(zipfile, assetpath.inner, assetpath.full):
 							file_info_list.pop(pathresult)
 							update_results.append(
@@ -82,7 +82,7 @@ def unpack(zipfile: ZipFile, client: Client, allow_older_version: bool = False):
 						else:
 							files_not_found.append((assetpath, result))
 					elif result.compare_type == CompareType.Deleted:
-						assetpath = BundlePath.construct(assetbasepath, result.current_hash.filepath)
+						assetpath = BundlePath.construct(assetbasepath, result.current_hash.filepath)  # pyright: ignore [reportOptionalMemberAccess]
 						updater.remove_asset(assetpath.full)
 						update_results.append(UpdateResult(result, DownloadType.Removed, assetpath))
 					progressbar.update()

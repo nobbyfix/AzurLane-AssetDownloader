@@ -1,5 +1,23 @@
 # Changelog
 
+## [4.1.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v4.0.0...v4.1.0) (2026-05-06)
+
+
+### Features
+
+* add default useragent ([2bc24fe](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/2bc24fe5eb17b64d516f85b95565d469fa149375))
+
+
+### Bug Fixes
+
+* ensure AZL vtype is not None when linking ([b658033](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/b658033a1d1124776a0b7b085bbcefdf86251ebd))
+* potential issue during version linking if mainversion does not exist ([ef2b6de](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/ef2b6deff601d319112e97d9a9fcba10d8c828b9))
+
+
+### Documentation
+
+* Update README ([af3aa48](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/af3aa48a4ee315227478a90ab26455f518044f57))
+
 ## [4.0.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.5.0...v4.0.0) (2026-05-02)
 
 

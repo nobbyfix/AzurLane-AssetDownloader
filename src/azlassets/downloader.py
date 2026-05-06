@@ -2,6 +2,7 @@ import aiofile
 import aiohttp
 import traceback
 from pathlib import Path
+from typing import Self
 
 from .classes import VersionResult
 
@@ -61,3 +62,7 @@ class AzurlaneAsyncDownloader(aiohttp.ClientSession):
 			print(f"ERROR: An unexpected error occured while downloading '{filehash}' to '{save_destination}'.")
 			traceback.print_exception(type(e), e, e.__traceback__)
 			return False
+
+	# override return type from superclass
+	async def __aenter__(self) -> Self:
+		return await super().__aenter__()  # pyright: ignore [reportReturnType]

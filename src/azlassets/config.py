@@ -1,7 +1,7 @@
 import json
 import sys
 import yaml
-from importlib.resources import files
+from importlib.resources import as_file, files
 from pathlib import Path
 from shutil import copy
 
@@ -24,7 +24,8 @@ def create_user_config() -> bool:
 		print("Userconfig does not exist. A new one will be created.")
 		print("The useragent is using the default value and it is advised to set a custom one.")
 		YAML_CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
-		copy(YAML_TEMPLATE_PATH, YAML_CONFIG_PATH)
+		with as_file(YAML_TEMPLATE_PATH) as template_path:
+			copy(template_path, YAML_CONFIG_PATH)
 		return True
 	return False
 
@@ -33,7 +34,7 @@ def load_user_config() -> UserConfig:
 	# make sure the config file exists
 	create_user_config()
 
-	with open(YAML_CONFIG_PATH, "r", encoding="utf8") as file:
+	with YAML_CONFIG_PATH.open("r", encoding="utf8") as file:
 		yamlconfig = yaml.safe_load(file)
 
 	try:
@@ -54,7 +55,7 @@ def load_user_config() -> UserConfig:
 
 
 def load_client_config(client: Client) -> ClientConfig:
-	with open(CLIENT_CONFIG_PATH, "r", encoding="utf8") as f:
+	with CLIENT_CONFIG_PATH.open("r", encoding="utf8") as f:
 		configdata = json.load(f)
 
 	if client.name not in configdata:

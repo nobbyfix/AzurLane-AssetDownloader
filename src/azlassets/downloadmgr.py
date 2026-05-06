@@ -41,7 +41,11 @@ async def execute(args):
 
 	# parse version response
 	version_string = version_response.pb.version
-	versionlist = [try_parse_version_string(v, args.skip_unknown_version_error) for v in version_string if v.startswith("$")]
+	versionlist = []
+	for v in version_string:
+		if v.startswith("$"):
+			if vresult := try_parse_version_string(v, args.skip_unknown_version_error):
+				versionlist.append(vresult)
 
 	# find AZL version result
 	azl_current = None

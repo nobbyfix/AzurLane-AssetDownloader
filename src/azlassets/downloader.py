@@ -2,7 +2,6 @@ import aiofile
 import aiohttp
 import traceback
 from pathlib import Path
-from typing import Self
 
 from .classes import VersionResult
 
@@ -64,5 +63,5 @@ class AzurlaneAsyncDownloader(aiohttp.ClientSession):
 			return False
 
 	# override return type from superclass
-	async def __aenter__(self) -> Self:
+	async def __aenter__(self) -> "AzurlaneAsyncDownloader":
 		return await super().__aenter__()  # pyright: ignore [reportReturnType]

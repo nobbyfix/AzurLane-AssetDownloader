@@ -156,6 +156,10 @@ class VersionController:
 			return
 
 	def set_as_linked(self, subversion: SimpleVersionResult, mainversion: SimpleVersionResult):
-		main_difflog = self.load_difflog(mainversion)
-		main_difflog.add_linked_version(subversion)
-		self._save_raw_difflog(main_difflog)
+		if main_difflog := self.load_difflog(mainversion):
+			main_difflog.add_linked_version(subversion)
+			self._save_raw_difflog(main_difflog)
+		else:
+			print(
+				f"WARN: Tried to link subversion '{subversion}' to  mainversion '{mainversion}' but mainversion has no difflog!"
+			)

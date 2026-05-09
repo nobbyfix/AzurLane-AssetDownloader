@@ -16,7 +16,7 @@ def get_difflog_versionlist(parent_directory: Path, vtype: VersionType) -> list[
 def get_diff_files(
 	versioncontroller: versioncontrol.VersionController, vtype: VersionType, version_string: str | None = None
 ) -> Iterable[BundlePath]:
-	version_string = version_string or versioncontroller.get_latest_versionstring(vtype)
+	version_string = version_string or versioncontroller.load_version_string(vtype)
 	if version_string:
 		if difflog := versioncontroller.load_difflog(SimpleVersionResult(version=version_string, version_type=vtype)):
 			filtered_success_file_entries = filter((lambda i: i[1] != CompareType.Deleted), difflog.success_files.items())

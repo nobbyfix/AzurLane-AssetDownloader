@@ -89,19 +89,7 @@ class VersionController:
 		self.save_version_string(version.version_type, version.version)
 		self.save_hash_file(version.version_type, hashrows)
 
-	def get_latest_versionstring(self, version_type: VersionType) -> str | None:
-		version_diffdir = Path(self.client_directory, "difflog", version_type.name.lower())
-		latest_versionfile = Path(version_diffdir, "latest")
-		if latest_versionfile.exists():
-			with open(latest_versionfile, "r", encoding="utf8") as f:
-				return f.read()
 
-	def save_latest_versionstring(self, version: SimpleVersionResult):
-		version_diffdir = Path(self.client_directory, "difflog", version.version_type.name.lower())
-		version_diffdir.mkdir(parents=True, exist_ok=True)
-		latest_filepath = Path(version_diffdir, "latest")
-		with open(latest_filepath, "w", encoding="utf8") as f:
-			f.write(version.version)
 
 	def _save_raw_difflog(self, difflog: DiffLog):
 		version_diffdir = Path(self.client_directory, "difflog", difflog.version.version_type.name.lower())
@@ -139,11 +127,6 @@ class VersionController:
 
 		# save data to file
 		self._save_raw_difflog(difflog)
-
-		# update 'latest version' file if this version is newer than the currently latest one
-		latest_version = self.get_latest_versionstring(version.version_type)
-		if compare_version_string(version_new=version.version, version_old=latest_version):
-			self.save_latest_versionstring(version)
 
 	def load_difflog(self, version: SimpleVersionResult) -> DiffLog | None:
 		version_diffdir = Path(self.client_directory, "difflog", version.version_type.name.lower())

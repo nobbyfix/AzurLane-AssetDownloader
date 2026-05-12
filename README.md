@@ -26,7 +26,7 @@ The program can be executed using `azl <command>` with different commands availa
 ### Importer
 Using this is *not necessary* to get all files, but **recommended** as the asset server may not have all files available. An import will guarantee that all game assets will be available on your system (if so desired) and avoid potentially spamming the asset server with errors of missing files on the first download.
 
-The import supports all game clients (EN, JP, CN, KR, TW) and multiple forms of importing the assets. The recommended and easiest way is by downloading the `.xapk` from one of many Google Play Store app distributors (like APKMirror or APKPure). They can be found by searching for the package name, which are as follows:
+The import supports all game clients (EN, JP, CN, KR, TW) and multiple forms of importing the assets. The recommended and easiest way is by downloading the App Bundle from one of the Google Play Store app distributors (`.apkm` for APKMirror or `.xapk` for APKPure). They can be found by searching for the package name, which are as follows:
 - EN: com.YoStarEN.AzurLane
 - JP: com.YoStarJP.AzurLane
 - KR: kr.txwy.and.blhx
@@ -36,7 +36,7 @@ If the game is already installed on emulators, copy the obb file to your system.
 
 For CN client (not distributed through Google Play Store), download an APK from the [official website](https://game.bilibili.com/blhx/). Alternatively, the APK can be found in `/data/app/com.bilibili.azurlane-1/` on Android (Note: Root access required).
 
-The `import` command can be executed by passing it the filepath to the xapk/apk/obb:
+The `import` command can be executed by passing it the filepath to the apkm/xapk/apk/obb file:
 ```bash
 azl import [FILEPATH]
 ```

@@ -6,6 +6,25 @@ from pathlib import Path
 from .classes import VersionResult
 
 
+def get_chunk_size(file_size: int) -> int:
+	"""
+	Return an appropriate chunk size for streaming a file of the given size.
+
+	Args:
+		file_size: Expected file size in bytes
+
+	Returns:
+		int: Chunk size in bytes
+	"""
+	if file_size <= 16_384:  # ≤ 16 KB (~50% files) -> one chunk
+		return file_size or 1024  # fallback for 0-byte files
+	if file_size <= 131_072:  # ≤ 128 KB (~35% files) -> 64 KB
+		return 65_536
+	if file_size <= 4_194_304:  # ≤ 4 MB: (~14% files) -> 256 KB
+		return 262_144
+	return 1_048_576  # > 4 MB (top ~1% files): -> 1 MB
+
+
 class AzurlaneAsyncDownloader(aiohttp.ClientSession):
 	def __init__(self, cdn_url: str, useragent: str):
 		base_url = f"{cdn_url}/android/"
@@ -53,7 +72,10 @@ class AzurlaneAsyncDownloader(aiohttp.ClientSession):
 
 				save_destination.parent.mkdir(parents=True, exist_ok=True)
 				async with aiofile.async_open(save_destination, "wb") as file:
-					async for chunk in response.content.iter_chunked(1024 * 16):  # no idea what chuck size is best
+					# adjust chunksize based on filesize to reduce over-buffer for small files
+					# and syscalls for large files
+					chunksize = get_chunk_size(expected_file_size)
+					async for chunk in response.content.iter_chunked(chunksize):
 						await file.write(chunk)
 
 			return True

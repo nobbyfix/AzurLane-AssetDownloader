@@ -20,7 +20,7 @@ def calc_md5hash(data: bytes) -> str:
 	return md5.hexdigest()
 
 
-def unpack(zipfile: ZipFile, client: Client, allow_older_version: bool = False):
+def unpack(zipfile: ZipFile, client: Client):
 	# load config data from files
 	userconfig = config.load_user_config()
 	CLIENT_ASSET_DIR = Path(userconfig.asset_directory, client.name)
@@ -142,29 +142,29 @@ def extract_asset(zipfile: ZipFile, filepath: str, target: Path):
 		pass
 
 
-def extract_obb(path: Path, fallback_client: Client | None = None, allow_older_version: bool = False):
+def extract_obb(path: Path, fallback_client: Client | None = None):
 	for client in Client:
 		if client.package_name and re.match(rf".*{client.package_name}\.obb", path.name):
 			print(f"Determined client {client.name} from filename.")
 			with ZipFile(path, "r") as zipfile:
-				unpack(zipfile, client, allow_older_version)
+				unpack(zipfile, client)
 			break
 	else:
 		if fallback_client:
 			print(f"Unpacking using provided client {fallback_client.name}.")
 			with ZipFile(path, "r") as zipfile:
-				unpack(zipfile, fallback_client, allow_older_version)
+				unpack(zipfile, fallback_client)
 		else:
 			sys.exit(f'Filename "{path.name}" could not be associated with any known client.')
 
 
-def extract_xapk(path: Path, allow_older_version: bool = False):
+def extract_xapk(path: Path):
 	with ZipFile(path, "r") as xapk_archive:
-		# read the manifest file for information about the client, obbs and the apk paths inside the archive
+		# read the manifest file for information about the client and obb paths inside the archive
 		with xapk_archive.open("manifest.json", "r") as manifestfile:
 			manifest = json.loads(manifestfile.read().decode("utf8"))
 
-		# determine the client the xpak comes from
+		# determine the client the apk comes from
 		if client := Client.from_package_name(manifest["package_name"]):
 			print(f"Determined client {client.name} from manifest.json file.")
 			# find all obb archives and extract files from them
@@ -174,18 +174,45 @@ def extract_xapk(path: Path, allow_older_version: bool = False):
 					mainobb_filedata = io.BytesIO(mainobbfile.read())
 
 					with ZipFile(mainobb_filedata, "r") as main_obb:
-						unpack(main_obb, client, allow_older_version)
+						unpack(main_obb, client)
 		else:
 			print("Could not determine client from xapk manifest.json.")
 
 
-def extract(path: Path, fallback_client: Client | None = None, allow_older_version: bool = False):
+def extract_apkm(path: Path):
+	"""
+	Extract assets from an APKM archive.
+
+	Args:
+		path: Path to the APKM file
+	"""
+	with ZipFile(path, "r") as apkm_archive:
+		# read the info file for information about the client and obb paths inside the archive
+		with apkm_archive.open("info.json", "r") as infofile:
+			apkinfo = json.loads(infofile.read().decode("utf8"))
+
+		# determine the client the apk comes from
+		if client := Client.from_package_name(apkinfo["pname"]):
+			print(f"Determined client {client.name} from info.json file.")
+			# find all obb archives and extract files from them
+			for obb_expansion in apkinfo["obb_files"]:
+				with apkm_archive.open(obb_expansion, "r") as mainobbfile:
+					# need to load the full obb into memory, otherwise it has to constantly read the whole obb again and performance gets shit
+					mainobb_filedata = io.BytesIO(mainobbfile.read())
+
+					with ZipFile(mainobb_filedata, "r") as main_obb:
+						unpack(main_obb, client)
+		else:
+			print("Could not determine client from apkm info.json.")
+
+
+def extract(path: Path, fallback_client: Client | None = None):
 	if not path.exists():
 		sys.exit("This file does not exist.")
 
 	if path.suffix == ".obb":
 		print("File has .obb extension.")
-		extract_obb(path, fallback_client, allow_older_version)
+		extract_obb(path, fallback_client)
 	elif path.suffix == ".apk":
 		if fallback_client:
 			apk_client = fallback_client
@@ -195,10 +222,13 @@ def extract(path: Path, fallback_client: Client | None = None, allow_older_versi
 			print(f"File has .apk extension and no fallback client has been provided, assuming {apk_client.name} client.")
 
 		with ZipFile(path, "r") as zipfile:
-			unpack(zipfile, apk_client, allow_older_version)
+			unpack(zipfile, apk_client)
 	elif path.suffix == ".xapk":
 		print("File has .xapk extension.")
-		extract_xapk(path, allow_older_version)
+		extract_xapk(path)
+	elif path.suffix == ".apkm":
+		print("File has .apkm extension.")
+		extract_apkm(path)
 	else:
 		sys.exit(f'Unknown file extension "{path.suffix}".')
 

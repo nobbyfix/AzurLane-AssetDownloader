@@ -85,7 +85,7 @@ class AzurlaneAsyncDownloader(aiohttp.ClientSession):
 			traceback.print_exception(type(e), e, e.__traceback__)
 			return
 
-	async def download_asset(self, filehash: str, save_destination: Path, expected_file_size: int) -> bool:
+	async def download_asset(self, filehash: str, save_destination: Path, expected_file_size: int, _retry_count: int = 0) -> bool:
 		"""
 		Download an asset file and write it to disk.
 		Prints an error and traceback to stdout on any exception.
@@ -119,6 +119,13 @@ class AzurlaneAsyncDownloader(aiohttp.ClientSession):
 						await file.write(chunk)
 
 			return True
+		except TimeoutError:
+			if _retry_count < 2:
+				return await self.download_asset(filehash, save_destination, expected_file_size, _retry_count + 1)
+			print(
+				f"ERROR: Connection timed out 3 times while downloading '{filehash}' to '{save_destination}'. Aborting file download."
+			)
+			return False
 		except Exception as e:
 			print(f"ERROR: An unexpected error occured while downloading '{filehash}' to '{save_destination}'.")
 			traceback.print_exception(type(e), e, e.__traceback__)

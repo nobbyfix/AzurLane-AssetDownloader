@@ -1,6 +1,5 @@
 import itertools
 import multiprocessing as mp
-from collections.abc import Iterable
 from pathlib import Path
 
 from azlassets import config, imgrecon, versioncontrol

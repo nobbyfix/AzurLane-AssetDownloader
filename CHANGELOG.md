@@ -1,5 +1,31 @@
 # Changelog
 
+## [4.1.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v4.0.0...v4.1.0) (2026-05-12)
+
+
+### Features
+
+* add default useragent ([2bc24fe](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/2bc24fe5eb17b64d516f85b95565d469fa149375))
+* support APKMirror .apkm files for import ([b761b38](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/b761b38b12021ab553a57230eb7f7efa8c61109e))
+
+
+### Bug Fixes
+
+* ensure AZL vtype is not None when linking ([b658033](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/b658033a1d1124776a0b7b085bbcefdf86251ebd))
+* failing download with trailing space on version hash ([aeae21a](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/aeae21ad4c499acc11c82563cd4a5740ae77c2f1))
+* handle asset download timeouts with 2 times retry ([c648bf5](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/c648bf50ca91fa5bd2d325b64480ec832b2e1ebf))
+* potential issue during version linking if mainversion does not exist ([ef2b6de](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/ef2b6deff601d319112e97d9a9fcba10d8c828b9))
+
+
+### Performance Improvements
+
+* faster download with small files by allowing more files into connection pool ([952bc10](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/952bc103b6b3a86ff974c990ca5fbd3ac837379d))
+
+
+### Documentation
+
+* Update README ([af3aa48](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/af3aa48a4ee315227478a90ab26455f518044f57))
+
 ## [4.0.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v3.5.0...v4.0.0) (2026-05-02)
 
 

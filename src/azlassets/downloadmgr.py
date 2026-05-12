@@ -7,6 +7,20 @@ from azlassets.classes import Client, UnknownVersionTypeError, VersionResult, Ve
 
 
 def try_parse_version_string(vstring: str, skip_error: bool = False) -> VersionResult | None:
+	"""
+	Parse a version string, with optional suppression of errors.
+
+	Args:
+		vstring: The version string to parse
+		skip_error: If True, an :class:`UnknownVersionTypeError` is caught, a warning is printed,
+			and None is returned instead of raising
+
+	Returns:
+		VersionResult or None: The parsed result, or None if the type was unknown and ``skip_error`` is True
+
+	Raises:
+		UnknownVersionTypeError: If the version type is unrecognised and ``skip_error`` is False
+	"""
 	try:
 		return versioncontrol.parse_version_string(vstring)
 	except UnknownVersionTypeError as e:
@@ -18,6 +32,9 @@ def try_parse_version_string(vstring: str, skip_error: bool = False) -> VersionR
 
 
 async def execute(args):
+	"""
+	Main async entry point for the download manager.
+	"""
 	# load config data from files
 	userconfig = config.load_user_config()
 	clientconfig = config.load_client_config(args.client)
@@ -64,7 +81,7 @@ async def execute(args):
 				)
 
 			if update_assets:
-				versioncontroller.save_difflog(vresult, update_assets)
+				versioncontroller.update_difflog(vresult, update_assets)
 				if vresult.version_type != VersionType.AZL and azl_current is not None:
 					versioncontroller.set_as_linked(vresult, azl_current)
 

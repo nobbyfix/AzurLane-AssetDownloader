@@ -15,12 +15,28 @@ from azlassets.classes import BundlePath, Client, CompareType, DownloadType, Sim
 
 
 def calc_md5hash(data: bytes) -> str:
+	"""
+	Calculate MD5 hash of ``data``.
+
+	Args:
+		data: Raw bytes to hash
+
+	Returns:
+		str: The MD5 hash as a lowercase hexadecimal string
+	"""
 	md5 = hashlib.md5()
 	md5.update(data)
 	return md5.hexdigest()
 
 
 def unpack(zipfile: ZipFile, client: Client):
+	"""
+	Unpack an OBB/APK archive into the client's asset directory.
+
+	Args:
+		zipfile: Open archive to unpack
+		client: Client whose asset directory will receive the extracted files
+	"""
 	# load config data from files
 	userconfig = config.load_user_config()
 	CLIENT_ASSET_DIR = Path(userconfig.asset_directory, client.name)
@@ -83,7 +99,7 @@ def unpack(zipfile: ZipFile, client: Client):
 							files_not_found.append((assetpath, result))
 					elif result.compare_type == CompareType.Deleted:
 						assetpath = BundlePath.construct(assetbasepath, result.current_hash.filepath)  # pyright: ignore [reportOptionalMemberAccess]
-						updater.remove_asset(assetpath.full)
+						updater.delete_asset_safe(assetpath.full)
 						update_results.append(UpdateResult(result, DownloadType.Removed, assetpath))
 					progressbar.update()
 
@@ -122,11 +138,21 @@ def unpack(zipfile: ZipFile, client: Client):
 		# update version string, hashes and difflog
 		version = SimpleVersionResult(version=obbversion, version_type=versiontype)
 		hashes_updated = updater.filter_hashes(update_results)
-		versioncontroller.update_version_data(version, hashes_updated)
-		versioncontroller.save_difflog(version, update_results)
+		versioncontroller.update_version_diffdata(version, hashes_updated, update_results)
 
 
-def extract_asset(zipfile: ZipFile, filepath: str, target: Path):
+def extract_asset(zipfile: ZipFile, filepath: str, target: Path) -> str | None:
+	"""
+	Extract a single asset from the archive to ``target``.
+
+	Args:
+		zipfile: Open archive to extract from
+		filepath: Asset path relative to ``assets/AssetBundles/``
+		target: Destination path to save the extracted file to
+
+	Returns:
+		str or None: The resolved in-archive path on success, None if not found
+	"""
 	target.parent.mkdir(exist_ok=True, parents=True)
 
 	if "." in Path(filepath).name:
@@ -143,6 +169,13 @@ def extract_asset(zipfile: ZipFile, filepath: str, target: Path):
 
 
 def extract_obb(path: Path, fallback_client: Client | None = None):
+	"""
+	Extract an OBB file, inferring the client from the filename.
+
+	Args:
+		path: Path to the OBB file
+		fallback_client: Client to use if client can't be determined from filename
+	"""
 	for client in Client:
 		if client.package_name and re.match(rf".*{client.package_name}\.obb", path.name):
 			print(f"Determined client {client.name} from filename.")
@@ -159,6 +192,12 @@ def extract_obb(path: Path, fallback_client: Client | None = None):
 
 
 def extract_xapk(path: Path):
+	"""
+	Extract assets from an XAPK archive.
+
+	Args:
+		path: Path to the XAPK file
+	"""
 	with ZipFile(path, "r") as xapk_archive:
 		# read the manifest file for information about the client and obb paths inside the archive
 		with xapk_archive.open("manifest.json", "r") as manifestfile:
@@ -207,6 +246,14 @@ def extract_apkm(path: Path):
 
 
 def extract(path: Path, fallback_client: Client | None = None):
+	"""
+	Dispatch extraction based on file extension.
+	Exits with an error message if the file doesn't exist or has an unknown extension.
+
+	Args:
+		path: Path to the archive file
+		fallback_client: Client to use when it cannot be inferred from the file
+	"""
 	if not path.exists():
 		sys.exit("This file does not exist.")
 

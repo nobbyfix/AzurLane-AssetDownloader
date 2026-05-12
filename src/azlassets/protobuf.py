@@ -5,11 +5,24 @@ PROTOBUFS = {}
 
 
 def import_pb(pb: int, addname: str = ""):
+	"""
+	Import a protobuf module.
+
+	Args:
+		pb: The protobuf file number
+		addname: Additional name suffix for the protobuf
+	"""
 	module = importlib.import_module(f".p{pb}{addname}_pb_pb2", "azlassets.proto")
 	PROTOBUFS[pb] = module
 
 
 def import_pb_with_retry(pb: int):
+	"""
+	Import a protobuf module with retry mechanism.
+
+	Args:
+		pb: The protobuf file number
+	"""
 	try:
 		import_pb(pb)
 	except ModuleNotFoundError:
@@ -47,7 +60,16 @@ HEADER_LEN = 2
 HEADER_NOID_LEN = ADV_HEADER_LEN - HEADER_LEN
 
 
-def serialize_pb(basic_pb_command):
+def serialize_pb(basic_pb_command: BasicCommand) -> bytearray:
+	"""
+	Serialize a protobuf command.
+
+	Args:
+		basic_pb_command: The protobuf command to serialize
+
+	Returns:
+		bytearray: The serialized command bytes
+	"""
 	payload = bytearray(basic_pb_command.pb.SerializeToString())
 
 	header_bytes = ((len(payload) or 1) + HEADER_NOID_LEN).to_bytes(2, byteorder="big")
@@ -65,7 +87,16 @@ def serialize_pb(basic_pb_command):
 	return command_bytes
 
 
-def deserialize_header(header_bytes):
+def deserialize_header(header_bytes: bytes) -> tuple[int, int, int]:
+	"""
+	Deserialize header bytes.
+
+	Args:
+		header_bytes: The header bytes to deserialize
+
+	Returns:
+		tuple: A tuple containing (payload_size, command_id, index)
+	"""
 	if not header_bytes[2] == 0:
 		raise InvalidHeaderError("Received invalid header.")
 	payload_size = (header_bytes[0] << 8 | header_bytes[1]) - HEADER_NOID_LEN
@@ -74,7 +105,18 @@ def deserialize_header(header_bytes):
 	return payload_size, command_id, index
 
 
-def deserialize_pb(command_id, index, payload_bytes):
+def deserialize_pb(command_id: int, index: int, payload_bytes: bytes) -> BasicCommand | None:
+	"""
+	Deserialize a protobuf command.
+
+	Args:
+		command_id: The command ID
+		index: The command index
+		payload_bytes: The payload bytes
+
+	Returns:
+		BasicCommand | None: The deserialized command, or ```None`` if it failed to deserialize.
+	"""
 	basiccmd = BasicCommand(command_id)
 	if hasattr(basiccmd, "pb"):
 		basiccmd.pb.ParseFromString(payload_bytes)
@@ -91,27 +133,37 @@ class ConnectionSocket(socket.socket):
 	def disconnect(self):
 		self.close()
 
-	def send_command(self, commandid, index, **kwargs):
+	def send_command(self, commandid: int, index: int, **kwargs):
 		print(f"Sending Command {commandid}.")
 		command = BasicCommand(commandid, index)
 		for k, v in kwargs.items():
 			setattr(command.pb, k, v)
 		self.send(serialize_pb(command))
 
-	def recv_command(self):
+	def recv_command(self) -> BasicCommand | None:
 		header = self.recv_bytes(ADV_HEADER_LEN)
 		payload_size, command_id, index = deserialize_header(header)
 		payload = self.recv_bytes(payload_size)
 		return deserialize_pb(command_id, index, payload)
 
-	def recv_bytes(self, bytesize: int):
+	def recv_bytes(self, bytesize: int) -> bytes:
 		data = b""
 		while len(data) < bytesize:
 			data += self.recv(bytesize - len(data))
 		return data
 
 
-def get_version_response(gateip, gateport):
+def get_version_response(gateip, gateport) -> BasicCommand | None:
+	"""
+	Get version response from game server.
+
+	Args:
+		gateip: The gate IP address
+		gateport: The gate port
+
+	Returns:
+		BasicCommand | None: The version response as protobuf command, or ``None`` if it failed.
+	"""
 	with ConnectionSocket() as socket:
 		socket.connect((gateip, gateport))
 		socket.send_command(10800, 0, state=21, platform="0")

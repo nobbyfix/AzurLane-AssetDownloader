@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Self
+from typing import Any, Self
 
 
 class UnknownVersionTypeError(NotImplementedError):
@@ -39,10 +39,20 @@ class VersionType(VersionTypeDataMixin, Enum):
 	def __str__(self) -> str:
 		return self.name.lower()
 
+	def __hash__(self) -> int:
+		return Enum.__hash__(self)
+
 	@property
 	def version_filename(self) -> str:
 		"""
-		Full version filename using the suffix.
+		Get the full version filename for this type.
+
+		For types without a suffix (e.g. ``AZL``), returns ``version.txt``.
+		For types with a suffix (e.g. ``CV``), returns ``version-{suffix}.txt``
+		(e.g. ``version-cv.txt``).
+
+		Returns:
+			str: The formatted version filename
 		"""
 		suffix = self.suffix
 		if suffix:
@@ -52,7 +62,14 @@ class VersionType(VersionTypeDataMixin, Enum):
 	@property
 	def hashes_filename(self) -> str:
 		"""
-		Full hashes filename using the suffix.
+		Get the full hashes filename for this type.
+
+		For types without a suffix (e.g. ``AZL``), returns ``hashes.csv``.
+		For types with a suffix (e.g. ``CV``), returns ``hashes-{suffix}.csv``
+		(e.g. ``hashes-cv.csv``).
+
+		Returns:
+			str: The formatted hashes filename
 		"""
 		suffix = self.suffix
 		if suffix:
@@ -62,7 +79,13 @@ class VersionType(VersionTypeDataMixin, Enum):
 	@classmethod
 	def from_hashname(cls, hashname: str) -> Self | None:
 		"""
-		Returns a VersionType member with matching *hashname* if match exists, otherwise None.
+		Get a VersionType member with matching hashname.
+
+		Args:
+			hashname: The hashname to match
+
+		Returns:
+			VersionType or None: The matching VersionType member or None if no match
 		"""
 		if not cls.__hash2member_map__:
 			cls.__hash2member_map__ = {member.hashname: member for member in cls}
@@ -70,31 +93,37 @@ class VersionType(VersionTypeDataMixin, Enum):
 
 
 @dataclass
-class AbstractClientDataMixin:
+class ClientDataMixin:
 	locale_code: str
 	package_name: str
+	"""Package name on the Google Play Store."""
 	active: bool = field(repr=False, default=True)
+	"""Whether the Client is receiving updates."""
 
 
-class AbstractClient(AbstractClientDataMixin, Enum):
+class Client(ClientDataMixin, Enum):
 	__package_name_map__: dict[str, Self] = {}
 
-	@classmethod
-	def from_package_name(cls, package_name: str) -> Self | None:
-		"""
-		Returns a Client member with matching *package_name* if match exists, otherwise None.
-		"""
-		if not cls.__package_name_map__:
-			cls.__package_name_map__ = {member.package_name: member for member in cls}
-		return cls.__package_name_map__.get(package_name)
-
-
-class Client(AbstractClient):
 	EN = "en-US", "com.YoStarEN.AzurLane"
 	JP = "ja-JP", "com.YoStarJP.AzurLane"
 	CN = "zh-CN", ""
 	KR = "ko-KR", "kr.txwy.and.blhx"
 	TW = "zh-TW", "com.hkmanjuu.azurlane.gp"
+
+	@classmethod
+	def from_package_name(cls, package_name: str) -> Self | None:
+		"""
+		Get a Client member with matching package name.
+
+		Args:
+			package_name: The package name to match
+
+		Returns:
+			Client or None: The matching Client member or None if no match
+		"""
+		if not cls.__package_name_map__:
+			cls.__package_name_map__ = {member.package_name: member for member in cls}
+		return cls.__package_name_map__.get(package_name)
 
 
 @dataclass
@@ -130,6 +159,16 @@ class BundlePath:
 
 	@staticmethod
 	def construct(parentdir: Path, inner: Path | str) -> "BundlePath":
+		"""
+		Construct a BundlePath from parent directory and inner path.
+
+		Args:
+			parentdir: The parent directory
+			inner: The inner path
+
+		Returns:
+			BundlePath: The constructed BundlePath object
+		"""
 		fullpath = Path(parentdir, inner)
 		return BundlePath(fullpath, str(inner))
 
@@ -171,12 +210,34 @@ class DiffLog:
 	failed_files: dict[BundlePath, CompareType] = field(default_factory=dict)
 
 	def add_linked_version(self, version: SimpleVersionResult):
+		"""
+		Add a version as linked to this difflog.
+
+		Args:
+			version: The version to add as linked
+		"""
 		if version.version_type not in self.linked_versions:
 			self.linked_versions[version.version_type] = []
 		if version.version not in self.linked_versions[version.version_type]:
 			self.linked_versions[version.version_type].append(version.version)
 
-	def to_json(self) -> dict:
+	def to_json(self) -> dict[str, Any]:
+		"""
+		Convert this DiffLog to a JSON-serialisable dict.
+
+		The returned structure is::
+
+			{
+				"version":		 str,
+				"major":		   bool,
+				"linked_versions": {VersionType.name: [version_str, ...]},
+				"success_files":   {inner_path: CompareType.name, ...},
+				"failed_files":	{inner_path: CompareType.name, ...},
+			}
+
+		Returns:
+			dict: The DiffLog data in JSON-serialisable format
+		"""
 		data = {
 			"version": self.version.version,
 			"major": self.major,
@@ -187,7 +248,18 @@ class DiffLog:
 		return data
 
 	@staticmethod
-	def from_json(diffdata: dict, vtype: VersionType, client_directory: Path):
+	def from_json(diffdata: dict[str, Any], vtype: VersionType, client_directory: Path):
+		"""
+		Construct a DiffLog object from JSON data.
+
+		Args:
+			diffdata: Dict produced by :meth:``to_json``
+			vtype: The VersionType that owns this log
+			client_directory: Root client directory
+
+		Returns:
+			DiffLog: The constructed DiffLog object
+		"""
 		version = SimpleVersionResult(version=diffdata["version"], version_type=vtype)
 		major = diffdata.get("major", False)
 		linked_versions = {VersionType[vt_str]: versions for vt_str, versions in diffdata.get("linked_versions", {}).items()}

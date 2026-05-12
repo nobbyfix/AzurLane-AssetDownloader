@@ -91,7 +91,7 @@ async def hashrows_from_files(client_directory: Path) -> list[HashRow]:
 	"""
 	assetbasepath = Path(client_directory, "AssetBundles")
 	print("Loading list of all files... ", end="")
-	filepaths = [fp for fp in assetbasepath.rglob("*") if not fp.is_file()]
+	filepaths = [fp for fp in assetbasepath.rglob("*") if fp.is_file()]
 	tasks = [hashrow_from_file(assetbasepath, fp) for fp in filepaths]
 	print("Done.\nChecking all files...")
 	return await tqdm_asyncio.gather(*tasks, desc="File Progress", unit="files")

@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 from collections import defaultdict
 from collections.abc import Iterable
 from pathlib import Path
@@ -23,6 +24,7 @@ def delete_asset_safe(filepath: Path):
 
 
 downloader_semaphore = asyncio.Semaphore(32)
+large_file_semaphore = asyncio.Semaphore(2)
 
 
 async def handle_asset_download(
@@ -44,8 +46,14 @@ async def handle_asset_download(
 		raise ValueError(f"ERROR: New hash for {result} is None!")
 
 	assetpath = BundlePath.construct(assetbasepath, newhash.filepath)
-	async with downloader_semaphore:  # prevent queueing into connection pool, since wait time in pool counts towards timeout
-		download_success = await downloader_session.download_asset(newhash.md5hash, assetpath.full, newhash.size)
+
+	# Large files acquire their own semaphore first to prevent them from saturating
+	# the connection pool and starving each other.
+	is_large_file = newhash.size > 10_485_760  # 10 MB
+	large_file_ctx = large_file_semaphore if is_large_file else contextlib.nullcontext()
+	async with large_file_ctx:
+		async with downloader_semaphore:  # prevent queueing into connection pool, since wait time in pool counts towards timeout
+			download_success = await downloader_session.download_asset(newhash.md5hash, assetpath.full, newhash.size)
 
 	return UpdateResult(result, DownloadType.Success if download_success else DownloadType.Failed, assetpath)
 

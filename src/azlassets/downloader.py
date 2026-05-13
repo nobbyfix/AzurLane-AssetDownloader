@@ -34,8 +34,9 @@ class AzurlaneAsyncDownloader(aiohttp.ClientSession):
 
 	def __init__(self, cdn_url: str, useragent: str):
 		base_url = f"{cdn_url}/android/"
-		limited_tcp_connector = aiohttp.TCPConnector(limit_per_host=6)
-		super().__init__(base_url=base_url, headers={"user-agent": useragent}, connector=limited_tcp_connector)
+		limited_tcp_connector = aiohttp.TCPConnector(limit_per_host=10, enable_cleanup_closed=True)
+		timeout = aiohttp.ClientTimeout(total=None, sock_connect=30, sock_read=10)
+		super().__init__(base_url=base_url, headers={"user-agent": useragent}, connector=limited_tcp_connector, timeout=timeout)
 
 	async def get_hashes(self, versionhash: str) -> aiohttp.ClientResponse:
 		"""

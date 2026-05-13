@@ -23,7 +23,7 @@ def delete_asset_safe(filepath: Path):
 		print(f"WARN: Tried to remove non-existant asset at {filepath}")
 
 
-downloader_semaphore = asyncio.Semaphore(32)
+downloader_semaphore = asyncio.Semaphore(30)
 large_file_semaphore = asyncio.Semaphore(2)
 
 

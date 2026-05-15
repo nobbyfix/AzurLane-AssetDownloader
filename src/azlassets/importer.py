@@ -6,6 +6,8 @@ import re
 import shutil
 import sys
 from collections import defaultdict
+from collections.abc import Callable
+from dataclasses import dataclass
 from pathlib import Path
 from tqdm import tqdm
 from zipfile import ZipFile
@@ -191,58 +193,69 @@ def extract_obb(path: Path, fallback_client: Client | None = None):
 			sys.exit(f'Filename "{path.name}" could not be associated with any known client.')
 
 
-def extract_xapk(path: Path):
+@dataclass
+class ApkArchiveFormat:
+	manifest_file: str
+	package_name_key: str
+	expansions_key: str
+	expansion_path_fn: Callable
+
+
+APK_FORMATS = {
+	".xapk": ApkArchiveFormat(
+		manifest_file="manifest.json",
+		package_name_key="package_name",
+		expansions_key="expansions",
+		expansion_path_fn=lambda entry: entry["file"],
+	),
+	".apkm": ApkArchiveFormat(
+		manifest_file="info.json",
+		package_name_key="pname",
+		expansions_key="obb_files",
+		expansion_path_fn=lambda entry: entry,
+	),
+}
+
+
+def extract_special_apk(path: Path, fmt: ApkArchiveFormat):
 	"""
-	Extract assets from an XAPK archive.
+	Extract assets from an XAPK or APKM archive.
 
 	Args:
-		path: Path to the XAPK file
+	    path: Path to the XAPK or APKM file
 	"""
-	with ZipFile(path, "r") as xapk_archive:
-		# read the manifest file for information about the client and obb paths inside the archive
-		with xapk_archive.open("manifest.json", "r") as manifestfile:
-			manifest = json.loads(manifestfile.read().decode("utf8"))
+	with ZipFile(path, "r") as archive:
+		with archive.open(fmt.manifest_file, "r") as f:
+			manifest = json.loads(f.read().decode("utf8"))
 
-		# determine the client the apk comes from
-		if client := Client.from_package_name(manifest["package_name"]):
-			print(f"Determined client {client.name} from manifest.json file.")
-			# find all obb archives and extract files from them
-			for obb_expansion in manifest["expansions"]:
-				with xapk_archive.open(obb_expansion["file"], "r") as mainobbfile:
-					# need to load the full obb into memory, otherwise it has to constantly read the whole obb again and performance gets shit
-					mainobb_filedata = io.BytesIO(mainobbfile.read())
-
-					with ZipFile(mainobb_filedata, "r") as main_obb:
-						unpack(main_obb, client)
+		if client := Client.from_package_name(manifest[fmt.package_name_key]):
+			print(f"Determined client {client.name} from {fmt.manifest_file}.")
+			for expansion in manifest[fmt.expansions_key]:
+				obb_path = fmt.expansion_path_fn(expansion)
+				with archive.open(obb_path, "r") as obb_file:
+					# load full obb into memory to avoid repeated seeks over the outer zip
+					obb_data = io.BytesIO(obb_file.read())
+					with ZipFile(obb_data, "r") as obb:
+						unpack(obb, client)
 		else:
-			print("Could not determine client from xapk manifest.json.")
+			print(f"Could not determine client from {fmt.manifest_file}.")
 
 
-def extract_apkm(path: Path):
+def detect_and_extract_special_apk(path: Path) -> bool:
 	"""
-	Extract assets from an APKM archive.
+	Detects the format and then extracts assets from an XAPK or APKM archive.
 
 	Args:
-		path: Path to the APKM file
+		path: Path to the XAPK or APKM file
+
+	Returns:
+		bool: False if the format does not match XAPK or APKMm else True
 	"""
-	with ZipFile(path, "r") as apkm_archive:
-		# read the info file for information about the client and obb paths inside the archive
-		with apkm_archive.open("info.json", "r") as infofile:
-			apkinfo = json.loads(infofile.read().decode("utf8"))
-
-		# determine the client the apk comes from
-		if client := Client.from_package_name(apkinfo["pname"]):
-			print(f"Determined client {client.name} from info.json file.")
-			# find all obb archives and extract files from them
-			for obb_expansion in apkinfo["obb_files"]:
-				with apkm_archive.open(obb_expansion, "r") as mainobbfile:
-					# need to load the full obb into memory, otherwise it has to constantly read the whole obb again and performance gets shit
-					mainobb_filedata = io.BytesIO(mainobbfile.read())
-
-					with ZipFile(mainobb_filedata, "r") as main_obb:
-						unpack(main_obb, client)
-		else:
-			print("Could not determine client from apkm info.json.")
+	fmt = APK_FORMATS.get(path.suffix.lower())
+	if fmt:
+		extract_special_apk(path, fmt)
+		return True
+	return True
 
 
 def extract(path: Path, fallback_client: Client | None = None):
@@ -270,14 +283,10 @@ def extract(path: Path, fallback_client: Client | None = None):
 
 		with ZipFile(path, "r") as zipfile:
 			unpack(zipfile, apk_client)
-	elif path.suffix == ".xapk":
-		print("File has .xapk extension.")
-		extract_xapk(path)
-	elif path.suffix == ".apkm":
-		print("File has .apkm extension.")
-		extract_apkm(path)
+	elif detect_and_extract_special_apk(path):
+		pass
 	else:
-		sys.exit(f'Unknown file extension "{path.suffix}".')
+		sys.exit(f"Unknown file extension {path.suffix!r}.")
 
 
 def execute_from_args(args):

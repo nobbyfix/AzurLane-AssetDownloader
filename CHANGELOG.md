@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.2.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v4.1.0...v4.2.0) (2026-05-16)
+
+
+### Features
+
+* add extract argument to download subcommand ([db32ea9](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/db32ea9516e312d4af6890f201555f0ce1283934))
+
 ## [4.1.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v4.0.0...v4.1.0) (2026-05-12)
 
 

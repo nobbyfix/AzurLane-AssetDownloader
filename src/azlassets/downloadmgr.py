@@ -2,7 +2,7 @@ import asyncio
 import sys
 from pathlib import Path
 
-from azlassets import config, downloader, protobuf, repair, updater, versioncontrol
+from azlassets import config, downloader, extractor, protobuf, repair, updater, versioncontrol
 from azlassets.classes import Client, UnknownVersionTypeError, VersionResult, VersionType
 
 
@@ -84,6 +84,9 @@ async def execute(args):
 				versioncontroller.update_difflog(vresult, update_assets)
 				if vresult.version_type != VersionType.AZL and azl_current is not None:
 					versioncontroller.set_as_linked(vresult, azl_current)
+
+	if args.extract:
+		extractor.extract_by_client(args.client)
 
 
 def execute_from_args(args):

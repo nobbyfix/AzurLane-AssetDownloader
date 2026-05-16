@@ -38,6 +38,13 @@ def add_subparser_download(parser):
 	download_parser = parser.add_parser("download", help="Download assets for a client")
 	download_parser.add_argument("client", type=str, choices=Client.__members__, help="client to update")
 	download_parser.add_argument(
+		"-e",
+		"--extract",
+		default=False,
+		action=argparse.BooleanOptionalAction,
+		help="Extract downloaded asset bundles to PNG images after download.",
+	)
+	download_parser.add_argument(
 		"--force-refresh",
 		default=False,
 		action=argparse.BooleanOptionalAction,

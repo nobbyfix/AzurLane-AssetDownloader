@@ -55,6 +55,7 @@ azl download [CLIENT]
 Where `CLIENT` is one of EN, CN, JP, KR or TW. Check downloaded/deleted files using difflog files in `ClientAssets/[CLIENT]/difflog`.
 
 #### Additional Arguments
+- `-e`, `--extract`: Automatically starts the extraction routine after the download
 - `--force-refresh`: Ignores version check, useful after editing config
 - `--repair`: Checks all files and downloads only missing ones, useful for resuming crashed downloads
 - `--check-integrity`: Checks for modified, deleted, or corrupt files and redownloads them

@@ -57,6 +57,31 @@ def try_safe_image(image, target: Path) -> Path:
 			return target
 
 
+def try_create_directory(directory: Path, _count: int = 0) -> Path:
+	"""
+	Tries to create a directory, appending a number to the name until a free path is found.
+	The number starts at 1 after the first fail, increasing by 1 for each additional fail.
+
+	Args:
+		directory: The directory that is attempted to be created
+		_count: Current counter for the number to be appended
+
+	Returns:
+		Path: The path of the final directory that was created
+	"""
+	if _count > 0:
+		dir_with_count = directory.with_name(f"{directory.name} ({_count})")
+	else:
+		dir_with_count = directory
+
+	try:
+		dir_with_count.mkdir(parents=True)
+	except FileExistsError:
+		try_create_directory(directory, _count + 1)
+
+	return dir_with_count
+
+
 def extract_assetbundle(bpath: BundlePath, targetdir: Path) -> Path | None:
 	"""
 	Extract images from an assetbundle and write them as PNGs.
@@ -205,6 +230,7 @@ class ClientExtractor:
 
 		print("Starting extraction...")
 		extract_directory = Path(self.client_extract_directory, difflog.version.version)
+		extract_directory = try_create_directory(extract_directory)
 		with mp.Pool(processes=mp.cpu_count() - 1) as pool:
 			for bundlepath in total_files:
 				pool.apply_async(

@@ -62,17 +62,17 @@ Where `CLIENT` is one of EN, CN, JP, KR or TW. Check downloaded/deleted files us
 - `--skip-unknown-version-error`: Ignores the error when a new version type gets added to the game
 
 ### Extractor
-The asset extraction supports extraction of all newly downloaded files or single asset bundles.
+The asset extraction supports extraction of all newly downloaded files or single asset bundles and directories.
 
 ```bash
 azl extract [CLIENT]
 ```
 
-Where `CLIENT` is one of EN, CN, JP, KR or TW. Extracted images will be saved in `ClientExtract/[CLIENT]/`. Since only Texture2D assets are exported, it's not desired to try to export from all assetbundles (See [settings section](#settings)).
+Where `CLIENT` is one of EN, CN, JP, KR or TW. Extracted images will be saved in `ClientExtract/[CLIENT]/` in a subdirectory with the version information as the name. Since only Texture2D assets are exported, it's not desired to try to export from all assetbundles (See [settings section](#settings)).
 
 Using the `-f` or `--filepath` a path for extraction can be passed to the program:
 ```bash
 azl extractor -f [FILEPATH]
 ```
 
-The path can be either to a single assetbundle or a directory. In the case of a directory, all subdiretories will be recursively extracted as well. The path can be either be an absolute path, or a relative path which needs to be relative to the `AssetBundles` directory of a client.
+The path can be either to a single assetbundle or a directory. In the case of a directory, all subdiretories will be recursively extracted as well. The path can be either an absolute path, or a relative path which needs to be relative to the `AssetBundles` directory of a client, in which case the client needs to be added as an argument as well.

@@ -95,6 +95,14 @@ def extract_assetbundle(bpath: BundlePath, targetdir: Path) -> Path | None:
 
 
 class ClientExtractor:
+	"""
+	Handles asset bundle extraction for a specific game client.
+
+	Manages the extraction pipeline from version difflog resolution through
+	multiprocessed assetbundle extraction, applying user-configured directory
+	filters along the way.
+	"""
+
 	userconfig: UserConfig
 	client_asset_directory: Path
 	client_extract_directory: Path
@@ -103,6 +111,15 @@ class ClientExtractor:
 	def __init__(
 		self, client: Client, userconfig: UserConfig, vcontroller: versioncontrol.VersionController | None = None
 	) -> None:
+		"""
+		Initialise a ClientExtractor for the given client.
+
+		Args:
+			client: The game client whose assets will be extracted.
+			userconfig: User configuration supplying asset/extract directory paths and filter settings.
+			vcontroller: Optional pre-constructed version controller. If omitted, one is created
+				automatically from the client asset directory.
+		"""
 		self.userconfig = userconfig
 		self.client_asset_directory = Path(userconfig.asset_directory, client.name)
 		self.client_extract_directory = Path(userconfig.extract_directory, client.name)
@@ -111,14 +128,45 @@ class ClientExtractor:
 		self.vcontroller = vcontroller
 
 	def get_difflog_success_files(self, difflog: DiffLog) -> list[BundlePath]:
+		"""
+		Return all successfully processed bundle paths from a difflog, excluding deleted files.
+
+		Args:
+			difflog: The difflog whose successful file entries should be retrieved.
+
+		Returns:
+			list[BundlePath]: Successful bundle paths.
+		"""
 		return difflog.get_success_files(lambda ctype: ctype != CompareType.Deleted)
 
 	def get_version_success_files(self, version: SimpleVersionResult) -> list[BundlePath]:
+		"""
+		Load the difflog for a version and return its successful (non-deleted) bundle paths.
+
+		Args:
+			version: The version result whose difflog should be loaded.
+
+		Returns:
+			list[BundlePath]: Successful bundle paths for the version, or an empty list if no
+			difflog exists for it.
+		"""
 		if difflog := self.vcontroller.load_difflog(version):
 			return self.get_difflog_success_files(difflog)
 		return []
 
 	def extract_difflog(self, difflog: DiffLog, with_linked_versions: bool = False):
+		"""
+		Extract all asset bundles referenced by a difflog.
+
+		Collects changed and added files from the difflog (and optionally from any linked
+		versions), applies the directory filter defined in ``userconfig``, then extracts
+		the remaining bundles. Output images are written under ``client_extract_directory/<version>/``.
+
+		Args:
+			difflog: The difflog describing which asset bundles changed in a version.
+			with_linked_versions: If ``True``, also extract assets from versions linked
+				to this difflog. Defaults to ``False``.
+		"""
 		print(f"Extracting files for '{difflog.version}'", end="")
 		file_collection = {difflog.version: self.get_difflog_success_files(difflog)}
 		if with_linked_versions:
@@ -174,12 +222,34 @@ class ClientExtractor:
 		print("Extraction completed.")
 
 	def extract_version(self, version: SimpleVersionResult, with_linked_versions: bool = False):
+		"""
+		Extract all asset bundles for a specific version.
+
+		Loads the difflog for ``version`` and delegates to :meth:`extract_difflog`.
+		Emits a warning if no difflog is found for the requested version.
+
+		Args:
+			version: The version whose assets should be extracted.
+			with_linked_versions: Forwarded to :meth:`extract_difflog`. If ``True``,
+				linked versions are extracted alongside the primary one.
+		"""
 		if difflog := self.vcontroller.load_difflog(version):
 			self.extract_difflog(difflog, with_linked_versions)
 		else:
 			print(f"WARN: Tried to extract version '{version}' while it does not exist.")
 
 	def extract_latest(self, vtype: VersionType = VersionType.AZL, with_linked_versions: bool = False):
+		"""
+		Extract assets for the latest available version of a given version type.
+
+		Resolves the most recent version for ``vtype`` via the version controller and
+		delegates to :meth:`extract_version`. Emits a warning if no version is found.
+
+		Args:
+			vtype: The version type to look up.
+			with_linked_versions: Forwarded to :meth:`extract_version`. If ``True``,
+				linked versions are extracted alongside the primary one.
+		"""
 		if latest_version := self.vcontroller.load_version(vtype):
 			self.extract_version(latest_version, with_linked_versions)
 		else:
@@ -187,6 +257,14 @@ class ClientExtractor:
 
 
 def extract_latest_client(client: Client, vtype: VersionType = VersionType.AZL, with_linked_versions: bool = False):
+	"""
+	Convenience function to extract the latest assets for a client.
+
+	Args:
+		client: The game client whose assets should be extracted.
+		vtype: The version type to extract.
+		with_linked_versions: If ``True``, linked versions are extracted alongside the primary one.
+	"""
 	userconfig = config.load_user_config()
 	client_extractor = ClientExtractor(client, userconfig)
 	client_extractor.extract_latest(vtype, with_linked_versions)

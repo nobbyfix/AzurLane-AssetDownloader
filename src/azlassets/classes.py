@@ -6,6 +6,8 @@ from typing import Any, Self
 
 
 class UnknownVersionTypeError(NotImplementedError):
+	"""Raised when a version hashname cannot be mapped to a known :class:`VersionType`."""
+
 	def __init__(self, version_name, *args):
 		super().__init__(f"Unknown versionname {version_name}.", *args)
 		self.version_name = version_name
@@ -17,6 +19,13 @@ DownloadType = Enum("DownloadType", "NoChange Removed Success Failed ForDeletion
 
 @dataclass
 class VersionTypeDataMixin:
+	"""
+	Data fields shared by all :class:`VersionType` enum members.
+
+	Used as a mixin so that each ``VersionType`` member carries typed metadata
+	alongside its enum value.
+	"""
+
 	hashname: str
 	"""Hash name used on the version result returned by the game server."""
 	suffix: str
@@ -24,6 +33,10 @@ class VersionTypeDataMixin:
 
 
 class VersionType(VersionTypeDataMixin, Enum):
+	"""
+	Enumeration of all supported asset version types.
+	"""
+
 	__hash2member_map__: dict[str, Self] = {}
 
 	AZL = "azhash", ""
@@ -95,6 +108,13 @@ class VersionType(VersionTypeDataMixin, Enum):
 
 @dataclass
 class ClientDataMixin:
+	"""
+	Data fields shared by all :class:`Client` enum members.
+
+	Used as a mixin so that each ``Client`` member carries typed metadata
+	alongside its enum value.
+	"""
+
 	locale_code: str
 	package_name: str
 	"""Package name on the Google Play Store."""
@@ -103,6 +123,10 @@ class ClientDataMixin:
 
 
 class Client(ClientDataMixin, Enum):
+	"""
+	Enumeration of supported Azur Lane game clients.
+	"""
+
 	__package_name_map__: dict[str, Self] = {}
 
 	EN = "en-US", "com.YoStarEN.AzurLane"
@@ -129,6 +153,12 @@ class Client(ClientDataMixin, Enum):
 
 @dataclass(eq=True, frozen=True)
 class HashRow:
+	"""
+	A single row from a client hashes CSV file.
+
+	Represents one asset entry as stored in ``hashes*.csv``. Instances are immutable and hashable.
+	"""
+
 	filepath: str
 	size: int
 	md5hash: str
@@ -136,6 +166,10 @@ class HashRow:
 
 @dataclass(eq=True)
 class CompareResult:
+	"""
+	The outcome of comparing an asset bundle between two snapshots.
+	"""
+
 	current_hash: HashRow | None
 	new_hash: HashRow | None
 	compare_type: CompareType
@@ -143,6 +177,13 @@ class CompareResult:
 
 @dataclass(eq=True, frozen=True)
 class SimpleVersionResult:
+	"""
+	A minimal version descriptor pairing a version string with its type.
+
+	Used wherever a full :class:`VersionResult` (which includes hash and raw
+	server response) is unnecessary or unavailable. Instances are immutable and hashable.
+	"""
+
 	version: str
 	version_type: VersionType
 
@@ -152,12 +193,26 @@ class SimpleVersionResult:
 
 @dataclass(eq=True, frozen=True)
 class VersionResult(SimpleVersionResult):
+	"""
+	A full version descriptor as returned by the game server.
+
+	Extends :class:`SimpleVersionResult` with the raw server response and the
+	associated hash of the ``hashes*.csv`` file, enabling download the file from the server.
+	"""
+
 	vhash: str
 	rawstring: str
 
 
 @dataclass(eq=True)
 class BundlePath:
+	"""
+	A resolved asset bundle path, storing both a resolvable path and
+	the normalised inner path relative to the client AssetBundles directory.
+
+	The inner path uses forward slashes regardless of the host OS.
+	"""
+
 	full: Path
 	inner: str
 
@@ -182,6 +237,10 @@ class BundlePath:
 
 @dataclass
 class UpdateResult:
+	"""
+	The combined outcome of comparing and downloading a single asset bundle.
+	"""
+
 	compare_result: CompareResult
 	download_type: DownloadType
 	path: BundlePath
@@ -189,6 +248,10 @@ class UpdateResult:
 
 @dataclass
 class UserConfig:
+	"""
+	User-supplied configuration controlling download and extraction behaviour.
+	"""
+
 	useragent: str
 	download_isblacklist: bool
 	download_filter: list
@@ -200,6 +263,10 @@ class UserConfig:
 
 @dataclass
 class ClientConfig:
+	"""
+	Server connection parameters for a game client.
+	"""
+
 	gateip: str
 	gateport: int
 	cdnurl: str
@@ -207,6 +274,10 @@ class ClientConfig:
 
 @dataclass
 class DiffLog:
+	"""
+	A record of which asset bundles changed between two versions of a client.
+	"""
+
 	version: SimpleVersionResult
 	major: bool = False
 	linked_versions: dict[VersionType, list[str]] = field(default_factory=dict)
@@ -226,9 +297,31 @@ class DiffLog:
 			self.linked_versions[version.version_type].append(version.version)
 
 	def get_success_files(self, filter: Callable[[CompareType], bool] = (lambda *args, **kwargs: True)) -> list[BundlePath]:
+		"""
+		Return successfully processed bundle paths, optionally filtered by compare type.
+
+		Args:
+			filter: A predicate that receives a :class:`CompareType` and returns ``True``
+				for entries that should be included. Defaults to including all entries.
+
+		Returns:
+			list[BundlePath]: Bundle paths from ``success_files`` whose compare type
+			satisfies the predicate.
+		"""
 		return [bpath for bpath, ctype in self.success_files.items() if filter(ctype)]
 
 	def get_failed_files(self, filter: Callable[[CompareType], bool] = (lambda *args, **kwargs: True)) -> list[BundlePath]:
+		"""
+		Return failed bundle paths, optionally filtered by compare type.
+
+		Args:
+			filter: A predicate that receives a :class:`CompareType` and returns ``True``
+				for entries that should be included. Defaults to including all entries.
+
+		Returns:
+			list[BundlePath]: Bundle paths from ``failed_files`` whose compare type
+			satisfies the predicate.
+		"""
 		return [bpath for bpath, ctype in self.failed_files.items() if filter(ctype)]
 
 	def to_json(self) -> dict[str, Any]:

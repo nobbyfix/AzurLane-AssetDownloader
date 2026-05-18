@@ -78,18 +78,9 @@ def add_subparser_download(parser):
 
 def add_subparser_extract(parser):
 	extract_parser = parser.add_parser("extract", help="Extract image assets as pngs")
-	extract_parser.add_argument("client", type=str, choices=Client.__members__, help="client to extract files of")
+	extract_parser.add_argument("client", nargs="?", type=str, choices=Client.__members__, help="client to extract files of")
 	extract_parser.add_argument(
 		"-f", "--filepath", type=str, help="Path to the file or directly to extract only single file or all directory content"
-	)
-	extract_parser.add_argument(
-		"-v", "--version", type=str, help="Extract files of a specific version (Currently only applies to AZL Versiontype!)"
-	)
-	extract_parser.add_argument(
-		"-u",
-		"--until-version",
-		type=str,
-		help="Extract files from the latest until a specific version (Currently only applies to AZL Versiontype!)",
 	)
 
 

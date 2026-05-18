@@ -70,7 +70,9 @@ azl extract [CLIENT]
 
 Where `CLIENT` is one of EN, CN, JP, KR or TW. Extracted images will be saved in `ClientExtract/[CLIENT]/`. Since only Texture2D assets are exported, it's not desired to try to export from all assetbundles (See [settings section](#settings)).
 
-A single assetbundle can be extracted by passing the filepath to the script:
+Using the `-f` or `--filepath` a path for extraction can be passed to the program:
 ```bash
 azl extractor -f [FILEPATH]
 ```
+
+The path can be either to a single assetbundle or a directory. In the case of a directory, all subdiretories will be recursively extracted as well. The path can be either be an absolute path, or a relative path which needs to be relative to the `AssetBundles` directory of a client.

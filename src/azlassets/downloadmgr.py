@@ -86,7 +86,7 @@ async def execute(args):
 					versioncontroller.set_as_linked(vresult, azl_current)
 
 	if args.extract:
-		extractor.extract_by_client(args.client)
+		extractor.extract_latest_client(args.client)
 
 
 def execute_from_args(args):

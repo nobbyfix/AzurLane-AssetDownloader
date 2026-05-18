@@ -102,12 +102,25 @@ class VersionController:
 			version_type: The version type to load the version string for.
 
 		Returns:
-			str | None: The local version string, or `None` if no version file exists.
+			str | None: The local version string, or ``None`` if no version file exists.
 		"""
 		fpath = Path(self.client_directory, version_type.version_filename)
 		if fpath.exists():
 			with fpath.open("r", encoding="utf8") as f:
 				return f.read()
+
+	def load_version(self, version_type: VersionType) -> SimpleVersionResult | None:
+		"""
+		Load the local version string for a given version type and creates a ``SimpleVersionResult``.
+
+		Args:
+			version_type: The version type to load the version for.
+
+		Returns:
+			SimpleVersionResult | None: The local version, or ``None`` if no version file exists.
+		"""
+		if version_string := self.load_version_string(version_type):
+			return SimpleVersionResult(version=version_string, version_type=version_type)
 
 	def save_version_string(self, version_type: VersionType, version_string: str):
 		"""

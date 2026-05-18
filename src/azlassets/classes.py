@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
@@ -126,33 +127,36 @@ class Client(ClientDataMixin, Enum):
 		return cls.__package_name_map__.get(package_name)
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class HashRow:
 	filepath: str
 	size: int
 	md5hash: str
 
 
-@dataclass
+@dataclass(eq=True)
 class CompareResult:
 	current_hash: HashRow | None
 	new_hash: HashRow | None
 	compare_type: CompareType
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class SimpleVersionResult:
 	version: str
 	version_type: VersionType
 
+	def __str__(self):
+		return f"{self.version_type.name} {self.version}"
 
-@dataclass
+
+@dataclass(eq=True, frozen=True)
 class VersionResult(SimpleVersionResult):
 	vhash: str
 	rawstring: str
 
 
-@dataclass
+@dataclass(eq=True)
 class BundlePath:
 	full: Path
 	inner: str
@@ -170,7 +174,7 @@ class BundlePath:
 			BundlePath: The constructed BundlePath object
 		"""
 		fullpath = Path(parentdir, inner)
-		return BundlePath(fullpath, str(inner))
+		return BundlePath(fullpath, str(inner).replace("\\", "/"))
 
 	def __hash__(self):
 		return hash(self.inner)
@@ -221,6 +225,12 @@ class DiffLog:
 		if version.version not in self.linked_versions[version.version_type]:
 			self.linked_versions[version.version_type].append(version.version)
 
+	def get_success_files(self, filter: Callable[[CompareType], bool] = (lambda *args, **kwargs: True)) -> list[BundlePath]:
+		return [bpath for bpath, ctype in self.success_files.items() if filter(ctype)]
+
+	def get_failed_files(self, filter: Callable[[CompareType], bool] = (lambda *args, **kwargs: True)) -> list[BundlePath]:
+		return [bpath for bpath, ctype in self.failed_files.items() if filter(ctype)]
+
 	def to_json(self) -> dict[str, Any]:
 		"""
 		Convert this DiffLog to a JSON-serialisable dict.
@@ -248,14 +258,14 @@ class DiffLog:
 		return data
 
 	@staticmethod
-	def from_json(diffdata: dict[str, Any], vtype: VersionType, client_directory: Path):
+	def from_json(diffdata: dict[str, Any], vtype: VersionType, client_asset_directory: Path):
 		"""
 		Construct a DiffLog object from JSON data.
 
 		Args:
 			diffdata: Dict produced by :meth:``to_json``
 			vtype: The VersionType that owns this log
-			client_directory: Root client directory
+			client_asset_directory: Root client directory
 
 		Returns:
 			DiffLog: The constructed DiffLog object
@@ -263,13 +273,13 @@ class DiffLog:
 		version = SimpleVersionResult(version=diffdata["version"], version_type=vtype)
 		major = diffdata.get("major", False)
 		linked_versions = {VersionType[vt_str]: versions for vt_str, versions in diffdata.get("linked_versions", {}).items()}
-		assetbasepath = Path(client_directory, "AssetBundles")
+		client_assetbundle_directory = Path(client_asset_directory, "AssetBundles")
 		success_files = {
-			BundlePath.construct(assetbasepath, path_str): CompareType[ctype]
+			BundlePath.construct(client_assetbundle_directory, path_str): CompareType[ctype]
 			for path_str, ctype in diffdata.get("success_files", {}).items()
 		}
 		failed_files = {
-			BundlePath.construct(assetbasepath, path_str): CompareType[ctype]
+			BundlePath.construct(client_assetbundle_directory, path_str): CompareType[ctype]
 			for path_str, ctype in diffdata.get("failed_files", {}).items()
 		}
 

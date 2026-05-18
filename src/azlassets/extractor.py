@@ -229,7 +229,7 @@ class ClientExtractor:
 		print(f"Total: {len(total_files)}")
 
 		print("Starting extraction...")
-		extract_directory = Path(self.client_extract_directory, difflog.version.version)
+		extract_directory = Path(self.client_extract_directory, f"{difflog.version.version_type.name} {difflog.version.version}")
 		extract_directory = try_create_directory(extract_directory)
 		with mp.Pool(processes=mp.cpu_count() - 1) as pool:
 			for bundlepath in total_files:

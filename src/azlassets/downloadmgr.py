@@ -2,8 +2,9 @@ import asyncio
 import sys
 from pathlib import Path
 
-from azlassets import config, downloader, extractor, protobuf, repair, updater, versioncontrol
-from azlassets.classes import Client, UnknownVersionTypeError, VersionResult, VersionType
+from . import config, downloader, extractor, protobuf, repair, updater
+from .classes import Client
+from .versioncontrol import UnknownVersionTypeError, VersionController, VersionResult, VersionType, parse_version_string
 
 
 def try_parse_version_string(vstring: str, skip_error: bool = False) -> VersionResult | None:
@@ -22,7 +23,7 @@ def try_parse_version_string(vstring: str, skip_error: bool = False) -> VersionR
 		UnknownVersionTypeError: If the version type is unrecognised and ``skip_error`` is False
 	"""
 	try:
-		return versioncontrol.parse_version_string(vstring)
+		return parse_version_string(vstring)
 	except UnknownVersionTypeError as e:
 		if skip_error:
 			print(f"WARN: Unknown version type '{e.version_name}' cannot be processed, but this error has been skipped.")
@@ -41,7 +42,7 @@ async def execute(args):
 
 	CLIENT_ASSET_DIR = Path(userconfig.asset_directory, args.client.name)
 	CLIENT_ASSET_DIR.mkdir(parents=True, exist_ok=True)
-	versioncontroller = versioncontrol.VersionController(CLIENT_ASSET_DIR)
+	versioncontroller = VersionController(CLIENT_ASSET_DIR)
 
 	if args.check_integrity:
 		async with downloader.AzurlaneAsyncDownloader(clientconfig.cdnurl, useragent=userconfig.useragent) as downloader_session:

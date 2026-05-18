@@ -6,8 +6,10 @@ from pathlib import Path
 from tqdm import tqdm
 from tqdm.asyncio import tqdm_asyncio
 
-from . import downloader, versioncontrol
-from .classes import BundlePath, CompareResult, CompareType, DownloadType, HashRow, UpdateResult, UserConfig, VersionResult
+from . import downloader
+from .classes import BundlePath, CompareResult, CompareType, DownloadType, HashRow, UpdateResult
+from .config import UserConfig
+from .versioncontrol import VersionController, VersionResult, compare_version_string, parse_hash_rows
 
 
 def delete_asset_safe(filepath: Path):
@@ -133,7 +135,7 @@ async def download_and_parse_hashes(
 					return True
 		return userconfig.download_isblacklist
 
-	return list(filter(_filter, versioncontrol.parse_hash_rows(hashes)))
+	return list(filter(_filter, parse_hash_rows(hashes)))
 
 
 def compare_hashes(oldhashes: Iterable[HashRow], newhashes: Iterable[HashRow]) -> dict[CompareType, list[CompareResult]]:
@@ -203,7 +205,7 @@ def filter_hashes(update_results: list[UpdateResult]) -> list[HashRow]:
 async def _update_from_hashes(
 	version_result: VersionResult,
 	downloader_session: downloader.AzurlaneAsyncDownloader,
-	versioncontroller: versioncontrol.VersionController,
+	versioncontroller: VersionController,
 	oldhashes: Iterable[HashRow],
 	newhashes: Iterable[HashRow],
 	allow_deletion: bool = True,
@@ -238,7 +240,7 @@ async def _update(
 	version_result: VersionResult,
 	downloader_session: downloader.AzurlaneAsyncDownloader,
 	userconfig: UserConfig,
-	versioncontroller: versioncontrol.VersionController,
+	versioncontroller: VersionController,
 	ignore_hashfile: bool = False,
 ) -> list[UpdateResult] | None:
 	"""
@@ -271,7 +273,7 @@ async def update(
 	version_result: VersionResult,
 	downloader_session: downloader.AzurlaneAsyncDownloader,
 	userconfig: UserConfig,
-	versioncontroller: versioncontrol.VersionController,
+	versioncontroller: VersionController,
 	force_refresh: bool = False,
 	ignore_hashfile: bool = False,
 ) -> list[UpdateResult] | None:
@@ -294,7 +296,7 @@ async def update(
 		list[UpdateResult] or None:  List of update results, or None if skipped
 	"""
 	oldversion = versioncontroller.load_version_string(version_result.version_type)
-	if versioncontrol.compare_version_string(version_result.version, oldversion):
+	if compare_version_string(version_result.version, oldversion):
 		print(
 			f"{version_result.version_type.name}: Current version {oldversion} is older than latest version {version_result.version}."
 		)

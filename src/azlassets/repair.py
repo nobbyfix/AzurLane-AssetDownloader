@@ -5,8 +5,10 @@ import itertools
 from pathlib import Path
 from tqdm.asyncio import tqdm_asyncio
 
-from . import downloader, updater, versioncontrol
-from .classes import BundlePath, CompareType, DownloadType, HashRow, UpdateResult, UserConfig, VersionResult, VersionType
+from . import downloader, updater
+from .classes import BundlePath, CompareType, DownloadType, HashRow, UpdateResult
+from .config import UserConfig
+from .versioncontrol import VersionController, VersionResult, VersionType
 
 semaphore_concurrent_files = asyncio.Semaphore(16)
 
@@ -98,7 +100,7 @@ async def hashrows_from_files(client_directory: Path) -> list[HashRow]:
 
 
 async def repair(
-	downloader_session: downloader.AzurlaneAsyncDownloader, versioncontroller: versioncontrol.VersionController
+	downloader_session: downloader.AzurlaneAsyncDownloader, versioncontroller: VersionController
 ) -> list[UpdateResult]:
 	"""
 	Full integrity repair: hash all files on disk and re-download anything that
@@ -124,7 +126,7 @@ async def repair_hashfile(
 	version_result: VersionResult,
 	downloader_session: downloader.AzurlaneAsyncDownloader,
 	userconfig: UserConfig,
-	versioncontroller: versioncontrol.VersionController,
+	versioncontroller: VersionController,
 ) -> list[UpdateResult]:
 	"""
 	Repair a single version type by reconciling local, disk, and server hashes.

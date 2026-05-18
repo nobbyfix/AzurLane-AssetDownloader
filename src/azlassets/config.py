@@ -1,11 +1,12 @@
 import json
 import sys
 import yaml
+from dataclasses import dataclass
 from importlib.resources import as_file, files
 from pathlib import Path
 from shutil import copy
 
-from .classes import Client, ClientConfig, UserConfig
+from .classes import Client
 
 # package-incuded filepaths
 CONFIG_DATA_PATH = files("azlassets").joinpath("config")
@@ -13,7 +14,33 @@ YAML_TEMPLATE_PATH = CONFIG_DATA_PATH.joinpath("user_config_template.yml")
 CLIENT_CONFIG_PATH = CONFIG_DATA_PATH.joinpath("client_config.json")
 
 # cwd-relative filepaths
-YAML_CONFIG_PATH = Path("config") / "user_config.yml"
+YAML_CONFIG_PATH = Path("config", "user_config.yml")
+
+
+@dataclass
+class UserConfig:
+	"""
+	User-supplied configuration controlling download and extraction behaviour.
+	"""
+
+	useragent: str
+	download_isblacklist: bool
+	download_filter: list
+	extract_isblacklist: bool
+	extract_filter: list
+	asset_directory: Path
+	extract_directory: Path
+
+
+@dataclass
+class ClientConfig:
+	"""
+	Server connection parameters for a game client.
+	"""
+
+	gateip: str
+	gateport: int
+	cdnurl: str
 
 
 def create_user_config() -> bool:

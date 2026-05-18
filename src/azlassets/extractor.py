@@ -3,8 +3,10 @@ import multiprocessing as mp
 from argparse import ArgumentError
 from pathlib import Path
 
-from azlassets import config, imgrecon, versioncontrol
-from azlassets.classes import BundlePath, Client, CompareType, DiffLog, SimpleVersionResult, UserConfig, VersionType
+from . import imgrecon
+from .classes import BundlePath, Client, CompareType
+from .config import UserConfig, load_user_config
+from .versioncontrol import DiffLog, SimpleVersionResult, VersionController, VersionType
 
 
 def restore_painting(image, abpath: Path, imgname: str, _do_retry: bool = True):
@@ -106,11 +108,9 @@ class ClientExtractor:
 	userconfig: UserConfig
 	client_asset_directory: Path
 	client_extract_directory: Path
-	vcontroller: versioncontrol.VersionController
+	vcontroller: VersionController
 
-	def __init__(
-		self, client: Client, userconfig: UserConfig, vcontroller: versioncontrol.VersionController | None = None
-	) -> None:
+	def __init__(self, client: Client, userconfig: UserConfig, vcontroller: VersionController | None = None) -> None:
 		"""
 		Initialise a ClientExtractor for the given client.
 
@@ -124,7 +124,7 @@ class ClientExtractor:
 		self.client_asset_directory = Path(userconfig.asset_directory, client.name)
 		self.client_extract_directory = Path(userconfig.extract_directory, client.name)
 		if not vcontroller:
-			vcontroller = versioncontrol.VersionController(self.client_asset_directory)
+			vcontroller = VersionController(self.client_asset_directory)
 		self.vcontroller = vcontroller
 
 	def get_difflog_success_files(self, difflog: DiffLog) -> list[BundlePath]:
@@ -265,7 +265,7 @@ def extract_latest_client(client: Client, vtype: VersionType = VersionType.AZL, 
 		vtype: The version type to extract.
 		with_linked_versions: If ``True``, linked versions are extracted alongside the primary one.
 	"""
-	userconfig = config.load_user_config()
+	userconfig = load_user_config()
 	client_extractor = ClientExtractor(client, userconfig)
 	client_extractor.extract_latest(vtype, with_linked_versions)
 
@@ -283,7 +283,7 @@ def extract_single_assetbundle(assetpath_str: str, client: Client | None):
 			to the client assetbundle directory
 	"""
 	print(f"Extracting assets from '{assetpath_str}'")
-	userconfig = config.load_user_config()
+	userconfig = load_user_config()
 	assetpath = Path(assetpath_str)
 	if client is None:
 		if not assetpath.is_absolute():

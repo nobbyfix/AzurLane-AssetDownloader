@@ -3,7 +3,7 @@ import aiohttp
 import traceback
 from pathlib import Path
 
-from .classes import VersionResult
+from .versioncontrol import VersionResult
 
 
 def get_chunk_size(file_size: int) -> int:

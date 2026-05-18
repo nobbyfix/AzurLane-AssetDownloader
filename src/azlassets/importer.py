@@ -12,8 +12,10 @@ from pathlib import Path
 from tqdm import tqdm
 from zipfile import ZipFile
 
-from azlassets import config, updater, versioncontrol
-from azlassets.classes import BundlePath, Client, CompareType, DownloadType, SimpleVersionResult, UpdateResult, VersionType
+from . import updater
+from .classes import BundlePath, Client, CompareType, DownloadType, UpdateResult
+from .config import load_user_config
+from .versioncontrol import SimpleVersionResult, VersionController, VersionType, compare_version_string, parse_hash_rows
 
 
 def calc_md5hash(data: bytes) -> str:
@@ -40,10 +42,10 @@ def unpack(zipfile: ZipFile, client: Client):
 		client: Client whose asset directory will receive the extracted files
 	"""
 	# load config data from files
-	userconfig = config.load_user_config()
+	userconfig = load_user_config()
 	CLIENT_ASSET_DIR = Path(userconfig.asset_directory, client.name)
 	CLIENT_ASSET_DIR.mkdir(parents=True, exist_ok=True)
-	versioncontroller = versioncontrol.VersionController(CLIENT_ASSET_DIR)
+	versioncontroller = VersionController(CLIENT_ASSET_DIR)
 
 	# create {filename: filesize} dict for later recovery of missed files
 	file_info_list = {f.filename: f.file_size for f in zipfile.filelist if not f.is_dir()}
@@ -63,13 +65,13 @@ def unpack(zipfile: ZipFile, client: Client):
 
 		# if the obbversion is older, don't extract data from obb
 		currentversion = versioncontroller.load_version_string(versiontype)
-		if not versioncontrol.compare_version_string(obbversion, currentversion):
+		if not compare_version_string(obbversion, currentversion):
 			print(f"{versiontype.name}: Current version {currentversion} is same or newer than obb version {obbversion}.")
 			continue
 
 		# read hash files from obb and current file and compare them
 		with zipfile.open("assets/" + versiontype.hashes_filename, "r") as hashfile:
-			obbhashes = versioncontrol.parse_hash_rows(hashfile.read().decode("utf8"))
+			obbhashes = parse_hash_rows(hashfile.read().decode("utf8"))
 		currenthashes = versioncontroller.load_hash_file(versiontype)
 		comparison_results = updater.compare_hashes(currenthashes or [], obbhashes)
 

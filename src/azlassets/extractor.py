@@ -77,7 +77,7 @@ def try_create_directory(directory: Path, _count: int = 0) -> Path:
 	try:
 		dir_with_count.mkdir(parents=True)
 	except FileExistsError:
-		try_create_directory(directory, _count + 1)
+		return try_create_directory(directory, _count + 1)
 
 	return dir_with_count
 

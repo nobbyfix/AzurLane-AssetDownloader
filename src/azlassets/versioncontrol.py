@@ -570,6 +570,7 @@ class VersionController:
 		version: SimpleVersionResult,
 		update_results: list[UpdateResult],
 		linked_versions: list[SimpleVersionResult] | None = None,
+		is_latest: bool = False,
 	):
 		"""
 		Save a difflog recording which assets changed in this version.
@@ -602,7 +603,7 @@ class VersionController:
 			difflog.add_linked_version(linkedv)
 
 		# save data to file
-		self.save_difflog(difflog)
+		self.save_difflog(difflog, is_latest)
 
 	def update_version_diffdata(
 		self,

@@ -58,22 +58,20 @@ async def execute(args):
 		sys.exit(1)
 
 	# parse version response
-	version_string: list[str] = version_response.pb.version
-	versionlist = []
-	for v in version_string:
+	version_response_string: list[str] = version_response.pb.version
+	parsed_version_response = dict()
+	for v in version_response_string:
 		if v.startswith("$"):
 			if vresult := try_parse_version_string(v.strip(), args.skip_unknown_version_error):
-				versionlist.append(vresult)
+				parsed_version_response[vresult.version_type] = vresult
 
-	# find AZL version result
-	azl_current = None
-	for vresult in versionlist:
-		if vresult.version_type == VersionType.AZL:
-			azl_current = vresult
-			break
+	try:
+		azl_latest_version_with_difflog = versioncontroller.load_latest_difflog_version(VersionType.AZL)
+	except FileNotFoundError:
+		azl_latest_version_with_difflog = None
 
 	async with downloader.AzurlaneAsyncDownloader(clientconfig.cdnurl, useragent=userconfig.useragent) as downloader_session:
-		for vresult in versionlist:
+		for vresult in parsed_version_response.values():
 			if args.repair:
 				update_assets = await repair.repair_hashfile(vresult, downloader_session, userconfig, versioncontroller)
 			else:
@@ -82,9 +80,12 @@ async def execute(args):
 				)
 
 			if update_assets:
-				versioncontroller.update_difflog(vresult, update_assets)
-				if vresult.version_type != VersionType.AZL and azl_current is not None:
-					versioncontroller.set_as_linked(vresult, azl_current)
+				versioncontroller.update_difflog(vresult, update_assets, is_latest=True)
+
+				if vresult.version_type == VersionType.AZL:
+					azl_latest_version_with_difflog = vresult
+				elif azl_latest_version_with_difflog is not None:
+					versioncontroller.set_as_linked(vresult, azl_latest_version_with_difflog)
 
 	if args.extract:
 		extractor.extract_latest_client(args.client)

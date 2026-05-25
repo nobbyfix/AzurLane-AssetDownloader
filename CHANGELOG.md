@@ -1,5 +1,22 @@
 # Changelog
 
+## [4.3.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v4.2.0...v4.3.0) (2026-05-25)
+
+
+### Features
+
+* allow path based extraction using absolute filepaths ([77e53a2](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/77e53a2e38f8afe6cf74895ed003412786e840dd))
+* automatically extract linked versions ([77e53a2](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/77e53a2e38f8afe6cf74895ed003412786e840dd))
+* create new extraction subdirectory if one for the current version already exists ([256f558](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/256f558937ee23276edf0e36c427787004cc99db))
+* extract files into seperate subfolder using version as name ([77e53a2](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/77e53a2e38f8afe6cf74895ed003412786e840dd))
+* use new file naming scheme for duplicate file names on extract ([927e7d9](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/927e7d9dee0d299a8749e4c64127a8cbde702574))
+
+
+### Bug Fixes
+
+* add version type to extraction directory name ([9758beb](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/9758beba6e951987d2148fd17d762843bb560771))
+* link with latest difflog version instead of latest server version ([526637f](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/526637f1ee6661c11f39a73a0fb18e2576f0fa7e))
+
 ## [4.2.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v4.1.0...v4.2.0) (2026-05-16)
 
 

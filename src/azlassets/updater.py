@@ -6,9 +6,9 @@ from pathlib import Path
 from tqdm import tqdm
 from tqdm.asyncio import tqdm_asyncio
 
-from . import downloader
 from .classes import BundlePath, CompareResult, CompareType, DownloadType, HashRow, UpdateResult
 from .config import UserConfig
+from .downloader import AzurlaneAsyncDownloader
 from .versioncontrol import VersionController, VersionResult, compare_version_string, parse_hash_rows
 
 
@@ -30,7 +30,7 @@ large_file_semaphore = asyncio.Semaphore(2)
 
 
 async def handle_asset_download(
-	downloader_session: downloader.AzurlaneAsyncDownloader, assetbasepath: Path, result: CompareResult
+	downloader_session: AzurlaneAsyncDownloader, assetbasepath: Path, result: CompareResult
 ) -> UpdateResult:
 	"""
 	Handle downloading a single asset.
@@ -61,7 +61,7 @@ async def handle_asset_download(
 
 
 async def update_assets(
-	downloader_session: downloader.AzurlaneAsyncDownloader,
+	downloader_session: AzurlaneAsyncDownloader,
 	comparison_results: dict[CompareType, list[CompareResult]],
 	client_directory: Path,
 	allow_deletion: bool = True,
@@ -109,7 +109,7 @@ async def update_assets(
 
 
 async def download_and_parse_hashes(
-	version_result: VersionResult, downloader_session: downloader.AzurlaneAsyncDownloader, userconfig: UserConfig
+	version_result: VersionResult, downloader_session: AzurlaneAsyncDownloader, userconfig: UserConfig
 ) -> list[HashRow] | None:
 	"""
 	Download, filter, and parse the hash file for a version.
@@ -204,7 +204,7 @@ def filter_hashes(update_results: list[UpdateResult]) -> list[HashRow]:
 
 async def _update_from_hashes(
 	version_result: VersionResult,
-	downloader_session: downloader.AzurlaneAsyncDownloader,
+	downloader_session: AzurlaneAsyncDownloader,
 	versioncontroller: VersionController,
 	oldhashes: Iterable[HashRow],
 	newhashes: Iterable[HashRow],
@@ -238,7 +238,7 @@ async def _update_from_hashes(
 
 async def _update(
 	version_result: VersionResult,
-	downloader_session: downloader.AzurlaneAsyncDownloader,
+	downloader_session: AzurlaneAsyncDownloader,
 	userconfig: UserConfig,
 	versioncontroller: VersionController,
 	ignore_hashfile: bool = False,
@@ -271,7 +271,7 @@ async def _update(
 
 async def update(
 	version_result: VersionResult,
-	downloader_session: downloader.AzurlaneAsyncDownloader,
+	downloader_session: AzurlaneAsyncDownloader,
 	userconfig: UserConfig,
 	versioncontroller: VersionController,
 	force_refresh: bool = False,

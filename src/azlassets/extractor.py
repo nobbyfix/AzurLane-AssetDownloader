@@ -2,7 +2,6 @@ import itertools
 import multiprocessing as mp
 from argparse import ArgumentError
 from pathlib import Path
-from PIL.Image import Image
 
 from . import imgrecon
 from .classes import BundlePath, Client, CompareType
@@ -37,7 +36,7 @@ def restore_painting(image, abpath: Path, imgname: str, _do_retry: bool = True):
 	return restore_painting(image, abpath.with_name(abpath.name + "_tex"), imgname, False)
 
 
-def try_save_image(image: Image, target: Path, _count: int = 0) -> Path:
+def try_save_image(image, target: Path, _count: int = 0) -> Path:
 	"""
 	Save an image to ``target``, , appending a number to the name until a free path is found.
 	The number starts at 1 after the first fail, increasing by 1 for each additional fail.

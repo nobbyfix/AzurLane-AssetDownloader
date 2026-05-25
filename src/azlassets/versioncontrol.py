@@ -330,7 +330,23 @@ def parse_hash_rows(hashes: str) -> Generator[HashRow, None, None]:
 
 @dataclass
 class VersionController:
+	"""
+	Manages reading and writing of versioning data for a single game client.
+	"""
+
 	client_directory: Path
+
+	def get_version_string_path(self, version_type: VersionType) -> Path:
+		"""
+		Return the filesystem path for the version string file of ``version_type``.
+
+		Args:
+			version_type: The version type whose version file path is needed.
+
+		Returns:
+			Path: Path to the ``version*.txt`` file.
+		"""
+		return Path(self.client_directory, version_type.version_filename)
 
 	def load_version_string(self, version_type: VersionType) -> str | None:
 		"""
@@ -342,7 +358,7 @@ class VersionController:
 		Returns:
 			str | None: The local version string, or ``None`` if no version file exists.
 		"""
-		fpath = Path(self.client_directory, version_type.version_filename)
+		fpath = self.get_version_string_path(version_type)
 		if fpath.exists():
 			with fpath.open("r", encoding="utf8") as f:
 				return f.read()
@@ -360,32 +376,47 @@ class VersionController:
 		if version_string := self.load_version_string(version_type):
 			return SimpleVersionResult(version=version_string, version_type=version_type)
 
-	def save_version_string(self, version_type: VersionType, version_string: str):
+	def save_version(self, version: SimpleVersionResult):
 		"""
 		Save the version string for a given version type.
 
 		Args:
-			version_type: The version type to save the version string for.
-			content: The raw version string to save.
+			version: The version result whose ``version`` string should be saved.
 		"""
-		fpath = Path(self.client_directory, version_type.version_filename)
+		fpath = self.get_version_string_path(version.version_type)
+		fpath.parent.mkdir(parents=True, exist_ok=True)
 		with fpath.open("w", encoding="utf8") as f:
-			f.write(version_string)
+			f.write(version.version)
+
+	def get_hash_file_path(self, version_type: VersionType) -> Path:
+		"""
+		Return the filesystem path for the hashes CSV file of ``version_type``.
+
+		Args:
+			version_type: The version type whose hash file path is needed.
+
+		Returns:
+			Path: Path to the ``hashes*.csv`` file.
+		"""
+		return Path(self.client_directory, version_type.hashes_filename)
 
 	def load_hash_file(self, version_type: VersionType) -> Generator[HashRow, None, None] | None:
 		"""
-		Load the local asset information file for a given version type.
+		Load the local asset hash CSV file for a given version type.
 
 		Args:
 			version_type: The version type to load asset info for.
 
 		Yields:
-			HashRow | None: A generator yielding ``HashRow`` objects, or ``None`` if no hash file exists.
+			HashRow | None: A generator yielding :class:`HashRow` objects objects parsed from the CSV,
+			or ``None`` if the hash file does not exist.
 		"""
-		fpath = Path(self.client_directory, version_type.hashes_filename)
-		if fpath.exists():
+		fpath = self.get_hash_file_path(version_type)
+		try:
 			with open(fpath, "r", encoding="utf8") as f:
 				return parse_hash_rows(f.read())
+		except FileNotFoundError:
+			return
 
 	def save_hash_file(self, version_type: VersionType, hashrows: Iterable[HashRow | None]):
 		"""
@@ -398,17 +429,88 @@ class VersionController:
 		"""
 		rowstrings = [f"{row.filepath},{row.size},{row.md5hash}" for row in hashrows if row]
 		content = "\n".join(rowstrings)
-		fpath = Path(self.client_directory, version_type.hashes_filename)
+		fpath = self.get_hash_file_path(version_type)
+		fpath.parent.mkdir(parents=True, exist_ok=True)
 		with fpath.open("w", encoding="utf8") as f:
 			f.write(content)
 
 	def update_version_data(self, version: SimpleVersionResult, hashrows: Iterable[HashRow]):
 		"""
 		Save both the version string and hash file for ``version`` in one call.
-		Shorthand method that calls ``save_version_string`` and ``save_hash_file``.
+		Shorthand method that calls ``save_version`` and ``save_hash_file``.
 		"""
-		self.save_version_string(version.version_type, version.version)
+		self.save_version(version)
 		self.save_hash_file(version.version_type, hashrows)
+
+	def get_difflog_dirpath(self, version_type: VersionType) -> Path:
+		"""
+		Return the directory path where difflogs for ``version_type`` are stored.
+
+		Args:
+			version_type: The version type whose difflog directory is needed.
+
+		Returns:
+			Path: Path to the directory.
+		"""
+		return Path(self.client_directory, "difflog", version_type.name.lower())
+
+	def get_latest_difflog_version_path(self, version_type: VersionType) -> Path:
+		"""
+		Return the path to the ``latest.txt`` file that records the most recent difflog version.
+
+		Args:
+			version_type: The version type whose latest-version pointer is needed.
+
+		Returns:
+			Path: Path to ``latest.txt`` in the difflog directory for ``version_type``.
+		"""
+		version_diffdir = self.get_difflog_dirpath(version_type)
+		latest_version_filepath = Path(version_diffdir, "latest.txt")
+		return latest_version_filepath
+
+	def load_latest_difflog_version(self, version_type: VersionType) -> SimpleVersionResult:
+		"""
+		Read the latest-version pointer from file and return the corresponding version descriptor.
+
+		Args:
+			version_type: The version type to look up.
+
+		Returns:
+			SimpleVersionResult: The version recorded as the latest difflog for ``version_type``.
+
+		Raises:
+			FileNotFoundError: If the file does not exist for this version type.
+		"""
+		latest_version_filepath = self.get_latest_difflog_version_path(version_type)
+		with latest_version_filepath.open("r", encoding="utf8") as f:
+			vstring = f.read()
+			return SimpleVersionResult(version_type=version_type, version=vstring)
+
+	def save_latest_difflog_version(self, version: SimpleVersionResult):
+		"""
+		Write ``version`` as the latest difflog pointer for its version type.
+
+		Args:
+			version: The version result to record as the latest difflog version.
+		"""
+		latest_version_filepath = self.get_latest_difflog_version_path(version.version_type)
+		latest_version_filepath.parent.mkdir(parents=True, exist_ok=True)
+		with latest_version_filepath.open("w", encoding="utf8") as f:
+			f.write(version.version)
+
+	def get_difflog_path(self, version: SimpleVersionResult) -> Path:
+		"""
+		Return the filesystem path for the JSON difflog file of ``version``.
+
+		Args:
+			version: The version whose difflog file path is needed.
+
+		Returns:
+			Path: Path to the difflog file.
+		"""
+		version_diffdir = self.get_difflog_dirpath(version.version_type)
+		difflog_filepath = Path(version_diffdir, version.version + ".json")
+		return difflog_filepath
 
 	def load_difflog(self, version: SimpleVersionResult) -> DiffLog | None:
 		"""
@@ -420,8 +522,7 @@ class VersionController:
 		Returns:
 			DiffLog | None: The loaded `DiffLog` object, or `None` if no log exists for this version.
 		"""
-		version_diffdir = Path(self.client_directory, "difflog", version.version_type.name.lower())
-		difflog_filepath = Path(version_diffdir, version.version + ".json")
+		difflog_filepath = self.get_difflog_path(version)
 		try:
 			with difflog_filepath.open("r", encoding="utf8") as f:
 				data = json.load(f)
@@ -429,17 +530,40 @@ class VersionController:
 		except FileNotFoundError:
 			return
 
-	def save_difflog(self, difflog: DiffLog):
+	def load_difflog_latest(self, version_type: VersionType) -> DiffLog | None:
+		"""
+		Load the difflog for the most recently recorded version of ``version_type``.
+
+		Resolves the latest version via :meth:`load_latest_difflog_version`, then
+		delegates to :meth:`load_difflog`.
+
+		Args:
+			version_type: The version type to load the latest difflog for.
+
+		Returns:
+			DiffLog | None: The latest :class:`DiffLog`, or ``None`` if the difflog
+			file is missing.
+
+		Raises:
+			FileNotFoundError: If the ``latest.txt`` pointer itself does not exist.
+		"""
+		latest_difflog_version = self.load_latest_difflog_version(version_type)
+		latest_difflog = self.load_difflog(latest_difflog_version)
+		return latest_difflog
+
+	def save_difflog(self, difflog: DiffLog, is_latest: bool = False):
 		"""Serialize a ``difflog`` to JSON and write it under the version type's difflog directory.
 
 		Args:
-			difflog: A `DiffLog` object to serialize and save.
+			difflog: A ``DiffLog`` object to serialize and save.
+			is_latest: Updates the ``latest.txt`` with the version of the difflog.
 		"""
-		version_diffdir = Path(self.client_directory, "difflog", difflog.version.version_type.name.lower())
-		version_diffdir.mkdir(parents=True, exist_ok=True)
-		difflog_filepath = Path(version_diffdir, difflog.version.version + ".json")
+		difflog_filepath = self.get_difflog_path(difflog.version)
+		difflog_filepath.parent.mkdir(parents=True, exist_ok=True)
 		with difflog_filepath.open("w", encoding="utf8") as f:
 			json.dump(difflog.to_json(), f)
+		if is_latest:
+			self.save_latest_difflog_version(difflog.version)
 
 	def update_difflog(
 		self,
@@ -515,15 +639,15 @@ class VersionController:
 
 	def get_difflog_versionlist(self, version_type: VersionType) -> list[str]:
 		"""
-		Return version strings of all saved difflogs.
+		Return version strings of all saved difflogs for ``version_type``.
 
 		Args:
-			client_directory: Root client directory
-			version_type: Version type to scan for
+			version_type: The version type to scan for saved difflogs.
 
 		Returns:
-			list[str]: Version strings derived from difflog filenames
+			list[str]: Version strings derived from difflog filenames, in
+			filesystem iteration order.
 		"""
-		version_diffdir = Path(self.client_directory, "difflog", version_type.name.lower())
+		version_diffdir = self.get_difflog_dirpath(version_type)
 		difflog_versionlist = [path.stem for path in version_diffdir.glob("*.json")]
 		return difflog_versionlist

@@ -336,7 +336,7 @@ def extract_single_assetbundle(assetpath_str: str, client: Client | None):
 		client_assetbundle_directory_abs = client_assetbundle_directory.absolute()
 		for p in assetpath.rglob("*"):
 			if p.is_file():
-				assetpath_inner = p.relative_to(client_assetbundle_directory_abs)
+				assetpath_inner = p.absolute().relative_to(client_assetbundle_directory_abs)
 				bpath = BundlePath.construct(client_assetbundle_directory, assetpath_inner)
 				extract_assetbundle(bpath, extract_directory)
 		print("Finished extraction of directory.")

@@ -2,6 +2,7 @@ import itertools
 import multiprocessing as mp
 from argparse import ArgumentError
 from pathlib import Path
+from PIL.Image import Image
 
 from . import imgrecon
 from .classes import BundlePath, Client, CompareType
@@ -36,25 +37,30 @@ def restore_painting(image, abpath: Path, imgname: str, _do_retry: bool = True):
 	return restore_painting(image, abpath.with_name(abpath.name + "_tex"), imgname, False)
 
 
-def try_safe_image(image, target: Path) -> Path:
+def try_save_image(image: Image, target: Path, _count: int = 0) -> Path:
 	"""
-	Save an image to ``target``, appending ``_`` to the stem if the path is taken until a free path is found.
+	Save an image to ``target``, , appending a number to the name until a free path is found.
+	The number starts at 1 after the first fail, increasing by 1 for each additional fail.
 
 	Args:
 		image: PIL image to save
 		target: Desired output path
+		_count: Current counter for the number to be appended
 
 	Returns:
 		Path: The path the image was actually saved to
 	"""
-	target.parent.mkdir(parents=True, exist_ok=True)
-	while True:
-		if target.exists():
-			print(f"ERROR: Tried to save '{target}', but the file already exists.")
-			target = target.with_name(target.stem + "_" + target.suffix)
-		else:
-			image.save(target)
-			return target
+	if _count == 0:
+		target.parent.mkdir(parents=True, exist_ok=True)
+		target_with_count = target
+	else:
+		target_with_count = target.with_stem(f"{target.stem} ({_count})")
+
+	if target_with_count.exists():
+		return try_save_image(image, target, _count + 1)
+	else:
+		image.save(target_with_count)
+		return target_with_count
 
 
 def try_create_directory(directory: Path, _count: int = 0) -> Path:
@@ -111,13 +117,13 @@ def extract_assetbundle(bpath: BundlePath, targetdir: Path) -> Path | None:
 	if len(all_images) == 1:
 		image, imgname = all_images[0]
 		target = Path(targetdir, bpath.inner).parent.joinpath(imgname + ".png")
-		return try_safe_image(image, target)
+		return try_save_image(image, target)
 
 	if len(all_images) > 1:
 		img_target_dir = Path(targetdir, bpath.inner).parent.joinpath(bpath.full.name)
 		for image, imgname in all_images:
 			target = Path(img_target_dir, imgname + ".png")
-			try_safe_image(image, target)
+			try_save_image(image, target)
 		return img_target_dir
 
 

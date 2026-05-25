@@ -334,11 +334,18 @@ def extract_single_assetbundle(assetpath_str: str, client: Client | None):
 
 	elif assetpath.is_dir():
 		client_assetbundle_directory_abs = client_assetbundle_directory.absolute()
-		for p in assetpath.rglob("*"):
-			if p.is_file():
-				assetpath_inner = p.absolute().relative_to(client_assetbundle_directory_abs)
-				bpath = BundlePath.construct(client_assetbundle_directory, assetpath_inner)
-				extract_assetbundle(bpath, extract_directory)
+
+		with mp.Pool(processes=mp.cpu_count() - 1) as pool:
+			for p in assetpath.rglob("*"):
+				if p.is_file():
+					assetpath_inner = p.absolute().relative_to(client_assetbundle_directory_abs)
+					bpath = BundlePath.construct(client_assetbundle_directory, assetpath_inner)
+					pool.apply_async(extract_assetbundle, (bpath, extract_directory))
+
+			# explicitly join pool, to wait for all asnyc tasks to complete
+			pool.close()
+			pool.join()
+
 		print("Finished extraction of directory.")
 	else:
 		raise FileNotFoundError("ERROR: Invalid file path!")

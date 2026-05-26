@@ -5,57 +5,57 @@ download-folder-listtype: blacklist
 extract-folder-listtype: whitelist
 download-folder-list: []
 extract-folder-list:
-- activitybanner
-- aircrafticon
-- backyardtheme
-- battlescore
-- bg
-- boxprefab
-- chargeicon
-- clutter
-- collectionfileillustration
-- collectionfiletitle
-- commanderhrz
-- commandericon
-- commanderskillicon
-- commandertalenticon
-- commonbg
-- crusingwindow
-- emblem
-- enemies
-- equips
-- eventtype
-- extra_page
-- furnitureicon
-- gallerycard
-- guildnode
-- guildboss
-- guildevent
-- guildmission
-- helpbg
-- herohrzicon
-- icondesc
-- iconframe
-- independenttex
-- levelmap
-- loadingbg
-- lotterybg
-- mangapic
-- medal
-- memoryicon
-- metaship
-- musiccover
-- newshipbg
-- newyearskinshowpage
-- painting
-- prints
-- props
-- qicon
-- shipmodels
-- shiprarity
-- shipyardicon
-- skillicon
-- squareicon
-- strategyicon
-- updatebg
-useragent: 'Azurlane Asset Manager Bot'
+  - activitybanner
+  - aircrafticon
+  - backyardtheme
+  - battlescore
+  - bg
+  - boxprefab
+  - chargeicon
+  - clutter
+  - collectionfileillustration
+  - collectionfiletitle
+  - commanderhrz
+  - commandericon
+  - commanderskillicon
+  - commandertalenticon
+  - commonbg
+  - crusingwindow
+  - emblem
+  - enemies
+  - equips
+  - eventtype
+  - extra_page
+  - furnitureicon
+  - gallerycard
+  - guildnode
+  - guildboss
+  - guildevent
+  - guildmission
+  - helpbg
+  - herohrzicon
+  - icondesc
+  - iconframe
+  - independenttex
+  - levelmap
+  - loadingbg
+  - lotterybg
+  - mangapic
+  - medal
+  - memoryicon
+  - metaship
+  - musiccover
+  - newshipbg
+  - newyearskinshowpage
+  - painting
+  - prints
+  - props
+  - qicon
+  - shipmodels
+  - shiprarity
+  - shipyardicon
+  - skillicon
+  - squareicon
+  - strategyicon
+  - updatebg
+useragent: "Azurlane Asset Manager Bot"

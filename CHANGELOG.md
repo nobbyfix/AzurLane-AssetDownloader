@@ -1,5 +1,22 @@
 # Changelog
 
+## [4.4.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v4.3.0...v4.4.0) (2026-05-26)
+
+
+### Features
+
+* update default extraction filter ([098c27d](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/098c27d88a7a6a9641dc487a049066832cbaa423))
+
+
+### Bug Fixes
+
+* correctly handle filepaths during directory extraction ([9348a89](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/9348a89bfceff1701cafcea96f680e1c5593af0b))
+
+
+### Performance Improvements
+
+* use multiprocessing for direct directory extraction ([0c5ef0e](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/0c5ef0edae6a671543b08d68995e55bfce48f08a))
+
 ## [4.3.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v4.2.0...v4.3.0) (2026-05-25)
 
 

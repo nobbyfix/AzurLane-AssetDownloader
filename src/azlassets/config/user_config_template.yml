@@ -5,57 +5,133 @@ download-folder-listtype: blacklist
 extract-folder-listtype: whitelist
 download-folder-list: []
 extract-folder-list:
+  - actgiftpackages
   - activitybanner
+  - activitybossbuff
+  - activitymedal
+  - activitypainting
   - aircrafticon
   - backyardtheme
   - battlescore
   - bg
   - boxprefab
+  - buildpainting
+  - bulletall
+  - cardtowerselectships
+  - catterystyle
+  - challengebossinfo
   - chargeicon
+  - chargo
+  - cluepictures
   - clutter
   - collectionfileillustration
   - collectionfiletitle
+  - combatuistyle
   - commanderhrz
   - commandericon
+  - commanderpainting
+  - commanderrarity
   - commanderskillicon
   - commandertalenticon
   - commonbg
   - crusingwindow
+  - cryptolaliaship
+  - dailylevelicon
+  - dorm3daccompany
+  - dorm3dbanner
+  - dorm3dcollection
+  - dorm3dcucoloris
+  - dorm3dicon
+  - dorm3dins
+  - dorm3dmemory
+  - dorm3dphoto
+  - dorm3dselect
+  - dorm3dskinpart
+  - dreamlandui
+  - educateavatar
+  - educatepicture
+  - educatepolaroid
+  - educateprops
+  - educatesite
+  - educatetarget
   - emblem
   - enemies
   - equips
   - eventtype
+  - exploreobj
   - extra_page
+  - feastchargift
+  - feasticon
+  - feastpainting
+  - frame
   - furnitureicon
-  - gallerycard
-  - guildnode
+  - gallerypic
+  - gamehallicon
   - guildboss
   - guildevent
   - guildmission
+  - guildnode
+  - guildpainting
   - helpbg
   - herohrzicon
+  - holidayicon
   - icondesc
   - iconframe
-  - independenttex
+  - islandachievement
+  - islandphoto
+  - jiujiuexpeditioncollectionicon
   - levelmap
+  - limitchallenge
+  - linkbutton
+  - linkbutton_mellow
+  - livingareacover
   - loadingbg
+  - loadingbg_hx
   - lotterybg
+  - loveletterstyleatlas
   - mangapic
   - medal
+  - medalalbum
   - memoryicon
+  - memorystoryline
+  - metapainting
   - metaship
   - musiccover
+  - neweducateicon
   - newshipbg
-  - newyearskinshowpage
+  - ninjacityicon
   - painting
+  - paintingface
+  - paintings
+  - paintingsother
+  - plane
   - prints
   - props
   - qicon
+  - roguecards
+  - roguegifts
+  - sculpturerole
+  - shipdesignicon
   - shipmodels
   - shiprarity
   - shipyardicon
+  - shopbanner
+  - shoppainting
+  - shrine2022
   - skillicon
+  - spweapon
   - squareicon
+  - storyicon
+  - storypointicon
   - strategyicon
-  - updatebg
+  - teccatchup
+  - tecfateskillicon
+  - technologyshipicon
+  - thirdanniversaryjppage
+  - towerclimbing
+  - towerclimbingcollectionicon
+  - voteships
+  - world
+  - worldhelpbg
+  - xunzhang
 useragent: "Azurlane Asset Manager Bot"

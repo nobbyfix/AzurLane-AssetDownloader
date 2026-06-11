@@ -365,6 +365,6 @@ def execute_from_args(args):
 	if filepath := args.filepath:
 		extract_single_assetbundle(filepath, client)
 	elif client:
-		extract_latest_client(client, with_linked_versions=True)
+		extract_latest_client(client, with_linked_versions=args.linked_versions)
 	else:
 		raise ArgumentError(None, "At least one of either 'client' or 'filepath' argument is required!")

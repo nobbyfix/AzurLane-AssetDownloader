@@ -80,7 +80,18 @@ def add_subparser_extract(parser):
 	extract_parser = parser.add_parser("extract", help="Extract image assets as pngs")
 	extract_parser.add_argument("client", nargs="?", type=str, choices=Client.__members__, help="client to extract files of")
 	extract_parser.add_argument(
-		"-f", "--filepath", type=str, help="Path to the file or directly to extract only single file or all directory content"
+		"-f",
+		"--filepath",
+		type=str,
+		help="""Path to a file or directory to extract. Directories will be extracted recursively.
+				Supports both absolute filepaths and paths relative to the client assetbundle directory in conjunction with the client argument.""",
+	)
+	extract_parser.add_argument(
+		"-l",
+		"--linked-versions",
+		default=True,
+		action=argparse.BooleanOptionalAction,
+		help="Whether linked versions should be extracted. Enabled by default.",
 	)
 
 

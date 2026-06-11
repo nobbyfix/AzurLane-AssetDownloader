@@ -70,9 +70,19 @@ azl extract [CLIENT]
 
 Where `CLIENT` is one of EN, CN, JP, KR or TW. Extracted images will be saved in `ClientExtract/[CLIENT]/` in a subdirectory with the version information as the name. Since only Texture2D assets are exported, it's not desired to try to export from all assetbundles (See [settings section](#settings)).
 
+#### Extraction using filepath
+
 Using the `-f` or `--filepath` a path for extraction can be passed to the program:
 ```bash
 azl extractor -f [FILEPATH]
 ```
 
 The path can be either to a single assetbundle or a directory. In the case of a directory, all subdiretories will be recursively extracted as well. The path can be either an absolute path, or a relative path which needs to be relative to the `AssetBundles` directory of a client, in which case the client needs to be added as an argument as well.
+
+#### Linked version extraction
+
+Linked versions are extracted by default. To disable this, add the `no-linked-versions` argument:
+
+```bash
+azl extract [CLIENT] --no-linked-versions
+```

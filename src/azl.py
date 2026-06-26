@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import argparse
 
-# Import all necessary modules
 from azlassets import __version__, config, downloadmgr, extractor, importer
 from azlassets.classes import Client
 
@@ -25,17 +24,8 @@ def execute_import(args):
 	importer.execute_from_args(args)
 
 
-def execute_from_parser_args(args):
-	if args.command == "download":
-		execute_download(args)
-	elif args.command == "extract":
-		execute_extract(args)
-	elif args.command == "import":
-		execute_import(args)
-
-
 def add_subparser_download(parser):
-	download_parser = parser.add_parser("download", help="Download assets for a client")
+	download_parser = parser.add_parser("download", aliases=["d"], help="Download assets for a client")
 	download_parser.add_argument("client", type=str, choices=Client.__members__, help="client to update")
 	download_parser.add_argument(
 		"-e",
@@ -74,10 +64,11 @@ def add_subparser_download(parser):
 		action=argparse.BooleanOptionalAction,
 		help="Skips the UnknownVersionTypeError termination as a temporary fix if a new version type gets added.",
 	)
+	download_parser.set_defaults(func=execute_download)
 
 
 def add_subparser_extract(parser):
-	extract_parser = parser.add_parser("extract", help="Extract image assets as pngs")
+	extract_parser = parser.add_parser("extract", aliases=["x"], help="Extract image assets as pngs")
 	extract_parser.add_argument("client", nargs="?", type=str, choices=Client.__members__, help="client to extract files of")
 	extract_parser.add_argument(
 		"-f",
@@ -93,10 +84,11 @@ def add_subparser_extract(parser):
 		action=argparse.BooleanOptionalAction,
 		help="Whether linked versions should be extracted. Enabled by default.",
 	)
+	extract_parser.set_defaults(func=execute_extract)
 
 
 def add_subparser_import(parser):
-	import_parser = parser.add_parser("import", help="Import assets from obb/apk/xapk files")
+	import_parser = parser.add_parser("import", aliases=["i"], help="Import assets from obb/apk/xapk files")
 	import_parser.add_argument("file", nargs=1, help="xapk/apk/obb file to extract")
 	import_parser.add_argument(
 		"-c",
@@ -104,6 +96,7 @@ def add_subparser_import(parser):
 		help="fallback client if it cannot be determined automatically (obb/apk only)",
 		choices=Client.__members__,
 	)
+	import_parser.set_defaults(func=execute_import)
 
 
 def add_subparsers(parser):
@@ -128,7 +121,7 @@ def main():
 		parser.print_help()
 		return
 
-	execute_from_parser_args(args)
+	args.func(args)
 
 
 if __name__ == "__main__":

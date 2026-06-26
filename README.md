@@ -21,12 +21,18 @@ To create the config file for editing before first usage, execute `azl` in a ter
 The `config/user_config.yml` file provides a few settings to filter which files will be downloaded and extracted. The options `download-folder-listtype` and `extract-folder-listtype` can be set to either "blacklist" or "whitelist". Depending on this it will filter by the top-level folder names (subfolders are not supported) or top-level filenames (files inside top-level folders or lower cannot be filtered) set in `download-folder-list` and `extract-folder-list`. This allows for reduced download and extraction times by skipping unneeded assets.
 
 ## Usage
-The program can be executed using `azl <command>` with different commands available depending on the desired functionality, which will be explained in the following sections.
+The program can be executed using `azl <command>` with different commands available depending on the desired functionality. The following commands are available, with additional short-form aliases:
+
+| Functionality | Command | Aliases |
+|-|-|-|
+| import files from archives | `import` | `i` |
+| download files from game server | `download` | `d` |
+| extract images | `extract` | `x` |
 
 ### Importer
 Using this is *not necessary* to get all files, but **recommended** as the asset server may not have all files available. An import will guarantee that all game assets will be available on your system (if so desired) and avoid potentially spamming the asset server with errors of missing files on the first download.
 
-The import supports all game clients (EN, JP, CN, KR, TW) and multiple forms of importing the assets. The recommended and easiest way is by downloading the App Bundle from one of the Google Play Store app distributors (`.apkm` for APKMirror or `.xapk` for APKPure). They can be found by searching for the package name, which are as follows:
+The import supports all five game clients and multiple forms of importing the assets. The recommended and easiest way is by downloading the App Bundle from one of the Google Play Store app distributors (`.apkm` for APKMirror or `.xapk` for APKPure). They can be found by searching for the package name, which are as follows:
 - EN: com.YoStarEN.AzurLane
 - JP: com.YoStarJP.AzurLane
 - KR: kr.txwy.and.blhx

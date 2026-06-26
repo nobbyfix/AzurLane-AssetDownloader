@@ -1,5 +1,19 @@
 # Changelog
 
+## [4.5.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v4.4.0...v4.5.0) (2026-06-26)
+
+
+### Features
+
+* add argument to allow extraction of specific versions ([60d9534](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/60d9534e5c9b6300de2c96a584f9b82f94692e1e))
+* add short-form CLI argument aliases ([a557a1a](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/a557a1afa656a9abbbda06e3fc983b585b0f529f))
+* added argument to disable linked version extraction ([dc31c20](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/dc31c200295d320351f3ad0357cc8117a8287af9))
+
+
+### Bug Fixes
+
+* add missing extraction of linked versions after download ([c5d0381](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/c5d0381256e205695e10a3b99df0bd442927ffbd))
+
 ## [4.4.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v4.3.0...v4.4.0) (2026-05-26)
 
 

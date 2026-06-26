@@ -18,7 +18,8 @@ dependencies = [
     "aiofile",
     "aiohttp[speedups] >= 3.12",
 	"aiodns < 4",
-	"tqdm"
+	"tqdm",
+	"packaging"
 ]
 keywords = [
     "azurlane",

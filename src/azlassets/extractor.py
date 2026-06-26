@@ -1,6 +1,7 @@
 import itertools
 import multiprocessing as mp
 from argparse import ArgumentError
+from packaging.requirements import InvalidRequirement, Requirement
 from pathlib import Path
 
 from . import imgrecon
@@ -309,6 +310,49 @@ def extract_latest_client(client: Client, vtype: VersionType = VersionType.AZL, 
 	client_extractor.extract_latest(vtype, with_linked_versions)
 
 
+def parse_version_requirement_string(input_string: str):
+	parsed_data = {}
+	blocks = input_string.split(";")
+	for block in blocks:
+		block = block.strip()
+		if not block:
+			continue
+
+		try:
+			req = Requirement(block)
+		except InvalidRequirement:
+			print(f"ERROR: '{block}' is a malformed version requirement string and will be ignored!")
+			raise
+
+		reqname = req.name.upper()
+		try:
+			versiontype = VersionType[reqname]
+		except KeyError:
+			print(f"ERROR: '{reqname}' is not a valid version type and will be ignored!")
+			raise
+
+		parsed_data[versiontype] = req.specifier
+
+	return parsed_data
+
+
+def extract_from_version_requirement_string(client: Client, input_string: str, with_linked_versions: bool = False):
+	userconfig = load_user_config()
+	client_extractor = ClientExtractor(client, userconfig)
+
+	version_data = parse_version_requirement_string(input_string)
+	for vtype, specifier in version_data.items():
+		if len(specifier) == 0:
+			client_extractor.extract_latest(vtype, with_linked_versions)
+		else:
+			version_list = client_extractor.vcontroller.get_difflog_versionlist(vtype)
+			filtered_version_list = list(specifier.filter(version_list))
+			print(f"Extracting following versions for type '{vtype.name}' based on filter: " + ", ".join(filtered_version_list))
+			for version_string in filtered_version_list:
+				version = SimpleVersionResult(version=version_string, version_type=vtype)
+				client_extractor.extract_version(version, with_linked_versions)
+
+
 def extract_single_assetbundle(assetpath_str: str, client: Client | None):
 	"""
 	Extract a single asset bundle (or all bundles in a directory) for a client.
@@ -365,6 +409,9 @@ def execute_from_args(args):
 	if filepath := args.filepath:
 		extract_single_assetbundle(filepath, client)
 	elif client:
-		extract_latest_client(client, with_linked_versions=args.linked_versions)
+		if args.version:
+			extract_from_version_requirement_string(client, args.version, with_linked_versions=args.linked_versions)
+		else:
+			extract_latest_client(client, with_linked_versions=args.linked_versions)
 	else:
 		raise ArgumentError(None, "At least one of either 'client' or 'filepath' argument is required!")

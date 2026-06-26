@@ -78,6 +78,14 @@ def add_subparser_extract(parser):
 				Supports both absolute filepaths and paths relative to the client assetbundle directory in conjunction with the client argument.""",
 	)
 	extract_parser.add_argument(
+		"-v",
+		"--version",
+		type=str,
+		help="""Version extraction string to extract specific versions.
+				Uses a subset of the PEP 508/440 compliant version specifier format.
+				Check README for details.""",
+	)
+	extract_parser.add_argument(
 		"-l",
 		"--linked-versions",
 		default=True,

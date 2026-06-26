@@ -76,9 +76,20 @@ azl extract [CLIENT]
 
 Where `CLIENT` is one of EN, CN, JP, KR or TW. Extracted images will be saved in `ClientExtract/[CLIENT]/` in a subdirectory with the version information as the name. Since only Texture2D assets are exported, it's not desired to try to export from all assetbundles (See [settings section](#settings)).
 
+#### Extraction of specific versions
+
+Using the `-v` or `--version` argument, specific versions and version types can be extracted, including older ones (although it will extract the currently available version of the file if was updated again since then). The syntax for this follows [PEP440/PEP508 version specifiers](https://packaging.python.org/en/latest/specifications/version-specifiers/#id5). By default this will extract linked versions as well.
+
+Here are some examples:
+| version specifier | extracted files |
+|-|-|
+| `AZL==9.3.110` | from "AZL" version type of version "9.3.110" |
+| `MANGA>=56` | from "MANGA" version type of versions "56" and newer |
+| `AZL>9.3.186;PAINTING>35` | from "AZL" of versions newer than "9.3.186" and "PAINTING" of versions newer than "35" |
+
 #### Extraction using filepath
 
-Using the `-f` or `--filepath` a path for extraction can be passed to the program:
+Using the `-f` or `--filepath` argument, a path for extraction can be passed to the program:
 ```bash
 azl extractor -f [FILEPATH]
 ```

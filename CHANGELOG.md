@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.6.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v4.5.0...v4.6.0) (2026-07-17)
+
+
+### Features
+
+* add "emoji" to default extraction list ([1142651](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/1142651da76510460bdff8656435290010e923fd))
+
+
+### Bug Fixes
+
+* add fallback unity version for files that have their version info stripped ([ebf5c58](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/ebf5c583412a6790877be1830db4106a8c16e79e))
+
 ## [4.5.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v4.4.0...v4.5.0) (2026-06-26)
 
 

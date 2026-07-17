@@ -1,7 +1,12 @@
 import re
+import UnityPy.config
 from PIL import Image
 from UnityPy import AssetsManager
 from UnityPy.enums import ClassIDType
+
+# some files have their version stripped recently, this is the last version used before that
+UnityPy.config.FALLBACK_UNITY_VERSION = "2022.3.51f1"
+
 
 VR = re.compile(r"v ")
 TR = re.compile(r"vt ")

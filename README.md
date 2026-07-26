@@ -26,7 +26,7 @@ The program can be executed using `azl <command>` with different commands availa
 | Functionality | Command | Aliases |
 |-|-|-|
 | import files from archives | `import` | `i` |
-| download files from game server | `download`, `update` | `d`, `u` |
+| download files from game server | `download` | `d`, `update`, `u` |
 | extract images | `extract` | `x`, `e` |
 
 ### Importer

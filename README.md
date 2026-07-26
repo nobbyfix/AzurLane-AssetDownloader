@@ -26,8 +26,8 @@ The program can be executed using `azl <command>` with different commands availa
 | Functionality | Command | Aliases |
 |-|-|-|
 | import files from archives | `import` | `i` |
-| download files from game server | `download` | `d` |
-| extract images | `extract` | `x` |
+| download files from game server | `download`, `update` | `d`, `u` |
+| extract images | `extract` | `x`, `e` |
 
 ### Importer
 Using this is *not necessary* to get all files, but **recommended** as the asset server may not have all files available. An import will guarantee that all game assets will be available on your system (if so desired) and avoid potentially spamming the asset server with errors of missing files on the first download.

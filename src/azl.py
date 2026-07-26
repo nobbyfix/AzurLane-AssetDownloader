@@ -25,7 +25,7 @@ def execute_import(args):
 
 
 def add_subparser_download(parser):
-	download_parser = parser.add_parser("download", aliases=["d"], help="Download assets for a client")
+	download_parser = parser.add_parser("download", aliases=["d", "update", "u"], help="Download assets for a client")
 	download_parser.add_argument("client", type=str, choices=Client.__members__, help="client to update")
 	download_parser.add_argument(
 		"-e",
@@ -68,7 +68,7 @@ def add_subparser_download(parser):
 
 
 def add_subparser_extract(parser):
-	extract_parser = parser.add_parser("extract", aliases=["x"], help="Extract image assets as pngs")
+	extract_parser = parser.add_parser("extract", aliases=["e", "x"], help="Extract image assets as pngs")
 	extract_parser.add_argument("client", nargs="?", type=str, choices=Client.__members__, help="client to extract files of")
 	extract_parser.add_argument(
 		"-f",

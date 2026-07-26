@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.7.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v4.6.0...v4.7.0) (2026-07-26)
+
+
+### Features
+
+* additional command aliases "update", "u" and "e" ([cd32d0d](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/cd32d0da8645691770bcc2e6c6530fd75c3d973e))
+
+
+### Bug Fixes
+
+* supress UnityVersionFallbackWarning completely ([7f6e8a3](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/7f6e8a3b6359914bd9ef31d5a1156d87ddae336b))
+
 ## [4.6.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v4.5.0...v4.6.0) (2026-07-17)
 
 

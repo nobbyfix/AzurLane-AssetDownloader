@@ -25,10 +25,9 @@ async def calc_md5hash(filepath: Path, chunk_size: int = 65536) -> str:
 		str: The MD5 hash as a lowercase hexadecimal string
 	"""
 	md5 = hashlib.md5()
-	async with semaphore_concurrent_files:
-		async with aiofile.async_open(filepath, "rb") as f:
-			async for chunk in f.iter_chunked(chunk_size):
-				md5.update(chunk)  # pyright: ignore [reportArgumentType]
+	async with semaphore_concurrent_files, aiofile.async_open(filepath, "rb") as f:
+		async for chunk in f.iter_chunked(chunk_size):
+			md5.update(chunk)  # pyright: ignore [reportArgumentType]
 	return md5.hexdigest()
 
 

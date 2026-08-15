@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Self
+from typing import ClassVar, Self
 
 CompareType = Enum("CompareType", "New Changed Unchanged Deleted")
 DownloadType = Enum("DownloadType", "NoChange Removed Success Failed ForDeletionNoChange")
@@ -28,7 +28,7 @@ class Client(ClientDataMixin, Enum):
 	Enumeration of supported Azur Lane game clients.
 	"""
 
-	__package_name_map__: dict[str, Self] = {}
+	__package_name_map__: ClassVar[dict[str, Self]] = {}
 
 	EN = "en-US", "com.YoStarEN.AzurLane"
 	JP = "ja-JP", "com.YoStarJP.AzurLane"

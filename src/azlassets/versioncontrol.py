@@ -3,7 +3,7 @@ from collections.abc import Callable, Generator, Iterable
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Self
+from typing import Any, ClassVar, Self
 
 from .classes import (
 	BundlePath,
@@ -42,7 +42,7 @@ class VersionType(VersionTypeDataMixin, Enum):
 	Enumeration of all supported asset version types.
 	"""
 
-	__hash2member_map__: dict[str, Self] = {}
+	__hash2member_map__: ClassVar[dict[str, Self]] = {}
 
 	AZL = "azhash", ""
 	CV = "cvhash", "cv"

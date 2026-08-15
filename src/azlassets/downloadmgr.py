@@ -70,6 +70,7 @@ async def execute(args):
 	except FileNotFoundError:
 		azl_latest_version_with_difflog = None
 
+	has_update = False
 	async with downloader.AzurlaneAsyncDownloader(clientconfig.cdnurl, useragent=userconfig.useragent) as downloader_session:
 		for vresult in parsed_version_response.values():
 			if args.repair:
@@ -80,6 +81,7 @@ async def execute(args):
 				)
 
 			if update_assets:
+				has_update = True
 				versioncontroller.update_difflog(vresult, update_assets, is_latest=True)
 
 				if vresult.version_type == VersionType.AZL:
@@ -87,7 +89,7 @@ async def execute(args):
 				elif azl_latest_version_with_difflog is not None:
 					versioncontroller.set_as_linked(vresult, azl_latest_version_with_difflog)
 
-	if args.extract:
+	if has_update and args.extract:
 		extractor.extract_latest_client(args.client, with_linked_versions=True)
 
 

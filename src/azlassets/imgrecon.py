@@ -7,7 +7,7 @@ from UnityPy.enums import ClassIDType
 from UnityPy.exceptions import UnityVersionFallbackWarning
 
 # some files have their version stripped recently, this is the last version used before that
-UnityPy.config.FALLBACK_UNITY_VERSION = "2022.3.51f1"
+UnityPy.config.FALLBACK_UNITY_VERSION = "2022.3.62f3"
 # ignore warning completely since it's expected to occur
 # additionally the default setting 'once' gets trigged multiple times anyway when using multiprocessing (once per process)
 warnings.simplefilter("ignore", UnityVersionFallbackWarning)

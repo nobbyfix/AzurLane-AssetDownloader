@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.7.1](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v4.7.0...v4.7.1) (2026-08-15)
+
+
+### Bug Fixes
+
+* when using auto-extract during update subroutine, only extract if any files were downloaded ([44da042](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/44da042d53633c584a7ad55527e535eac69e8ec1))
+
 ## [4.7.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v4.6.0...v4.7.0) (2026-07-26)
 
 

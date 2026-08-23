@@ -1,10 +1,13 @@
 import asyncio
-import sys
 from pathlib import Path
 
 from . import config, downloader, extractor, protobuf, repair, updater
 from .classes import Client
 from .versioncontrol import UnknownVersionTypeError, VersionController, VersionResult, VersionType, parse_version_string
+
+
+class InvalidVersionResponseError(Exception):
+	pass
 
 
 def try_parse_version_string(vstring: str, skip_error: bool = False) -> VersionResult | None:
@@ -54,12 +57,11 @@ async def execute(args):
 
 	version_response = protobuf.get_version_response(clientconfig.gateip, clientconfig.gateport)
 	if not version_response:
-		print("Server did not return a response to version request.")
-		sys.exit(1)
+		raise InvalidVersionResponseError("Server did not return a response to version request.")
 
 	# parse version response
 	version_response_string: list[str] = version_response.pb.version
-	parsed_version_response = dict()
+	parsed_version_response = {}
 	for v in version_response_string:
 		if v.startswith("$"):
 			if vresult := try_parse_version_string(v.strip(), args.skip_unknown_version_error):

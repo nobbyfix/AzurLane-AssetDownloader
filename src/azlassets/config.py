@@ -119,8 +119,7 @@ def load_client_config(client: Client) -> ClientConfig:
 	config = configdata[client.name]
 	try:
 		clientconfig = ClientConfig(config["gateip"], config["gateport"], config["cdnurl"])
-	except KeyError:
-		print("The clientconfig has been wrongly configured.")
-		sys.exit(1)
+	except KeyError as e:
+		raise KeyError("The clientconfig has been wrongly configured.") from e
 
 	return clientconfig

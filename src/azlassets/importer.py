@@ -4,7 +4,6 @@ import itertools
 import json
 import re
 import shutil
-import sys
 from collections import defaultdict
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -16,6 +15,14 @@ from . import updater
 from .classes import BundlePath, Client, CompareType, DownloadType, UpdateResult
 from .config import load_user_config
 from .versioncontrol import SimpleVersionResult, VersionController, VersionType, compare_version_string, parse_hash_rows
+
+
+class UnknownArchiveFormatError(Exception):
+	pass
+
+
+class UnknownClientError(Exception):
+	pass
 
 
 def calc_md5hash(data: bytes) -> str:
@@ -192,7 +199,7 @@ def extract_obb(path: Path, fallback_client: Client | None = None):
 			with ZipFile(path, "r") as zipfile:
 				unpack(zipfile, fallback_client)
 		else:
-			sys.exit(f'Filename "{path.name}" could not be associated with any known client.')
+			raise UnknownClientError(f"Filename '{path.name}' could not be associated with any known client.")
 
 
 @dataclass
@@ -251,13 +258,13 @@ def detect_and_extract_special_apk(path: Path) -> bool:
 		path: Path to the XAPK or APKM file
 
 	Returns:
-		bool: False if the format does not match XAPK or APKMm else True
+		bool: True if the format matches XAPK or APKM else False
 	"""
 	fmt = APK_FORMATS.get(path.suffix.lower())
 	if fmt:
 		extract_special_apk(path, fmt)
 		return True
-	return True
+	return False
 
 
 def extract(path: Path, fallback_client: Client | None = None):
@@ -270,7 +277,7 @@ def extract(path: Path, fallback_client: Client | None = None):
 		fallback_client: Client to use when it cannot be inferred from the file
 	"""
 	if not path.exists():
-		sys.exit("This file does not exist.")
+		raise FileNotFoundError(f"The file '{path}' does not exist.")
 
 	if path.suffix == ".obb":
 		print("File has .obb extension.")
@@ -288,7 +295,7 @@ def extract(path: Path, fallback_client: Client | None = None):
 	elif detect_and_extract_special_apk(path):
 		pass
 	else:
-		sys.exit(f"Unknown file extension {path.suffix!r}.")
+		raise UnknownArchiveFormatError(f"Unknown file extension {path.suffix!r}.")
 
 
 def execute_from_args(args):

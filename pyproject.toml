@@ -17,7 +17,7 @@ dependencies = [
     "protobuf",
     "aiofile",
     "aiohttp[speedups] >= 3.12",
-	"pycares < 5", # new version can be used once updated c-ares is included
+	"pycares < 6", # new version can be used once updated c-ares is included
 	"tqdm",
 	"packaging",
 	"tomli-w"

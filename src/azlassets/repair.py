@@ -7,7 +7,7 @@ from tqdm.asyncio import tqdm_asyncio
 
 from . import downloader, updater
 from .classes import BundlePath, CompareType, DownloadType, HashRow, UpdateResult
-from .config import UserConfig
+from .filter import PathFilter
 from .versioncontrol import VersionController, VersionResult, VersionType
 
 semaphore_concurrent_files = asyncio.Semaphore(16)
@@ -124,7 +124,7 @@ async def repair(
 async def repair_hashfile(
 	version_result: VersionResult,
 	downloader_session: downloader.AzurlaneAsyncDownloader,
-	userconfig: UserConfig,
+	download_filter: PathFilter,
 	versioncontroller: VersionController,
 ) -> list[UpdateResult]:
 	"""
@@ -133,7 +133,7 @@ async def repair_hashfile(
 	Args:
 		version_result: Version type and string to repair
 		downloader_session: Active downloader session
-		userconfig: The user configuration
+		download_filter: Apply a filter to the hashrows
 		versioncontroller: The version controller
 
 	Returns:
@@ -143,7 +143,7 @@ async def repair_hashfile(
 	localhashes = versioncontroller.load_hash_file(version_result.version_type) or []
 
 	# load newest hashes from the game server
-	serverhashes = await updater.download_and_parse_hashes(version_result, downloader_session, userconfig) or []
+	serverhashes = await updater.download_and_parse_hashes(version_result, downloader_session, download_filter) or []
 	assetbasepath = versioncontroller.client_directory / "AssetBundles"
 
 	# parse hashes from all files stored on disk, but only check files that are expected based on the new hashes

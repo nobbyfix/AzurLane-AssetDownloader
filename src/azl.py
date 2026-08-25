@@ -5,11 +5,12 @@ from azlassets import __version__, config, downloadmgr, extractor, importer
 from azlassets.classes import Client
 
 
-def ensure_installed() -> bool:
+def ensure_installed():
 	"""
-	Returns `True` if the installation sucessfully completed, else `False`.
+	Ensures all user-facing config files are present.
 	"""
-	return config.create_user_config()
+	config.update_default_toml_userconfig_example()
+	config.ensure_toml_userconfig_exists()
 
 
 def execute_download(args):
@@ -22,6 +23,10 @@ def execute_extract(args):
 
 def execute_import(args):
 	importer.execute_from_args(args)
+
+
+def execute_convert(_):
+	config.create_toml_userconfig_from_yaml()
 
 
 def add_subparser_download(parser):
@@ -107,18 +112,22 @@ def add_subparser_import(parser):
 	import_parser.set_defaults(func=execute_import)
 
 
+def add_subparser_convert(parser):
+	convert_parser = parser.add_parser("convert", help="Converts YAML-based userconfig to TOML")
+	convert_parser.set_defaults(func=execute_convert)
+
+
 def add_subparsers(parser):
 	add_subparser_download(parser)
 	add_subparser_extract(parser)
 	add_subparser_import(parser)
+	add_subparser_convert(parser)
 
 
 def main():
 	print(f"Running Azurlane asset manager v{__version__}.")
 
-	if ensure_installed():
-		print("First time usage installation successfully completed.")
-		return
+	ensure_installed()
 
 	parser = argparse.ArgumentParser(description="Tool for Azurlane assets management")
 	subparsers = parser.add_subparsers(dest="command", help="Available commands")

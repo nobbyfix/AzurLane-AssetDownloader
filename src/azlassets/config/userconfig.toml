@@ -1,0 +1,7 @@
+# Use this file for your custom settings.
+#
+# You can either just copy the whole default file and edit it or
+# only set the options in this file that you want to have changed.
+#
+# When loading the config, the program will first look in this file
+# and any options that are not set will be used from the default config.

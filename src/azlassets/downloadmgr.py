@@ -40,7 +40,7 @@ async def execute(args):
 	Main async entry point for the download manager.
 	"""
 	# load config data from files
-	userconfig = config.load_user_config()
+	userconfig = config.load_userconfig()
 	clientconfig = config.load_client_config(args.client)
 
 	CLIENT_ASSET_DIR = Path(userconfig.asset_directory, args.client.name)
@@ -76,10 +76,17 @@ async def execute(args):
 	async with downloader.AzurlaneAsyncDownloader(clientconfig.cdnurl, useragent=userconfig.useragent) as downloader_session:
 		for vresult in parsed_version_response.values():
 			if args.repair:
-				update_assets = await repair.repair_hashfile(vresult, downloader_session, userconfig, versioncontroller)
+				update_assets = await repair.repair_hashfile(
+					vresult, downloader_session, userconfig.download_filter, versioncontroller
+				)
 			else:
 				update_assets = await updater.update(
-					vresult, downloader_session, userconfig, versioncontroller, args.force_refresh, args.ignore_hashfile
+					vresult,
+					downloader_session,
+					userconfig.download_filter,
+					versioncontroller,
+					args.force_refresh,
+					args.ignore_hashfile,
 				)
 
 			if update_assets:

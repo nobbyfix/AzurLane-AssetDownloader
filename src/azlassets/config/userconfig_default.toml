@@ -1,0 +1,174 @@
+### EDITING THIS FILE WILL HAVE NO EFFECT ###
+# This file is only as an example to show all options and their default values.
+# Use 'userconfig.toml' to customize this userconfig.
+
+[user]
+# Useragent that is displayed for the server when downloading.
+useragent = "Azurlane Asset Manager Bot"
+
+# Directories can be both relative and absolute, allowing
+# the files to be stored anywhere on your system, as desired.
+[filepaths]
+# Directory to which all assets will be downloaded.
+asset-directory = "ClientAssets"
+# Directory to which all extracted images will be saved to.
+extract-directory = "ClientExtract"
+
+# Filters that will pre-filter which files to download.
+# By default this will download ALL files.
+[download.filters]
+# If the lists are empty, they are ignored.
+#
+# When using both whitelist and blacklist at the same time, the whitelist will be applied first
+# and the blacklist filters on the remaining files after that.
+#
+# The entries in the whitelist and blacklist use 'str.startswith' to match,
+# allowing for simple filtering of directories, subdirectories and files.
+# Entries support matching using Unix shell-style wildcards (see https://docs.python.org/3/library/fnmatch.html)
+# if they contain any of the special characters inside the brackets ( *?[]! ).
+whitelist = []
+blacklist = []
+
+# Filters that will pre-filter which files to extract images from.
+# By default it will only extract from the directories and files
+# listed below in the whitelist.
+#
+# See above in 'download.filters' for whitelist/blacklist behavior.
+[extract.filters]
+whitelist = [
+	"actgiftpackages/",
+	"activitybanner/",
+	"activitybossbuff/",
+	"activitymedal/",
+	"activitypainting/",
+	"aircrafticon/",
+	"backyardtheme/",
+	"battlescore/",
+	"bg/",
+	"boxprefab/",
+	"buildpainting/",
+	"bulletall/",
+	"cardtowerselectships/",
+	"catterystyle/",
+	"challengebossinfo/",
+	"chargeicon/",
+	"chargo/",
+	"cluepictures/",
+	"clutter/",
+	"collectionfileillustration/",
+	"collectionfiletitle/",
+	"combatuistyle/",
+	"commanderhrz/",
+	"commandericon/",
+	"commanderpainting/",
+	"commanderrarity/",
+	"commanderskillicon/",
+	"commandertalenticon/",
+	"commonbg/",
+	"crusingwindow/",
+	"cryptolaliaship/",
+	"dailylevelicon/",
+	"dorm3daccompany/",
+	"dorm3dbanner/",
+	"dorm3dcollection/",
+	"dorm3dcucoloris/",
+	"dorm3dicon/",
+	"dorm3dins/",
+	"dorm3dmemory/",
+	"dorm3dphoto/",
+	"dorm3dselect/",
+	"dorm3dskinpart/",
+	"dreamlandui/",
+	"educateavatar/",
+	"educatepicture/",
+	"educatepolaroid/",
+	"educateprops/",
+	"educatesite/",
+	"educatetarget/",
+	"emblem/",
+	"emoji/",
+	"enemies/",
+	"equips/",
+	"eventtype/",
+	"exploreobj/",
+	"extra_page/",
+	"feastchargift/",
+	"feasticon/",
+	"feastpainting/",
+	"frame/",
+	"furnitureicon/",
+	"gallerypic/",
+	"gamehallicon/",
+	"guildboss/",
+	"guildevent/",
+	"guildmission/",
+	"guildnode/",
+	"guildpainting/",
+	"helpbg/",
+	"herohrzicon/",
+	"holidayicon/",
+	"icondesc/",
+	"iconframe/",
+	"islandachievement/",
+	"islandphoto/",
+	"jiujiuexpeditioncollectionicon/",
+	"levelmap/",
+	"limitchallenge/",
+	"linkbutton/",
+	"linkbutton_mellow/",
+	"livingareacover/",
+	"loadingbg/",
+	"loadingbg_hx/",
+	"lotterybg/",
+	"loveletterstyleatlas/",
+	"mangapic/",
+	"medal/",
+	"medalalbum/",
+	"memoryicon/",
+	"memorystoryline/",
+	"metapainting/",
+	"metaship/",
+	"musiccover/",
+	"neweducateicon/",
+	"newshipbg/",
+	"ninjacityicon/",
+	"painting/",
+	"paintingface/",
+	"paintings/",
+	"paintingsother/",
+	"plane/",
+	"prints/",
+	"props/",
+	"qicon/",
+	"roguecards/",
+	"roguegifts/",
+	"sculpturerole/",
+	"shipdesignicon/",
+	"shipmodels/",
+	"shiprarity/",
+	"shipyardicon/",
+	"shopbanner/",
+	"shoppainting/",
+	"shrine2022/",
+	"skillicon/",
+	"spweapon/",
+	"squareicon/",
+	"storyicon/",
+	"storypointicon/",
+	"strategyicon/",
+	"teccatchup/",
+	"tecfateskillicon/",
+	"technologyshipicon/",
+	"thirdanniversaryjppage/",
+	"towerclimbing/",
+	"towerclimbingcollectionicon/",
+	"voteships/",
+	"world/",
+	"worldhelpbg/",
+	"xunzhang/"
+]
+blacklist = []
+
+# No function, can be ignored
+[meta]
+version = 2

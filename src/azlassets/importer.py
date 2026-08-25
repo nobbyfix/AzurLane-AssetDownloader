@@ -13,7 +13,7 @@ from zipfile import ZipFile
 
 from . import updater
 from .classes import BundlePath, Client, CompareType, DownloadType, UpdateResult
-from .config import load_user_config
+from .config import load_userconfig
 from .versioncontrol import SimpleVersionResult, VersionController, VersionType, compare_version_string, parse_hash_rows
 
 
@@ -49,7 +49,7 @@ def unpack(zipfile: ZipFile, client: Client):
 		client: Client whose asset directory will receive the extracted files
 	"""
 	# load config data from files
-	userconfig = load_user_config()
+	userconfig = load_userconfig()
 	CLIENT_ASSET_DIR = Path(userconfig.asset_directory, client.name)
 	CLIENT_ASSET_DIR.mkdir(parents=True, exist_ok=True)
 	versioncontroller = VersionController(CLIENT_ASSET_DIR)

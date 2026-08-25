@@ -19,7 +19,8 @@ dependencies = [
     "aiohttp[speedups] >= 3.12",
 	"pycares < 5", # new version can be used once updated c-ares is included
 	"tqdm",
-	"packaging"
+	"packaging",
+	"tomli-w"
 ]
 keywords = [
     "azurlane",
@@ -59,4 +60,4 @@ azl = "azl:main"
 version = { attr = "azlassets.__version__" }
 
 [tool.setuptools.package-data]
-"azlassets.config" = ["*.json", "*.yml"]
+"azlassets.config" = ["*.json", "*.toml"]

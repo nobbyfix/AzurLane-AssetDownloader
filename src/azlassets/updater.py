@@ -7,8 +7,8 @@ from tqdm import tqdm
 from tqdm.asyncio import tqdm_asyncio
 
 from .classes import BundlePath, CompareResult, CompareType, DownloadType, HashRow, UpdateResult
-from .config import UserConfig
 from .downloader import AzurlaneAsyncDownloader
+from .filter import PathFilter
 from .versioncontrol import VersionController, VersionResult, compare_version_string, parse_hash_rows
 
 
@@ -109,7 +109,7 @@ async def update_assets(
 
 
 async def download_and_parse_hashes(
-	version_result: VersionResult, downloader_session: AzurlaneAsyncDownloader, userconfig: UserConfig
+	version_result: VersionResult, downloader_session: AzurlaneAsyncDownloader, download_filter: PathFilter
 ) -> list[HashRow] | None:
 	"""
 	Download, filter, and parse the hash file for a version.
@@ -117,7 +117,7 @@ async def download_and_parse_hashes(
 	Args:
 		version_result: Version whose hash file should be fetched
 		downloader_session: Active downloader session
-		userconfig: The user configuration
+		download_filter: Apply a filter to the hashrows
 
 	Returns:
 		list[HashRow] or None: Filtered hash rows, or None if the server returned an empty response
@@ -127,15 +127,9 @@ async def download_and_parse_hashes(
 		print(f"Server returned empty hashfile for {version_result.version_type.name}, skipping.")
 		return
 
-	# hash filter function
-	def _filter(row: HashRow):
-		for path in userconfig.download_filter:
-			if row.filepath.startswith(path):
-				if not userconfig.download_isblacklist:
-					return True
-		return userconfig.download_isblacklist
-
-	return list(filter(_filter, parse_hash_rows(hashes)))
+	hashrows = parse_hash_rows(hashes)
+	filtered_hashrows = list(download_filter.filter(hashrows, lambda hashrow: hashrow.filepath))
+	return filtered_hashrows
 
 
 def compare_hashes(oldhashes: Iterable[HashRow], newhashes: Iterable[HashRow]) -> dict[CompareType, list[CompareResult]]:
@@ -239,7 +233,7 @@ async def _update_from_hashes(
 async def _update(
 	version_result: VersionResult,
 	downloader_session: AzurlaneAsyncDownloader,
-	userconfig: UserConfig,
+	download_filter: PathFilter,
 	versioncontroller: VersionController,
 	ignore_hashfile: bool = False,
 ) -> list[UpdateResult] | None:
@@ -253,14 +247,14 @@ async def _update(
 	Args:
 		version_result: Version to update
 		downloader_session: Active downloader session
-		userconfig: The user configuration
+		download_filter: Apply a filter to the hashrows
 		versioncontroller: Used to load the local hash file and persist results
 		ignore_hashfile: If True, treat all server files as new regardless of local state
 
 	Returns:
 		list[UpdateResult] or None: List of update results, or None if the server returned an empty hash file
 	"""
-	newhashes = await download_and_parse_hashes(version_result, downloader_session, userconfig)
+	newhashes = await download_and_parse_hashes(version_result, downloader_session, download_filter)
 	if newhashes:
 		if ignore_hashfile:
 			oldhashes = []
@@ -272,7 +266,7 @@ async def _update(
 async def update(
 	version_result: VersionResult,
 	downloader_session: AzurlaneAsyncDownloader,
-	userconfig: UserConfig,
+	download_filter: PathFilter,
 	versioncontroller: VersionController,
 	force_refresh: bool = False,
 	ignore_hashfile: bool = False,
@@ -287,7 +281,7 @@ async def update(
 	Args:
 		version_result: Version to update
 		downloader_session: Active downloader session
-		userconfig: The user configuration
+		download_filter: Apply a filter to the hashrows
 		versioncontroller: Used to load the local version string and persist results
 		force_refresh: If True, run the update even when the local version is current
 		ignore_hashfile: If True, treat all server files as new regardless of local state
@@ -300,11 +294,11 @@ async def update(
 		print(
 			f"{version_result.version_type.name}: Current version {oldversion} is older than latest version {version_result.version}."
 		)
-		return await _update(version_result, downloader_session, userconfig, versioncontroller, ignore_hashfile)
+		return await _update(version_result, downloader_session, download_filter, versioncontroller, ignore_hashfile)
 	else:
 		print(f"{version_result.version_type.name}: Current version {oldversion} is latest. ", end="")
 		if force_refresh:
 			print("(force check enabled: Try downloading files anyway.)")
-			return await _update(version_result, downloader_session, userconfig, versioncontroller, ignore_hashfile)
+			return await _update(version_result, downloader_session, download_filter, versioncontroller, ignore_hashfile)
 		else:
 			print("(Nothing to check.)")

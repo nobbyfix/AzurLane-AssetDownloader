@@ -6,7 +6,7 @@ from pathlib import Path
 
 from . import imgrecon
 from .classes import BundlePath, Client, CompareType
-from .config import UserConfig, load_user_config
+from .config import UserConfig, load_userconfig
 from .versioncontrol import DiffLog, SimpleVersionResult, VersionController, VersionType
 
 
@@ -222,17 +222,9 @@ class ClientExtractor:
 		for svr, success_files in file_collection.items():
 			print(f"* {svr}: {len(success_files)}")
 
-		extract_filter_dirs = self.userconfig.extract_filter
-		is_blacklist = self.userconfig.extract_isblacklist
-
-		def _filter(bpath: BundlePath) -> bool:
-			if bpath.inner.split("/")[0] in extract_filter_dirs:
-				return not is_blacklist
-			return is_blacklist
-
 		filtered_file_collection = {}
 		for svr, success_files in file_collection.items():
-			if filtered_files := list(filter(_filter, success_files)):
+			if filtered_files := list(self.userconfig.extract_filter.filter(success_files, lambda bpath: bpath.inner)):
 				filtered_file_collection[svr] = filtered_files
 
 		print("Amount of files to be extracted after applying userconfig filter:")
@@ -305,7 +297,7 @@ def extract_latest_client(client: Client, vtype: VersionType = VersionType.AZL, 
 		vtype: The version type to extract.
 		with_linked_versions: If ``True``, linked versions are extracted alongside the primary one.
 	"""
-	userconfig = load_user_config()
+	userconfig = load_userconfig()
 	client_extractor = ClientExtractor(client, userconfig)
 	client_extractor.extract_latest(vtype, with_linked_versions)
 
@@ -337,7 +329,7 @@ def parse_version_requirement_string(input_string: str):
 
 
 def extract_from_version_requirement_string(client: Client, input_string: str, with_linked_versions: bool = False):
-	userconfig = load_user_config()
+	userconfig = load_userconfig()
 	client_extractor = ClientExtractor(client, userconfig)
 
 	version_data = parse_version_requirement_string(input_string)
@@ -366,7 +358,7 @@ def extract_single_assetbundle(assetpath_str: str, client: Client | None):
 			to the client assetbundle directory
 	"""
 	print(f"Extracting assets from '{assetpath_str}'")
-	userconfig = load_user_config()
+	userconfig = load_userconfig()
 	assetpath = Path(assetpath_str)
 	if client is None:
 		if not assetpath.is_absolute():

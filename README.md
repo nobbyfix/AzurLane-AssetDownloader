@@ -2,10 +2,11 @@
 This tool automatically downloads the newest assets directly from the game's CDN servers and allows extraction of Texture2D files as PNG images.
 
 ## Upgrade Notice
-### From 2.x / no version number to 3.x+
-When upgrading from versions 2.x or with no version number, the project has to be newly set up. To retain all current data, the following folders should be copied to the new working directory:
-- `config`: Only `user_config.yml` is required, the rest can be deleted.
-- `ClientAssets` or directory set in `asset-directory` of the config: Contains all currently downloaded assets, version information, and update logs used for extraction. Highly recommended  to transfer to the new working directory.
+When upgrading from the following major versions to a newer one, manual action may be required:
+* 4.x or lower → 5.x+
+* 2.x / no version number → 3.x+
+
+Check [UPGRADE.md](https://github.com/nobbyfix/AzurLane-AssetDownloader/blob/master/UPGRADE.md) on what to do.
 
 ## Setup
 Before installation, Python 3.11 or newer needs to be available on the system. It is recommended to set the project up using [venv](https://docs.python.org/3/tutorial/venv.html) or a similar virtual environment manager.
@@ -18,7 +19,7 @@ pip install azlassets
 To create the config file for editing before first usage, execute `azl` in a terminal.
 
 ### Settings
-The `config/user_config.yml` file provides a few settings to filter which files will be downloaded and extracted. The options `download-folder-listtype` and `extract-folder-listtype` can be set to either "blacklist" or "whitelist". Depending on this it will filter by the top-level folder names (subfolders are not supported) or top-level filenames (files inside top-level folders or lower cannot be filtered) set in `download-folder-list` and `extract-folder-list`. This allows for reduced download and extraction times by skipping unneeded assets.
+The `config/userconfig.toml` file provides a few settings to filter which files will be downloaded and extracted and where these files will be written to. For a list of all options and what they do check `config/userconfig_default.toml`.
 
 ## Usage
 The program can be executed using `azl <command>` with different commands available depending on the desired functionality. The following commands are available, with additional short-form aliases:

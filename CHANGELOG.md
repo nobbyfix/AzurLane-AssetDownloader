@@ -1,5 +1,19 @@
 # Changelog
 
+## [5.0.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v4.7.1...v5.0.0) (2026-08-25)
+
+
+### ⚠ BREAKING CHANGES
+
+* add new TOML-based user configuration file, replacing YAML config
+
+### Features
+
+* add new TOML-based user configuration file, replacing YAML config ([669321f](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/669321f5b7634aaff08544ad0a7ede2f5826f0dd))
+* add seperate settings for white- and blacklist, allowing simultaneous use of both ([669321f](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/669321f5b7634aaff08544ad0a7ede2f5826f0dd))
+* add support for glob-style patterns in white- and blacklist ([669321f](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/669321f5b7634aaff08544ad0a7ede2f5826f0dd))
+* add YAML to TOML config converter ([669321f](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/669321f5b7634aaff08544ad0a7ede2f5826f0dd))
+
 ## [4.7.1](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v4.7.0...v4.7.1) (2026-08-15)
 
 

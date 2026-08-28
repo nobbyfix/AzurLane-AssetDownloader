@@ -88,7 +88,7 @@ def try_create_directory(directory: Path, _count: int = 0) -> Path:
 	return dir_with_count
 
 
-def extract_assetbundle(bpath: BundlePath, targetdir: Path) -> Path | None:
+def extract_assetbundle(bpath: BundlePath, targetdir: Path) -> list[Path]:
 	"""
 	Extract images from an assetbundle and write them as PNGs.
 	Painting bundles are run through :func:`restore_painting` before saving.
@@ -98,8 +98,7 @@ def extract_assetbundle(bpath: BundlePath, targetdir: Path) -> Path | None:
 		targetdir: Root output directory for extracted images
 
 	Returns:
-		Path or None: Output file (single image) or directory (multiple images),
-		or None if no images were extracted
+		list[Path]: Path to the files of all extracted images
 	"""
 	all_images = []
 	for reader, texture2d in imgrecon.load_images(str(bpath.full)):
@@ -122,17 +121,17 @@ def extract_assetbundle(bpath: BundlePath, targetdir: Path) -> Path | None:
 			image = restore_painting(image, bpath.full, name, True)
 		all_images.append((image, name))
 
+	path_results = []
 	if len(all_images) == 1:
 		image, imgname = all_images[0]
 		target = Path(targetdir, bpath.inner).parent.joinpath(imgname + ".png")
-		return try_save_image(image, target)
-
-	if len(all_images) > 1:
+		path_results.append(try_save_image(image, target))
+	elif len(all_images) > 1:
 		img_target_dir = Path(targetdir, bpath.inner).parent.joinpath(bpath.full.name)
 		for image, imgname in all_images:
 			target = Path(img_target_dir, imgname + ".png")
-			try_save_image(image, target)
-		return img_target_dir
+			path_results.append(try_save_image(image, target))
+	return path_results
 
 
 class ClientExtractor:

@@ -233,6 +233,9 @@ class ClientExtractor:
 
 		total_files = list(itertools.chain.from_iterable(filtered_file_collection.values()))
 		print(f"Total: {len(total_files)}")
+		if len(total_files) <= 0:
+			print("Nothing to extract.")
+			return
 
 		print("Starting extraction...")
 		extract_directory = Path(self.client_extract_directory, f"{difflog.version.version_type.name} {difflog.version.version}")

@@ -1,8 +1,10 @@
-import itertools
-import multiprocessing as mp
 from argparse import ArgumentError
+from concurrent.futures import ProcessPoolExecutor, as_completed
+from functools import partial
+from itertools import chain
 from packaging.requirements import InvalidRequirement, Requirement
 from pathlib import Path
+from tqdm import tqdm
 
 from . import imgrecon
 from .classes import BundlePath, Client, CompareType
@@ -134,6 +136,16 @@ def extract_assetbundle(bpath: BundlePath, targetdir: Path) -> list[Path]:
 	return path_results
 
 
+def extract_assetbundles_with_processpoolexecutor(assetbundles: list[BundlePath], targetdir: Path) -> list[Path]:
+	extract_partial = partial(extract_assetbundle, targetdir=targetdir)
+	filepaths = []
+	with ProcessPoolExecutor() as executor:
+		futures = [executor.submit(extract_partial, bundlepath) for bundlepath in assetbundles]
+		for future in tqdm(as_completed(futures), total=len(assetbundles), desc="File Progress", unit="files"):
+			filepaths.extend(future.result())
+	return filepaths
+
+
 class ClientExtractor:
 	"""
 	Handles asset bundle extraction for a specific game client.
@@ -230,7 +242,7 @@ class ClientExtractor:
 		for svr, filtered_files in filtered_file_collection.items():
 			print(f"* {svr}: {len(filtered_files)}")
 
-		total_files = list(itertools.chain.from_iterable(filtered_file_collection.values()))
+		total_files = list(chain.from_iterable(filtered_file_collection.values()))
 		total_files_amount = len(total_files)
 		print(f"Total: {total_files_amount}")
 		if total_files_amount <= 0:
@@ -240,21 +252,8 @@ class ClientExtractor:
 		print("Starting extraction...")
 		extract_directory = Path(self.client_extract_directory, f"{difflog.version.version_type.name} {difflog.version.version}")
 		extract_directory = try_create_directory(extract_directory)
-		with mp.Pool(processes=min(mp.cpu_count(), total_files_amount)) as pool:
-			for bundlepath in total_files:
-				pool.apply_async(
-					extract_assetbundle,
-					(
-						bundlepath,
-						extract_directory,
-					),
-				)
-
-			# explicitly join pool, to wait for all asnyc tasks to complete
-			pool.close()
-			pool.join()
-
-		print("Extraction completed.")
+		filepaths = extract_assetbundles_with_processpoolexecutor(total_files, extract_directory)
+		print(f"Extraction completed. {len(filepaths)} image files were created.")
 
 	def extract_version(self, version: SimpleVersionResult, with_linked_versions: bool = False):
 		"""
@@ -381,19 +380,15 @@ def extract_single_assetbundle(assetpath_str: str, client: Client | None):
 
 	elif assetpath.is_dir():
 		client_assetbundle_directory_abs = client_assetbundle_directory.absolute()
+		assetbundles = []
+		for p in assetpath.rglob("*"):
+			if p.is_file():
+				assetpath_inner = p.absolute().relative_to(client_assetbundle_directory_abs)
+				bpath = BundlePath.construct(client_assetbundle_directory, assetpath_inner)
+				assetbundles.append(bpath)
 
-		with mp.Pool(processes=mp.cpu_count()) as pool:
-			for p in assetpath.rglob("*"):
-				if p.is_file():
-					assetpath_inner = p.absolute().relative_to(client_assetbundle_directory_abs)
-					bpath = BundlePath.construct(client_assetbundle_directory, assetpath_inner)
-					pool.apply_async(extract_assetbundle, (bpath, extract_directory))
-
-			# explicitly join pool, to wait for all asnyc tasks to complete
-			pool.close()
-			pool.join()
-
-		print("Finished extraction of directory.")
+		filepaths = extract_assetbundles_with_processpoolexecutor(assetbundles, extract_directory)
+		print(f"Finished extraction of directory. {len(filepaths)} image files were created.")
 	else:
 		raise FileNotFoundError("ERROR: Invalid file path!")
 

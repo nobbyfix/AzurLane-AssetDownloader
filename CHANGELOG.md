@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.1.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v5.0.0...v5.1.0) (2026-08-28)
+
+
+### Features
+
+* add progressbars to extraction routine ([f6628ba](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/f6628bab0a9bef93dad806e4f464293036749c0c))
+
+
+### Bug Fixes
+
+* immediately abort extraction when there is nothing to extract ([a6fa7f5](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/a6fa7f55cee7912c0154fd6bb1489128f4fad0c4))
+
 ## [5.0.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v4.7.1...v5.0.0) (2026-08-25)
 
 

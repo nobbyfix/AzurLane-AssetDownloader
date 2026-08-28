@@ -231,15 +231,16 @@ class ClientExtractor:
 			print(f"* {svr}: {len(filtered_files)}")
 
 		total_files = list(itertools.chain.from_iterable(filtered_file_collection.values()))
-		print(f"Total: {len(total_files)}")
-		if len(total_files) <= 0:
+		total_files_amount = len(total_files)
+		print(f"Total: {total_files_amount}")
+		if total_files_amount <= 0:
 			print("Nothing to extract.")
 			return
 
 		print("Starting extraction...")
 		extract_directory = Path(self.client_extract_directory, f"{difflog.version.version_type.name} {difflog.version.version}")
 		extract_directory = try_create_directory(extract_directory)
-		with mp.Pool(processes=mp.cpu_count() - 1) as pool:
+		with mp.Pool(processes=min(mp.cpu_count(), total_files_amount)) as pool:
 			for bundlepath in total_files:
 				pool.apply_async(
 					extract_assetbundle,
@@ -381,7 +382,7 @@ def extract_single_assetbundle(assetpath_str: str, client: Client | None):
 	elif assetpath.is_dir():
 		client_assetbundle_directory_abs = client_assetbundle_directory.absolute()
 
-		with mp.Pool(processes=mp.cpu_count() - 1) as pool:
+		with mp.Pool(processes=mp.cpu_count()) as pool:
 			for p in assetpath.rglob("*"):
 				if p.is_file():
 					assetpath_inner = p.absolute().relative_to(client_assetbundle_directory_abs)

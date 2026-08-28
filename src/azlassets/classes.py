@@ -103,6 +103,11 @@ class BundlePath:
 		fullpath = Path(parentdir, inner)
 		return BundlePath(fullpath, str(inner).replace("\\", "/"))
 
+	@property
+	def top_dir_name(self) -> str | None:
+		if "/" in self.inner:
+			return self.inner.split("/")[0]
+
 	def __hash__(self):
 		return hash(self.inner)
 

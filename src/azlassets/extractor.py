@@ -110,7 +110,7 @@ def extract_assetbundle(bpath: BundlePath, targetdir: Path) -> Path | None:
 			continue  # skip image if its of a chibi
 
 		image = texture2d.image
-		if bpath.inner.split("/")[0] in [
+		if bpath.top_dir_name in [
 			"painting",
 			"paintings",
 			"paintingsother",

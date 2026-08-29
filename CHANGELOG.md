@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.1.1](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v5.1.0...v5.1.1) (2026-08-29)
+
+
+### Bug Fixes
+
+* "islandachievement" in extract whitelist being matched like a directory ([beb6fff](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/beb6fff77d5623eac4c41477617e00d131e2e6ea))
+
 ## [5.1.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v5.0.0...v5.1.0) (2026-08-28)
 
 

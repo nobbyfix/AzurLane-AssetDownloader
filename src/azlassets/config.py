@@ -11,7 +11,7 @@ from shutil import copy
 from .classes import Client
 from .filter import PathFilter
 
-CONFIG_VERSION = 2
+CONFIG_VERSION = 3
 
 # package-incuded filepaths
 CONFIG_DATA_PATH = files("azlassets").joinpath("config")

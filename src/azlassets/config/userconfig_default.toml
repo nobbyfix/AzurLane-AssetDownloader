@@ -25,7 +25,7 @@ extract-directory = "ClientExtract"
 # The entries in the whitelist and blacklist use 'str.startswith' to match,
 # allowing for simple filtering of directories, subdirectories and files.
 # Entries support matching using Unix shell-style wildcards (see https://docs.python.org/3/library/fnmatch.html)
-# if they contain any of the special characters inside the brackets ( *?[]! ).
+# if they contain any of the following special characters listed inside the brackets ( *?[]! ).
 whitelist = []
 blacklist = []
 
@@ -36,6 +36,8 @@ blacklist = []
 # See above in 'download.filters' for whitelist/blacklist behavior.
 [extract.filters]
 whitelist = [
+	# directories
+	# explicitly match full directory name by appending '/'
 	"actgiftpackages/",
 	"activitybanner/",
 	"activitybossbuff/",
@@ -109,7 +111,6 @@ whitelist = [
 	"holidayicon/",
 	"icondesc/",
 	"iconframe/",
-	"islandachievement/",
 	"islandphoto/",
 	"jiujiuexpeditioncollectionicon/",
 	"levelmap/",
@@ -165,10 +166,13 @@ whitelist = [
 	"voteships/",
 	"world/",
 	"worldhelpbg/",
-	"xunzhang/"
+	"xunzhang/",
+
+	# files
+	"islandachievement"
 ]
 blacklist = []
 
 # No function, can be ignored
 [meta]
-version = 2
+version = 3

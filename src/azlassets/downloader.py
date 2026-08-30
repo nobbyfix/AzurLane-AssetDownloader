@@ -1,6 +1,7 @@
 import aiofile
 import aiohttp
 import traceback
+from contextlib import AbstractAsyncContextManager
 from pathlib import Path
 
 from .versioncontrol import VersionResult
@@ -25,18 +26,20 @@ def get_chunk_size(file_size: int) -> int:
 	return 1_048_576  # > 4 MB (top ~1% files): -> 1 MB
 
 
-class AzurlaneAsyncDownloader(aiohttp.ClientSession):
+class AzurlaneAsyncDownloader(AbstractAsyncContextManager):
 	"""
 	Async HTTP client for downloading Azur Lane assets and hash files.
-
-	Extends :class:`aiohttp.ClientSession` with a base URL of``{cdn_url}/android/``.
 	"""
+
+	clientsession: aiohttp.ClientSession
 
 	def __init__(self, cdn_url: str, useragent: str):
 		base_url = f"{cdn_url}/android/"
 		limited_tcp_connector = aiohttp.TCPConnector(limit_per_host=10, enable_cleanup_closed=True)
 		timeout = aiohttp.ClientTimeout(total=None, sock_connect=30, sock_read=10)
-		super().__init__(base_url=base_url, headers={"user-agent": useragent}, connector=limited_tcp_connector, timeout=timeout)
+		self.clientsession = aiohttp.ClientSession(
+			base_url=base_url, headers={"user-agent": useragent}, connector=limited_tcp_connector, timeout=timeout
+		)
 
 	async def get_hashes(self, versionhash: str) -> aiohttp.ClientResponse:
 		"""
@@ -48,7 +51,7 @@ class AzurlaneAsyncDownloader(aiohttp.ClientSession):
 		Returns:
 			aiohttp.ClientResponse: The raw response
 		"""
-		return await self.get(f"hash/{versionhash}")
+		return await self.clientsession.get(f"hash/{versionhash}")
 
 	async def get_asset(self, filehash: str) -> aiohttp.ClientResponse:
 		"""
@@ -60,7 +63,7 @@ class AzurlaneAsyncDownloader(aiohttp.ClientSession):
 		Returns:
 			aiohttp.ClientResponse: The raw response
 		"""
-		return await self.get(f"resource/{filehash}")
+		return await self.clientsession.get(f"resource/{filehash}")
 
 	async def download_hashes(self, version_result: VersionResult) -> str | None:
 		"""
@@ -132,6 +135,10 @@ class AzurlaneAsyncDownloader(aiohttp.ClientSession):
 			traceback.print_exception(type(e), e, e.__traceback__)
 			return False
 
-	# override return type from superclass
-	async def __aenter__(self) -> "AzurlaneAsyncDownloader":
-		return await super().__aenter__()  # pyright: ignore [reportReturnType]
+	async def __aexit__(
+		self,
+		exc_type,
+		exc_val,
+		exc_tb,
+	) -> None:
+		await self.clientsession.close()

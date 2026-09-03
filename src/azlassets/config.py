@@ -92,6 +92,16 @@ class ClientConfig:
 	cdnurl: str
 
 
+def deep_update(dict1: dict, dict2: dict) -> dict:
+	"""Recursively merges dict2 into dict1."""
+	for key, value in dict2.items():
+		if isinstance(value, dict):
+			dict1[key] = deep_update(dict1[key], value)
+		else:
+			dict1[key] = value
+	return dict1
+
+
 def load_yaml_userconfig() -> YAMLUserConfig | None:
 	"""
 	Load user configuration from ``config/user_config.yml``.
@@ -210,7 +220,7 @@ def load_userconfig() -> UserConfig:
 
 	# load default config first and then overwrite it with the userconfig
 	toml_userconfig = load_default_toml_userconfig()
-	toml_userconfig |= load_toml_userconfig()
+	toml_userconfig = deep_update(toml_userconfig, load_toml_userconfig())
 
 	userconfig = get_userconfig_from_tomldata(toml_userconfig)
 	return userconfig

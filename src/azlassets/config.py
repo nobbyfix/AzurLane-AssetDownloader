@@ -11,7 +11,7 @@ from shutil import copy
 from .classes import Client
 from .filter import PathFilter
 
-CONFIG_VERSION = 3
+CONFIG_VERSION = 4
 
 # package-incuded filepaths
 CONFIG_DATA_PATH = files("azlassets").joinpath("config")
@@ -78,6 +78,7 @@ class UserConfig:
 	asset_directory: Path
 	extract_directory: Path
 	download_filter: PathFilter
+	import_filter: PathFilter
 	extract_filter: PathFilter
 
 
@@ -146,6 +147,7 @@ def convert_yaml_userconfig(yaml_config: YAMLUserConfig) -> UserConfig:
 		asset_directory=yaml_config.asset_directory,
 		extract_directory=yaml_config.extract_directory,
 		download_filter=download_filter,
+		import_filter=download_filter,
 		extract_filter=extract_filter,
 	)
 	return userconfig
@@ -199,16 +201,29 @@ def get_userconfig_from_tomldata(toml_data: dict) -> UserConfig:
 		raw_patterns_whitelist=toml_data["download"]["filters"]["whitelist"],
 		raw_patterns_blacklist=toml_data["download"]["filters"]["blacklist"],
 	)
-	extract_filter = PathFilter(
-		raw_patterns_whitelist=toml_data["extract"]["filters"]["whitelist"],
-		raw_patterns_blacklist=toml_data["extract"]["filters"]["blacklist"],
-	)
+
+	if toml_data["import"]["filters"]["use-download-filters"]:
+		import_filter = download_filter
+	else:
+		import_filter = PathFilter(
+			raw_patterns_whitelist=toml_data["import"]["filters"]["whitelist"],
+			raw_patterns_blacklist=toml_data["import"]["filters"]["blacklist"],
+		)
+
+	if toml_data["import"]["filters"]["use-download-filters"]:
+		extract_filter = download_filter
+	else:
+		extract_filter = PathFilter(
+			raw_patterns_whitelist=toml_data["extract"]["filters"]["whitelist"],
+			raw_patterns_blacklist=toml_data["extract"]["filters"]["blacklist"],
+		)
 
 	userconfig = UserConfig(
 		useragent=toml_data["user"]["useragent"],
 		asset_directory=toml_data["filepaths"]["asset-directory"],
 		extract_directory=toml_data["filepaths"]["extract-directory"],
 		download_filter=download_filter,
+		import_filter=import_filter,
 		extract_filter=extract_filter,
 	)
 	return userconfig

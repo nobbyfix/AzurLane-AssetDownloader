@@ -29,12 +29,24 @@ extract-directory = "ClientExtract"
 whitelist = []
 blacklist = []
 
+# Filters that will pre-filter which files to import.
+# By default this will use the same filters set for the download.
+[import.filters]
+# Whether to use the same filters as set for the download.
+use-download-filters = true
+# See above in 'download.filters' for whitelist/blacklist behavior.
+# Ignored if 'use-download-filters' is set to 'true'.
+whitelist = []
+blacklist = []
+
 # Filters that will pre-filter which files to extract images from.
 # By default it will only extract from the directories and files
 # listed below in the whitelist.
-#
-# See above in 'download.filters' for whitelist/blacklist behavior.
 [extract.filters]
+# Whether to use the same filters as set for the download.
+use-download-filters = false
+# See above in 'download.filters' for whitelist/blacklist behavior.
+# Ignored if 'use-download-filters' is set to 'true'.
 whitelist = [
 	# directories
 	# explicitly match full directory name by appending '/'
@@ -175,4 +187,4 @@ blacklist = []
 
 # No function, can be ignored
 [meta]
-version = 3
+version = 4

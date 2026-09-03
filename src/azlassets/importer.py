@@ -79,8 +79,9 @@ def unpack(zipfile: ZipFile, client: Client):
 		# read hash files from obb and current file and compare them
 		with zipfile.open("assets/" + versiontype.hashes_filename, "r") as hashfile:
 			obbhashes = parse_hash_rows(hashfile.read().decode("utf8"))
+		filtered_obbhashes = userconfig.import_filter.filter(obbhashes, lambda hashrow: hashrow.filepath)
 		currenthashes = versioncontroller.load_hash_file(versiontype)
-		comparison_results = updater.compare_hashes(currenthashes or [], obbhashes)
+		comparison_results = updater.compare_hashes(currenthashes or [], filtered_obbhashes)
 
 		# extract and delete files
 		assetbasepath = Path(CLIENT_ASSET_DIR, "AssetBundles")

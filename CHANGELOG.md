@@ -1,5 +1,20 @@
 # Changelog
 
+## [5.2.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v5.1.1...v5.2.0) (2026-09-03)
+
+
+### Features
+
+* add options for filtering import files to config ([5c2c278](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/5c2c278445b3dd39291e8d2993aff9b5db9205d3))
+* add options to use download filter for import and extract to config ([5c2c278](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/5c2c278445b3dd39291e8d2993aff9b5db9205d3))
+* filter files during import using download filter ([5c2c278](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/5c2c278445b3dd39291e8d2993aff9b5db9205d3))
+
+
+### Bug Fixes
+
+* add specific error message when download 404's ([dcf966d](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/dcf966d071afd35ea2fa0abdc0a894a5c90389cf))
+* error when loading config and not all options of a group are present ([55f8f73](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/55f8f730aeb77b6344842806a772845ae901eb7b))
+
 ## [5.1.1](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v5.1.0...v5.1.1) (2026-08-29)
 
 

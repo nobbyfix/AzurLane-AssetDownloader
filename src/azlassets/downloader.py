@@ -130,6 +130,15 @@ class AzurlaneAsyncDownloader(AbstractAsyncContextManager):
 				f"ERROR: Connection timed out 3 times while downloading '{filehash}' to '{save_destination}'. Aborting file download."
 			)
 			return False
+		except aiohttp.ClientResponseError as e:
+			if e.status == 404:
+				print(
+					f"ERROR: The asset '{filehash}' with target '{save_destination}' does not exist on the server. Try to use the import function of the program."
+				)
+			else:
+				print(f"ERROR: An unexpected error occured while downloading '{filehash}' to '{save_destination}'.")
+				traceback.print_exception(type(e), e, e.__traceback__)
+			return False
 		except Exception as e:
 			print(f"ERROR: An unexpected error occured while downloading '{filehash}' to '{save_destination}'.")
 			traceback.print_exception(type(e), e, e.__traceback__)

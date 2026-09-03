@@ -22,7 +22,7 @@ class UnknownVersionTypeError(NotImplementedError):
 		self.version_name = version_name
 
 
-@dataclass
+@dataclass(frozen=True)
 class VersionTypeDataMixin:
 	"""
 	Data fields shared by all :class:`VersionType` enum members.
@@ -57,9 +57,6 @@ class VersionType(VersionTypeDataMixin, Enum):
 
 	def __str__(self) -> str:
 		return self.name.lower()
-
-	def __hash__(self) -> int:
-		return Enum.__hash__(self)
 
 	@property
 	def version_filename(self) -> str:
@@ -111,7 +108,7 @@ class VersionType(VersionTypeDataMixin, Enum):
 		return cls.__hash2member_map__.get(hashname)
 
 
-@dataclass(eq=True, frozen=True)
+@dataclass(frozen=True)
 class SimpleVersionResult:
 	"""
 	A minimal version descriptor pairing a version string with its type.
@@ -127,7 +124,7 @@ class SimpleVersionResult:
 		return f"{self.version_type.name} {self.version}"
 
 
-@dataclass(eq=True, frozen=True)
+@dataclass(frozen=True)
 class VersionResult(SimpleVersionResult):
 	"""
 	A full version descriptor as returned by the game server.

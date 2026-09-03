@@ -7,7 +7,7 @@ CompareType = Enum("CompareType", "New Changed Unchanged Deleted")
 DownloadType = Enum("DownloadType", "NoChange Removed Success Failed ForDeletionNoChange")
 
 
-@dataclass
+@dataclass(frozen=True)
 class ClientDataMixin:
 	"""
 	Data fields shared by all :class:`Client` enum members.
@@ -52,7 +52,7 @@ class Client(ClientDataMixin, Enum):
 		return cls.__package_name_map__.get(package_name)
 
 
-@dataclass(eq=True, frozen=True)
+@dataclass(frozen=True)
 class HashRow:
 	"""
 	A single row from a client hashes CSV file.
@@ -65,7 +65,7 @@ class HashRow:
 	md5hash: str
 
 
-@dataclass(eq=True)
+@dataclass
 class CompareResult:
 	"""
 	The outcome of comparing an asset bundle between two snapshots.
@@ -76,7 +76,7 @@ class CompareResult:
 	compare_type: CompareType
 
 
-@dataclass(eq=True)
+@dataclass(frozen=True)
 class BundlePath:
 	"""
 	A resolved asset bundle path, storing both a resolvable path and

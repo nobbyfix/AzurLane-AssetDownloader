@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.2.1](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v5.2.0...v5.2.1) (2026-09-05)
+
+
+### Bug Fixes
+
+* extract using download filter by default, ignoring config ([1468063](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/1468063bacfd80e53bf15d1feda4f06a9f4b7eae))
+
 ## [5.2.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v5.1.1...v5.2.0) (2026-09-03)
 
 

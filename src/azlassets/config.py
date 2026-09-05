@@ -210,7 +210,7 @@ def get_userconfig_from_tomldata(toml_data: dict) -> UserConfig:
 			raw_patterns_blacklist=toml_data["import"]["filters"]["blacklist"],
 		)
 
-	if toml_data["import"]["filters"]["use-download-filters"]:
+	if toml_data["extract"]["filters"]["use-download-filters"]:
 		extract_filter = download_filter
 	else:
 		extract_filter = PathFilter(

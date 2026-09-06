@@ -15,6 +15,7 @@ dist
 .autoenv
 *.apk
 *.xapk
+*.apkm
 *.obb
 
 # generated files

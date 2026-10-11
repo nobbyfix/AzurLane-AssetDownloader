@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.3.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v5.2.1...v5.3.0) (2026-10-11)
+
+
+### Features
+
+* add pattern filter as extraction argument ([c53dadc](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/c53dadc31f76e2c99f62d3dca3f7cea9cbfa8d99))
+
+
+### Bug Fixes
+
+* update extract filter whitelist for latest game version ([caa88fa](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/caa88fa217b953337539407773e38e8ebf170388))
+
 ## [5.2.1](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v5.2.0...v5.2.1) (2026-09-05)
 
 

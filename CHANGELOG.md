@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.3.1](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v5.3.0...v5.3.1) (2026-10-11)
+
+
+### Bug Fixes
+
+* upgrade config version ([a7d6d4e](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/a7d6d4e22e9b246f77bd650c26e5e214fd87ff5f))
+
 ## [5.3.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v5.2.1...v5.3.0) (2026-10-11)
 
 

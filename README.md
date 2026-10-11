@@ -92,10 +92,15 @@ Here are some examples:
 
 Using the `-f` or `--filepath` argument, a path for extraction can be passed to the program:
 ```bash
-azl extractor -f [FILEPATH]
+azl extract -f [FILEPATH]
 ```
 
 The path can be either to a single assetbundle or a directory. In the case of a directory, all subdiretories will be recursively extracted as well. The path can be either an absolute path, or a relative path which needs to be relative to the `AssetBundles` directory of a client, in which case the client needs to be added as an argument as well.
+
+When extracting from a directory, the files can be filtered using a glob-style pattern:
+```bash
+azl extract -f [FILEPATH] -p [PATTERN]
+```
 
 #### Linked version extraction
 

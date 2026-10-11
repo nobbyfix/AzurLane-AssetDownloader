@@ -347,17 +347,20 @@ def extract_from_version_requirement_string(client: Client, input_string: str, w
 				client_extractor.extract_version(version, with_linked_versions)
 
 
-def extract_single_assetbundle(assetpath_str: str, client: Client | None):
+def extract_from_path(assetpath_str: str, client: Client | None = None, filter_pattern: str | None = None):
 	"""
-	Extract a single asset bundle (or all bundles in a directory) for a client.
+	Extract assetbundles from a given filepath.
 
-	If ``assetpath`` points to a directory, all files within it are extracted
-	recursively. Otherwise the single bundle at that path is extracted.
+	If ``assetpath_str`` points to a file, the assetbundle at that file will be extracted.
+
+	If ``assetpath_str`` points to a directory, all files within it are extracted recursively.
+	This can be further filtered by setting the glob-style pattern ``filter_pattern``.
 
 	Args:
 		client: Client whose asset directory should be used
 		assetpath_str: Path to a singular asset or directory, may be absolute or relative
 			to the client assetbundle directory
+		filter_pattern: Glob-style pattern to filter files when extracting from a directory
 	"""
 	print(f"Extracting assets from '{assetpath_str}'")
 	userconfig = load_userconfig()
@@ -381,7 +384,7 @@ def extract_single_assetbundle(assetpath_str: str, client: Client | None):
 	elif assetpath.is_dir():
 		client_assetbundle_directory_abs = client_assetbundle_directory.absolute()
 		assetbundles = []
-		for p in assetpath.rglob("*"):
+		for p in assetpath.rglob(filter_pattern or "*"):
 			if p.is_file():
 				assetpath_inner = p.absolute().relative_to(client_assetbundle_directory_abs)
 				bpath = BundlePath.construct(client_assetbundle_directory, assetpath_inner)
@@ -397,7 +400,7 @@ def execute_from_args(args):
 	# parse arguments and execute
 	client = Client.__members__.get(args.client)
 	if filepath := args.filepath:
-		extract_single_assetbundle(filepath, client)
+		extract_from_path(filepath, client, args.pattern)
 	elif client:
 		if args.version:
 			extract_from_version_requirement_string(client, args.version, with_linked_versions=args.linked_versions)

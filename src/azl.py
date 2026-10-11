@@ -83,6 +83,12 @@ def add_subparser_extract(parser):
 				Supports both absolute filepaths and paths relative to the client assetbundle directory in conjunction with the client argument.""",
 	)
 	extract_parser.add_argument(
+		"-p",
+		"--pattern",
+		type=str,
+		help="Filters extraction directory using glob-style pattern. Only used when extracting with 'filepath' argument.",
+	)
+	extract_parser.add_argument(
 		"-v",
 		"--version",
 		type=str,

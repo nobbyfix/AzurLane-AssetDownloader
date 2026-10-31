@@ -85,6 +85,7 @@ whitelist = [
 	"commanderskillicon/",
 	"commandertalenticon/",
 	"commonbg/",
+	"coreactivityuitable/",
 	"crusingwindow/",
 	"cryptolaliaship/",
 	"dailylevelicon/",
@@ -195,4 +196,4 @@ blacklist = []
 
 # No function, can be ignored
 [meta]
-version = 5
+version = 6

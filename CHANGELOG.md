@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.4.0](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v5.3.1...v5.4.0) (2026-10-31)
+
+
+### Features
+
+* add "coreactivityuitable" directory to default extraction whitelist ([708ddc0](https://github.com/nobbyfix/AzurLane-AssetDownloader/commit/708ddc07982ddb7623e07f971dd998dd53bd82f8))
+
 ## [5.3.1](https://github.com/nobbyfix/AzurLane-AssetDownloader/compare/v5.3.0...v5.3.1) (2026-10-11)
 
 

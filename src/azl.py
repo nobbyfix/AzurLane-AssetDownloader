@@ -25,10 +25,6 @@ def execute_import(args):
 	importer.execute_from_args(args)
 
 
-def execute_convert(_):
-	config.create_toml_userconfig_from_yaml()
-
-
 def add_subparser_download(parser):
 	download_parser = parser.add_parser("download", aliases=["d", "update", "u"], help="Download assets for a client")
 	download_parser.add_argument("client", type=str, choices=Client.__members__, help="client to update")
@@ -118,16 +114,10 @@ def add_subparser_import(parser):
 	import_parser.set_defaults(func=execute_import)
 
 
-def add_subparser_convert(parser):
-	convert_parser = parser.add_parser("convert", help="Converts YAML-based userconfig to TOML")
-	convert_parser.set_defaults(func=execute_convert)
-
-
 def add_subparsers(parser):
 	add_subparser_download(parser)
 	add_subparser_extract(parser)
 	add_subparser_import(parser)
-	add_subparser_convert(parser)
 
 
 def main():

@@ -12,14 +12,12 @@ requires-python = ">=3.11"
 dynamic = ["version"]
 dependencies = [
     "UnityPy >= 1.10.18",
-    "PyYAML",
     "Pillow",
     "protobuf",
     "aiofile",
     "aiohttp[speedups] >= 3.12",
 	"tqdm",
-	"packaging",
-	"tomli-w"
+	"packaging"
 ]
 keywords = [
     "azurlane",

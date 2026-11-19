@@ -128,7 +128,7 @@ def load_yaml_userconfig() -> YAMLUserConfig | None:
 			extract_directory=yamlconfig["extract-directory"],
 		)
 		return userconfig
-	except KeyError:
+	except (KeyError, TypeError):
 		warnings.warn(FORMAT_WARNING, category=YAMLConfigInvalidFormatWarning)
 		return None
 
